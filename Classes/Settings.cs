@@ -18,12 +18,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static int MaxBrowserInstances = 2;
 
         public static bool UseAPI = true;
-        public static string API_URL = "";
+        public static string APIUrl = "";
 
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
+        public static bool ClaimSeasonReward = false;
+        public static int SleepBetweenBattles = 30;
+        public static int ERCThreshold = 75;
 
-        public static BotInstance[] BotInstances;
+        public static List<BotInstance> BotInstances;
         public static IWebDriver[] SeleniumInstances;
 
         public const string JavaScriptClickFunction = @"function simulate(element, eventName)

@@ -54,6 +54,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         {
                             chromeOptions.AddArgument("--no-sandbox");
                         }
+                        if (Settings.Headless)
+                        {
+                            chromeOptions.AddArgument("--headless");
+                        }
                         chromeOptions.AddArgument("--disable-web-security");
                         chromeOptions.AddArgument("--disable-features=IsolateOrigins");
                         chromeOptions.AddArgument("--disable-site-isolation-trials");
@@ -241,10 +245,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         /// <param name="by">By</param>
         /// <param name="seconds">Maximum seconds to wait</param>
         /// <param name="elementIndex">Index of the element if there are multiple</param>
-        public static void WaitForWebsiteLoadedAndElementShown(this IWebDriver webDriver, By by, int seconds = 15, int elementIndex = 0, [CallerMemberName] string callerName = "")
+        public static bool WaitForWebsiteLoadedAndElementShown(this IWebDriver webDriver, By by, int seconds = 15, int elementIndex = 0, [CallerMemberName] string callerName = "")
         {
-            WaitForWebsiteLoaded(webDriver, by, seconds, elementIndex, callerName);
-            WaitForElementShown(webDriver, by, (seconds / 2), elementIndex, callerName);
+            if (!WaitForWebsiteLoaded(webDriver, by, seconds, elementIndex, callerName)) return false;
+            return WaitForElementShown(webDriver, by, (seconds / 2), elementIndex, callerName);
         }
 
         /// <summary>
@@ -254,7 +258,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         /// <param name="time">Time to wait (default 30 seconds)</param>
         /// <param name="elementIndex">Index of the element if there are multiple</param>
         //[DebuggerNonUserCode]
-        public static void WaitForWebsiteLoaded(this IWebDriver webDriver, By by, int time = 30, int elementIndex = 0, [CallerMemberName] string callerName = "")
+        public static bool WaitForWebsiteLoaded(this IWebDriver webDriver, By by, int time = 30, int elementIndex = 0, [CallerMemberName] string callerName = "")
         {
             try
             {
@@ -266,14 +270,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                         if (element != null)
                         {
-                            break;
+                            return true;
                         }
                         else
                         {
                             System.Threading.Thread.Sleep(1000);
                         }
                     }
-                    catch (WebDriverException ex)
+                    catch (WebDriverException)
                     {
                         break;
                     }
@@ -290,6 +294,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
+            return false;
         }
 
         /// <summary>
@@ -807,7 +812,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         /// <param name="by">By</param>
         /// <param name="seconds">Maximum seconds to wait</param>
         /// <param name="elementIndex">Index of the element if there are multiple</param>
-        public static void WaitForElementShown(this IWebDriver webDriver, By by, int seconds = 15, int elementIndex = 0, [CallerMemberName] string callerName = "")
+        public static bool WaitForElementShown(this IWebDriver webDriver, By by, int seconds = 15, int elementIndex = 0, [CallerMemberName] string callerName = "")
         {
             try
             {
@@ -820,7 +825,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                     else
                     {
-                        break;
+                        return true;
                     }
                 }
             }
@@ -830,6 +835,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString() + Environment.NewLine + "Element-Index: " + elementIndex.ToString());
             }
+            return false;
         }
 
         /// <summary>

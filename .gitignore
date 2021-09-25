@@ -6,6 +6,7 @@
 # Project-specific files
 config.txt
 logins.txt
+accounts.txt
 log.txt
 chromedriver.exe
 
