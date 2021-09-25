@@ -104,7 +104,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
@@ -124,7 +124,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "Element: " + element.ToString());
             }
@@ -156,7 +156,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "Element: " + element.ToString());
             }
@@ -175,7 +175,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
@@ -232,7 +232,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex);
             }
@@ -290,7 +290,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
@@ -310,7 +310,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "Frame-Name: " + Name);
             }
@@ -329,7 +329,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "Frame-Index: " + Index.ToString());
             }
@@ -348,7 +348,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "Element: " + Element.ToString());
             }
@@ -367,7 +367,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
@@ -384,7 +384,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex);
             }
@@ -404,7 +404,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
                 throw;
@@ -442,7 +442,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
@@ -468,7 +468,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
@@ -509,7 +509,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString() + Environment.NewLine + "Index: " + index.ToString() + "elementIndex: " + elementIndex.ToString());
             }
@@ -531,7 +531,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString() + Environment.NewLine + "Value: " + value + "elementIndex: " + elementIndex.ToString());
             }
@@ -576,7 +576,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "Message: " + Message);
             }
@@ -596,7 +596,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "JS: " + jsScript);
             }
@@ -617,7 +617,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "JS: " + jsScript + Environment.NewLine + "argument: " + argument.ToString());
             }
@@ -637,7 +637,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By.ID: " + id);
             }
@@ -658,7 +658,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "Element: " + element.ToString());
             }
@@ -678,7 +678,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
@@ -699,7 +699,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "Element: " + Element.ToString());
             }
@@ -719,7 +719,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
@@ -739,7 +739,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString());
             }
@@ -753,7 +753,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "");
             }
@@ -776,7 +776,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By.ID: " + elementID);
             }
@@ -800,7 +800,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By.ID: " + elementID);
             }
@@ -831,7 +831,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString() + Environment.NewLine + "Element-Index: " + elementIndex.ToString());
             }
@@ -874,7 +874,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
+                StackFrame frame = new StackFrame(1);
                 string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
                 ReportError(calledMethod, ex, "By: " + by.ToString() + Environment.NewLine + "Element-Index: " + elementIndex.ToString());
             }

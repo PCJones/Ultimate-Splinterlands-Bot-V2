@@ -37,9 +37,13 @@ namespace Ultimate_Splinterlands_Bot_V2
         {
             var instances = new HashSet<Task>();
             int nextBrowserInstance = 0;
+
+            bool logoutNeeded = Settings.BotInstances.Count == Settings.MaxBrowserInstances;
+
             for (int i = 0; i < Settings.MaxBrowserInstances; i++)
             {
-                instances.Add(Task.Run(async () => Settings.BotInstances[i].DoBattle(Settings.SeleniumInstances[nextBrowserInstance++])));
+                instances.Add(Task.Run(async () => 
+                await Settings.BotInstances[i].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));
             }
 
             int nextBotInstance = nextBrowserInstance;
@@ -50,7 +54,8 @@ namespace Ultimate_Splinterlands_Bot_V2
                 instances.Remove(t);
                 nextBotInstance = nextBotInstance >= Settings.BotInstances.Count ? 0 : nextBotInstance;
                 nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
-                instances.Add(Task.Run(async () => Settings.BotInstances[nextBotInstance++].DoBattle(Settings.SeleniumInstances[nextBrowserInstance++])));
+                instances.Add(Task.Run(async () => 
+                await Settings.BotInstances[nextBotInstance++].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));
             }
         }
 
@@ -139,7 +144,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 string[] temp = loginData.Split(':');
                 if (temp.Length == 2)
                 {
-                    Settings.BotInstances.Add(new BotInstance(temp[0].Trim(), temp[1].Trim()));
+                    Settings.BotInstances.Add(new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim()));
                 }
             }
 
