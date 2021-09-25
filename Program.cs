@@ -24,6 +24,10 @@ namespace Ultimate_Splinterlands_Bot_V2
             Settings.DebugMode = true;
         }
 
+        static void ReadConfig()
+        {
+
+        }
         static void CheckForChromeDriver()
         {
             if (!File.Exists(Settings.StartupPath + @"/chromedriver.exe"))
