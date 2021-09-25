@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenQA.Selenium;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
-        
+
+        public static BotInstance[] BotInstances;
+        public static IWebDriver[] SeleniumInstances;
 
         public const string JavaScriptClickFunction = @"function simulate(element, eventName)
 {

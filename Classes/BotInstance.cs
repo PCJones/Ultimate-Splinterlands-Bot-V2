@@ -13,5 +13,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public string Email { get; init; }
         public string Password { get; init; }
 
+        public async Task DoBattleAsync()
+        {
+
+        }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Ultimate_Splinterlands_Bot_V2.Classes;
 
 namespace Ultimate_Splinterlands_Bot_V2
@@ -11,6 +13,28 @@ namespace Ultimate_Splinterlands_Bot_V2
             Log.WriteStartupInfoToLog();
             CheckForChromeDriver();
             Initialize();
+
+            _ = Task.Run(async () => await BotLoop()).ConfigureAwait(false);
+        }
+
+        static async Task BotLoop()
+        {
+            var instances = new HashSet<Task>();
+            int nextBotInstance = 0;
+            for (int i = 0; i < Settings.MaxBrowserInstances; i++)
+            {
+                instances.Add(Settings.BotInstances[i].DoBattleAsync());
+                Settings.SeleniumInstances[i] = SeleniumAddons.CreateSeleniumInstance();
+                nextBotInstance++;
+            }
+
+            while (true)
+            {
+                Task t = await Task.WhenAny(instances);
+                instances.Remove(t);
+                nextBotInstance = nextBotInstance >= Settings.BotInstances.Length ? 0 : nextBotInstance;
+                instances.Add(Settings.BotInstances[nextBotInstance++].DoBattleAsync());
+            }
         }
 
         static void Initialize()
@@ -22,6 +46,11 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             // todo
             Settings.DebugMode = true;
+
+            if (Settings.MaxBrowserInstances > Settings.BotInstances.Length)
+            {
+                Settings.MaxBrowserInstances = Settings.BotInstances.Length;
+            }
         }
 
         static void ReadConfig()
