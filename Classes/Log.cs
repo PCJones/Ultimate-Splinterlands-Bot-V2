@@ -63,6 +63,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Console.ForegroundColor = textColor;
                 Console.WriteLine(messagePrefix + message);
                 Console.ResetColor();
+
+                if (Settings.WriteLogToFile)
+                {
+                    System.IO.File.AppendAllText(Settings.StartupPath + @"/log.txt", messagePrefix + message + Environment.NewLine);
+                }
             }
         }
 
@@ -88,7 +93,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             WriteToLog("Ultimate Splinderlands Bot by PC Jones (Based on bot by alfficcadenti)");
             WriteToLog("Join the telegram group https://t.me/ultimatesplinterlandsbot");
             WriteToLog("Join the discord server https://discord.gg/hwSr7KNGs9");
-            WriteToLog("                   Close this window to stop the bot");
+            WriteToLog("                        Close this window to stop the bot");
             WriteToLog("--------------------------------------------------------------------------");
         }
     }

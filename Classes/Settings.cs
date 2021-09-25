@@ -7,10 +7,21 @@ using System.Threading.Tasks;
 namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
     public static class Settings
-    {
-        public static bool DebugMode = false;
-
+    {         
         public static string StartupPath = "";
+        public static bool DebugMode = false;
+        public static bool WriteLogToFile = false;
+
+        public static bool ChromeNoSandbox = false;
+        public static bool Headless = false;
+        public static int MaxBrowserInstances = 2;
+
+        public static bool UseAPI = true;
+        public static string API_URL = "";
+
+        public static bool PrioritizeQuest = true;
+        public static bool ClaimQuestReward = false;
+        
 
         public const string JavaScriptClickFunction = @"function simulate(element, eventName)
 {

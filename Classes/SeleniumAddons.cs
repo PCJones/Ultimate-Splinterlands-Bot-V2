@@ -50,10 +50,19 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         {
                             chromeOptions.AddArgument("user-agent=" + userAgent);
                         }
+                        if (Settings.ChromeNoSandbox)
+                        {
+                            chromeOptions.AddArgument("--no-sandbox");
+                        }
+                        chromeOptions.AddArgument("--disable-web-security");
+                        chromeOptions.AddArgument("--disable-features=IsolateOrigins");
+                        chromeOptions.AddArgument("--disable-site-isolation-trials");
                         chromeOptions.AddArgument("--mute-audio");
                         chromeOptions.AddArgument("--disable-notifications");
-                        chromeOptions.AddExtension(Settings.StartupPath + "\\Config\\BrowserAddons\\AvoidDetection.crx");
-                        driver = new ChromeDriver(Settings.StartupPath, chromeOptions, TimeSpan.FromSeconds(timeOut));
+                        chromeOptions.AddArgument("--window-size=1920,1080");
+                        var chromeDriverService = ChromeDriverService.CreateDefaultService(Settings.StartupPath);
+                        chromeDriverService.HideCommandPromptWindow = true;
+                        driver = new ChromeDriver(chromeDriverService, chromeOptions, TimeSpan.FromSeconds(timeOut));
                     }
                     driver.Manage().Window.Position = new System.Drawing.Point(0, 0);
                     //driver.Manage().Window.Maximize();
