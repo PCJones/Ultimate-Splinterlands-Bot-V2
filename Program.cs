@@ -179,6 +179,58 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Settings.SeleniumInstances[i] = SeleniumAddons.CreateSeleniumInstance();
             }
             Log.WriteToLog("Browser instances created!", Log.LogType.Success);
+
+            Settings.QuestTypes = new Dictionary<string, string>();
+            Settings.QuestTypes.Add("Defend the Borders", "life");
+            Settings.QuestTypes.Add("Pirate Attacks", "water");
+            Settings.QuestTypes.Add("High Priority Targets", "snipe");
+            Settings.QuestTypes.Add("Lyanna's Call", "earth");
+            Settings.QuestTypes.Add("Stir the Volcano", "fire");
+            Settings.QuestTypes.Add("Rising Dead", "death");
+            Settings.QuestTypes.Add("Stubborn Mercenaries", "neutral");
+            Settings.QuestTypes.Add("Gloridax Revenge", "dragon");
+            Settings.QuestTypes.Add("Stealth Mission", "sneak");
+
+            Settings.Summoners = new Dictionary<string, string>();
+            Settings.Summoners.Add("224", "dragon");
+            Settings.Summoners.Add("27", "earth");
+            Settings.Summoners.Add("16", "water");
+            Settings.Summoners.Add("156", "life");
+            Settings.Summoners.Add("189", "earth");
+            Settings.Summoners.Add("167", "fire");
+            Settings.Summoners.Add("145", "death");
+            Settings.Summoners.Add("5", "fire");
+            Settings.Summoners.Add("71", "water");
+            Settings.Summoners.Add("114", "dragon");
+            Settings.Summoners.Add("178", "water");
+            Settings.Summoners.Add("110", "fire");
+            Settings.Summoners.Add("49", "death");
+            Settings.Summoners.Add("88", "dragon");
+            Settings.Summoners.Add("38", "life");
+            Settings.Summoners.Add("239", "life");
+            Settings.Summoners.Add("74", "death");
+            Settings.Summoners.Add("78", "dragon");
+            Settings.Summoners.Add("260", "fire");
+            Settings.Summoners.Add("70", "fire");
+            Settings.Summoners.Add("109", "death");
+            Settings.Summoners.Add("111", "water");
+            Settings.Summoners.Add("112", "earth");
+            Settings.Summoners.Add("130", "dragon");
+            Settings.Summoners.Add("72", "earth");
+            Settings.Summoners.Add("235", "dragon");
+            Settings.Summoners.Add("56", "dragon");
+            Settings.Summoners.Add("113", "life");
+            Settings.Summoners.Add("200", "dragon");
+            Settings.Summoners.Add("236", "fire");
+            Settings.Summoners.Add("240", "dragon");
+            Settings.Summoners.Add("254", "water");
+            Settings.Summoners.Add("257", "water");
+            Settings.Summoners.Add("258", "death");
+            Settings.Summoners.Add("259", "earth");
+            Settings.Summoners.Add("261", "life");
+            Settings.Summoners.Add("262", "dragon");
+            Settings.Summoners.Add("278", "earth");
+            Settings.Summoners.Add("73", "life");
         }
 
         static void SetStartupPath()

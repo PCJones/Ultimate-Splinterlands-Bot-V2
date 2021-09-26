@@ -55,7 +55,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 JToken quest = await API.GetPlayerQuestAsync(Username);
-                string[] cards = await API.GetPlayerCards(Username);
+                string[] cards = await API.GetPlayerCardsAsync(Username);
                 Log.WriteToLog($"{Username}: Deck size: {cards.Length - 1}"); // Minus 1 because phantom card array has an empty string in it
                 ClosePopups(driver);
                 NavigateToBattlePage(driver);
@@ -80,6 +80,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 // todo: implement selectCorrectBattleType
                 StartBattle(driver); // todo: try catch, return true/false
+                WaitForLoadingBanner(driver);
                 int counter = 0;
                 while (!driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("button[class='btn btn--create-team']")))
                 {
@@ -96,6 +97,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string[] allowedSplinters = GetAllowedSplinters(driver);
                 driver.ClickElementOnPage(By.CssSelector("button[class='btn btn--create-team']"));
                 WaitForLoadingBanner(driver);
+                var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters, cards, quest, Username);
+                if ((string)team["summoner_id"] == "")
+                {
+                    Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
+                    return;
+                }
+                SelectTeam(driver, team);
+
+                // todo: determine winner, show summary etc
+                Log.WriteToLog($"{Username}: Finished battle!", Log.LogType.Success);
             }
             catch (Exception ex)
             {
@@ -108,6 +119,52 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     driver.ExecuteJavaScript("SM.Logout();");
                 }
             }
+        }
+
+        private void SelectTeam(IWebDriver driver, JToken team)
+        {
+            Log.WriteToLog($"{Username}: Selecting team...");
+            string color = (string)team["color"];
+            string summonerID = (string)team["summoner_id"];
+            string monster1 = (string)team["monster_1_id"];
+            string monster2 = (string)team["monster_2_id"];
+            string monster3 = (string)team["monster_3_id"];
+            string monster4 = (string)team["monster_4_id"];
+            string monster5 = (string)team["monster_5_id"];
+            string monster6 = (string)team["monster_6_id"];
+            driver.WaitForWebsiteLoadedAndElementShown(By.XPath($"//div[@card_detail_id={summonerID}]"));
+            driver.FindElement(By.XPath($"//div[@card_detail_id={summonerID}]")).Click();
+            Thread.Sleep(1000);
+            if (GetSummonerColor(summonerID) == "dragon")
+            {
+                // check
+                Log.WriteToLog($"{Username}: DRAGON - Teamcolor: {color}");
+                driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector($"label[for='filter-element-{color}-button']"));
+                driver.ClickElementOnPage(By.CssSelector($"label[for='filter-element-{color}-button']"));
+            }
+            driver.WaitForWebsiteLoadedAndElementShown(By.XPath($"//div[@card_detail_id={monster1}]"));
+            driver.FindElement(By.XPath($"//div[@card_detail_id={monster1}]")).Click();
+            if (monster2 != "")
+                driver.FindElement(By.XPath($"//div[@card_detail_id={monster2}]")).Click();
+
+            if (monster3 != "")
+                driver.FindElement(By.XPath($"//div[@card_detail_id={monster3}]")).Click();
+
+            if (monster4 != "")
+                driver.FindElement(By.XPath($"//div[@card_detail_id={monster4}]")).Click();
+
+            if (monster5 != "")
+                driver.FindElement(By.XPath($"//div[@card_detail_id={monster5}]")).Click();
+
+            if (monster6 != "")
+                driver.FindElement(By.XPath($"//div[@card_detail_id={monster6}]")).Click();
+
+
+        }
+
+        private static string GetSummonerColor(string id)
+        {
+            return Settings.Summoners.ContainsKey(id) ? Settings.Summoners[id] : "";
         }
 
         private int GetMana(IWebDriver driver)
