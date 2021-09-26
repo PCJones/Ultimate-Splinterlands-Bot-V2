@@ -32,7 +32,7 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
+#[Bb]in/
 [Oo]bj/
 [Oo]ut/
 [Ll]og/
