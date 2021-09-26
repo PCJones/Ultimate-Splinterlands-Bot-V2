@@ -1,4 +1,4 @@
-# Ultimate-Splinterlands-Bot-V2
+# Ultimate-Splinterlands-Bot-V2 (EXPERIMENTAL, may have bugs!)
 A fast, free, multi-account splinderlands bot
 
 A completely rewritten new version of this bot: https://github.com/PCJones/ultimate-splinterlands-bot
