@@ -247,8 +247,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         /// <param name="elementIndex">Index of the element if there are multiple</param>
         public static bool WaitForWebsiteLoadedAndElementShown(this IWebDriver webDriver, By by, int seconds = 15, int elementIndex = 0, [CallerMemberName] string callerName = "")
         {
-            if (!WaitForWebsiteLoaded(webDriver, by, seconds, elementIndex, callerName)) return false;
-            return WaitForElementShown(webDriver, by, (seconds / 2), elementIndex, callerName);
+            if (!WaitForWebsiteLoaded(webDriver, by, seconds / 2, elementIndex, callerName)) return false;
+            return WaitForElementShown(webDriver, by, seconds / 2, elementIndex, callerName);
         }
 
         /// <summary>
@@ -262,6 +262,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
+                time = time == 0 ? 1 : time;
                 for (int i = 0; i < time; i++)
                 {
                     try
@@ -816,6 +817,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
+                seconds = seconds == 0 ? 1 : seconds;
                 for (int i = 0; i < seconds; i++)
                 {
                     //if (WebDriver.FindElements(by)[elementIndex].GetAttribute("type") == "hidden")

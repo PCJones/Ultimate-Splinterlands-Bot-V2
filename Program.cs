@@ -38,7 +38,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             var instances = new HashSet<Task>();
             int nextBrowserInstance = 0;
 
-            bool logoutNeeded = Settings.BotInstances.Count == Settings.MaxBrowserInstances;
+            bool logoutNeeded = Settings.BotInstances.Count != Settings.MaxBrowserInstances;
 
             for (int i = 0; i < Settings.MaxBrowserInstances; i++)
             {
@@ -52,7 +52,11 @@ namespace Ultimate_Splinterlands_Bot_V2
             {
                 Task t = await Task.WhenAny(instances);
                 instances.Remove(t);
-                nextBotInstance = nextBotInstance >= Settings.BotInstances.Count ? 0 : nextBotInstance;
+                if (nextBotInstance >= Settings.BotInstances.Count)
+                {
+                    Log.WriteSupportInformationToLog();
+                    nextBotInstance = 0;
+                }
                 nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
                 instances.Add(Task.Run(async () => 
                 await Settings.BotInstances[nextBotInstance++].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));

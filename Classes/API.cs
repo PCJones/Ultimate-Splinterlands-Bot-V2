@@ -14,6 +14,21 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private const string SplinterlandsAPI = "https://game-api.splinterlands.io";
         private const string SplinterlandsAPIFallback = "https://api2.splinterlands.com";
 
+        public static async Task<JToken> GetTeamFromAPI(int mana, string rules, string[] splinters, string[] cards, JToken quest)
+        {
+            var matchDetails = new JObject(
+                new JProperty("mana", mana),
+                new JProperty("rules", rules),
+                new JProperty("splinters", splinters),
+                new JProperty("myCards", cards),
+                new JProperty("quest", Settings.PrioritizeQuest && quest != null 
+                &&((int)quest["total"] != (int)quest["completed"]) ? quest : "")
+            );
+
+            var test = JsonConvert.SerializeObject(matchDetails);
+            return matchDetails;
+        }
+
         public static async Task<JToken> GetPlayerQuestAsync(string username)
         {
             try
@@ -31,7 +46,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get quest from splinterlands api: {ex}");
+                Log.WriteToLog($"{username}: Could not get quest from splinterlands api: {ex}", Log.LogType.Error);
             }
             return null;
         }
@@ -49,9 +64,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 DateTime oneDayAgo = DateTime.Now.AddDays(-1);
-                var test2 = (DateTime)JToken.Parse(data)["cards"][35]["last_used_date"];
-                var test3 = JsonConvert.SerializeObject(JToken.Parse(data)["cards"][35]["last_used_date"]);
-                var test4 = DateTime.Parse(test3.Replace("\"", "").Trim());
                 string[] cards = JToken.Parse(data)["cards"].Where(x =>
                 (x["delegated_to"].Type == JTokenType.Null || (string)x["delegated_to"] == username) &&
                 x["market_listing_type"].Type == JTokenType.Null && 
@@ -71,7 +83,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get cards from splinterlands api: {ex}{Environment.NewLine}Bot will play with phantom cards only.");
+                Log.WriteToLog($"{username}: Could not get cards from splinterlands api: {ex}{Environment.NewLine}Bot will play with phantom cards only.", Log.LogType.Error);
             }
             return Settings.PhantomCards;
         }

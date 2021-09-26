@@ -51,7 +51,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     break;
                 case LogType.Warning:
                     textColor = ConsoleColor.Yellow;
-                    messagePrefix += "Warning: ";
+                    //messagePrefix += "Warning: ";
                     break;
                 default:
                     textColor = Console.ForegroundColor;
