@@ -97,7 +97,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     remoteElement.Click();
                 }
-                catch (InvalidElementStateException ex)
+                catch (InvalidElementStateException)
                 {
                     return;
                 }

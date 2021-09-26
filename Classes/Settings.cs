@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium;
+﻿using Newtonsoft.Json.Linq;
+using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +30,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static List<BotInstance> BotInstances;
         public static IWebDriver[] SeleniumInstances;
 
+        public static JArray CardsDetails;
         public static Dictionary<string, string> QuestTypes;
         public static Dictionary<string, string> Summoners;
         public static readonly string[] PhantomCards = { "1","2","3","4","5","6","7","8","12","13","14","15","16","17","18","19","23","24","25","26","27","28","29","30","34","35","36","37","38","39","40","41","42","45","46","47","48","49","50","51","52","60","61","62","63","64","65","66","79","157","158","159","160","161","162","163","167","168","169","170","171","172","173","174","178","179","180","181","182","183","184","185","189","140","141","145","146","147","148","149","150","151","152","156","135","136","137","138","139","140","141","145","185","189","224","190","191","192","193","194","195","196","" };

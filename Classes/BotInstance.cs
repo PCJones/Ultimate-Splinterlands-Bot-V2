@@ -31,15 +31,22 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 UnknownUsername = false;
                 Username = username;
+                Email = "";
             }
 
             Password = password;
             LastBattle = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * - 1);
         }
+
         public async Task DoBattleAsync(IWebDriver driver, bool logoutNeeded)
         {
             try
             {
+                if (LastBattle.AddMinutes(Settings.SleepBetweenBattles) > DateTime.Now)
+                {
+                    Log.WriteToLog($"{Username}: is sleeping until {LastBattle.AddMinutes(Settings.SleepBetweenBattles)}");
+                    return;
+                }
                 if (!Login(driver, logoutNeeded))
                 {
                     return;
@@ -105,6 +112,25 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 SelectTeam(driver, team);
 
+                while (driver.WaitForWebsiteLoadedAndElementShown(By.Id("find-match-timer"), 8))
+                {
+                    Thread.Sleep(5000);
+                }
+                LastBattle = DateTime.Now;
+                driver.WaitForWebsiteLoadedAndElementShown(By.Id("btnRumble"));
+                Thread.Sleep(1000);
+                driver.ClickElementOnPage(By.Id("btnRumble"));
+                Log.WriteToLog($"{Username}: Rumble button clicked");
+                driver.WaitForWebsiteLoadedAndElementShown(By.Id("btnSkip"));
+                Thread.Sleep(3000);
+                driver.ClickElementOnPage(By.Id("btnSkip"));
+                Log.WriteToLog($"{Username}: Skip button clicked");
+
+                Log.WriteToLog($"{Username}: Battle finished, winner log etc is not yet implemented");
+                Log.WriteToLog($"{Username}: Sleeping for 8 secs to see result, this will be removed after beta");
+                Thread.Sleep(8000);
+                
+
                 // todo: determine winner, show summary etc
                 Log.WriteToLog($"{Username}: Finished battle!", Log.LogType.Success);
             }
@@ -123,48 +149,165 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private void SelectTeam(IWebDriver driver, JToken team)
         {
-            Log.WriteToLog($"{Username}: Selecting team...");
-            string color = (string)team["color"];
-            string summonerID = (string)team["summoner_id"];
-            string monster1 = (string)team["monster_1_id"];
-            string monster2 = (string)team["monster_2_id"];
-            string monster3 = (string)team["monster_3_id"];
-            string monster4 = (string)team["monster_4_id"];
-            string monster5 = (string)team["monster_5_id"];
-            string monster6 = (string)team["monster_6_id"];
-            driver.WaitForWebsiteLoadedAndElementShown(By.XPath($"//div[@card_detail_id={summonerID}]"));
-            driver.FindElement(By.XPath($"//div[@card_detail_id={summonerID}]")).Click();
-            Thread.Sleep(1000);
-            if (GetSummonerColor(summonerID) == "dragon")
+            try
             {
-                // check
-                Log.WriteToLog($"{Username}: DRAGON - Teamcolor: {color}");
-                driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector($"label[for='filter-element-{color}-button']"));
-                driver.ClickElementOnPage(By.CssSelector($"label[for='filter-element-{color}-button']"));
+                Log.WriteToLog($"{Username}: Selecting team...");
+                string color = (string)team["color"];
+                string summonerID = (string)team["summoner_id"];
+                string monster1 = (string)team["monster_1_id"];
+                string monster2 = (string)team["monster_2_id"];
+                string monster3 = (string)team["monster_3_id"];
+                string monster4 = (string)team["monster_4_id"];
+                string monster5 = (string)team["monster_5_id"];
+                string monster6 = (string)team["monster_6_id"];
+                driver.WaitForWebsiteLoadedAndElementShown(By.XPath($"//div[@card_detail_id={summonerID}]"));
+                Thread.Sleep(300);
+                IWebElement element = driver.FindElement(By.XPath($"//div[@card_detail_id={summonerID}]"));
+                //driver.ExecuteJavaScript("arguments[0].click();", element);
+                driver.ActionClick(By.XPath($"//div[@card_detail_id={summonerID}]"));
+                Thread.Sleep(1000);
+                if (GetSummonerColor(summonerID) == "Gold")
+                {
+                    string colorToPlay = "";
+                    if (monster1 != "")
+                    {
+                        string mobColor = GetSummonerColor(monster1);
+                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
+                        {
+                            colorToPlay = mobColor;
+                        }
+                    }
+                    if (colorToPlay == "" && monster2 != "")
+                    {
+                        string mobColor = GetSummonerColor(monster2);
+                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
+                        {
+                            colorToPlay = mobColor;
+                        }
+                    }
+                    if (colorToPlay == "" && monster3 != "")
+                    {
+                        string mobColor = GetSummonerColor(monster3);
+                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
+                        {
+                            colorToPlay = mobColor;
+                        }
+                    }
+                    if (colorToPlay == "" && monster4 != "")
+                    {
+                        string mobColor = GetSummonerColor(monster4);
+                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
+                        {
+                            colorToPlay = mobColor;
+                        }
+                    }
+                    if (colorToPlay == "" && monster5 != "")
+                    {
+                        string mobColor = GetSummonerColor(monster5);
+                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
+                        {
+                            colorToPlay = mobColor;
+                        }
+                    }
+                    if (colorToPlay == "" && monster6 != "")
+                    {
+                        string mobColor = GetSummonerColor(monster6);
+                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
+                        {
+                            colorToPlay = mobColor;
+                        }
+                    }
+                    colorToPlay = colorToPlay.Replace("Red", "fire").Replace("Blue", "water")
+                        .Replace("White", "life").Replace("Black", "death").Replace("Green", "earth");
+                    // check
+                    Log.WriteToLog($"{Username}: DRAGON - Teamcolor: {colorToPlay}");
+                    driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector($"label[for='filter-element-{colorToPlay}-button']"));
+                    driver.ActionClick(By.CssSelector($"label[for='filter-element-{colorToPlay}-button']"));
+                    Thread.Sleep(500);
+                }
+                driver.WaitForWebsiteLoadedAndElementShown(By.XPath($"//div[@card_detail_id={monster1}]"));
+                Thread.Sleep(1000);
+                element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster1}]"));
+                driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
+                //element.Click();
+                Thread.Sleep(1000);
+                driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster1}]"));
+                //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster1}]"));
+
+                if (monster2 != "")
+                {
+                    //Thread.Sleep(1000);
+                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster2}]"));
+                    //element.Click();
+                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
+                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
+                    Thread.Sleep(750);
+                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster2}]"));
+                    driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
+                }
+
+                if (monster3 != "")
+                {
+                    //Thread.Sleep(1000);
+                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster3}]"));
+                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
+                    //element.Click();
+                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster3}]"));
+                    Thread.Sleep(750);
+                    driver.ActionClick(By.XPath($"//div[@card_detail_id={monster3}]"));
+                }
+
+                if (monster4 != "")
+                {
+                    //Thread.Sleep(1000);
+                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster4}]"));
+                    //element.Click();
+                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
+                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
+                    Thread.Sleep(750);
+                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster4}]"));
+                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster4}]"));
+                }
+
+                if (monster5 != "")
+                {
+                    //Thread.Sleep(1000);
+                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster5}]"));
+                    //element.Click();
+                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
+                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
+                    Thread.Sleep(750);
+                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster5}]"));
+                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster5}]"));
+                }
+
+                if (monster6 != "")
+                {
+                    //Thread.Sleep(1000);
+                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster6}]"));
+                    //element.Click();
+                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
+                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
+                    Thread.Sleep(750);
+                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster6}]"));
+                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster6}]"));
+                }
+
+                Thread.Sleep(1000);
+                driver.ClickElementOnPage(By.CssSelector("button[class='btn-green']"));
+                Thread.Sleep(1000);
+                driver.ClickElementOnPage(By.CssSelector("button[class='btn-green']"));
+                //driver.ActionClick(By.CssSelector("button[class='btn-green']"));
             }
-            driver.WaitForWebsiteLoadedAndElementShown(By.XPath($"//div[@card_detail_id={monster1}]"));
-            driver.FindElement(By.XPath($"//div[@card_detail_id={monster1}]")).Click();
-            if (monster2 != "")
-                driver.FindElement(By.XPath($"//div[@card_detail_id={monster2}]")).Click();
-
-            if (monster3 != "")
-                driver.FindElement(By.XPath($"//div[@card_detail_id={monster3}]")).Click();
-
-            if (monster4 != "")
-                driver.FindElement(By.XPath($"//div[@card_detail_id={monster4}]")).Click();
-
-            if (monster5 != "")
-                driver.FindElement(By.XPath($"//div[@card_detail_id={monster5}]")).Click();
-
-            if (monster6 != "")
-                driver.FindElement(By.XPath($"//div[@card_detail_id={monster6}]")).Click();
-
-
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at team selection: {ex}");
+            }
         }
 
         private static string GetSummonerColor(string id)
         {
-            return Settings.Summoners.ContainsKey(id) ? Settings.Summoners[id] : "";
+            return (string)Settings.CardsDetails[Convert.ToInt32(id) - 1]["color"];
         }
 
         private int GetMana(IWebDriver driver)
@@ -189,10 +332,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         }
         private void StartBattle(IWebDriver driver)
         {
-            Log.WriteToLog($"{Username} Waiting for battle button...");
+            Log.WriteToLog($"{Username}: Waiting for battle button...");
             driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//button[contains(., 'BATTLE')]"));
             driver.ClickElementOnPage(By.XPath("//button[contains(., 'BATTLE')]"));
-            Log.WriteToLog($"{Username} Battle button clicked!");
+            Log.WriteToLog($"{Username}: Battle button clicked!");
         }
         private void NavigateToBattlePage(IWebDriver driver)
         {
@@ -268,7 +411,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
-                if (driver.WaitForWebsiteLoaded(By.ClassName("close"), 4))
+                if (driver.WaitForWebsiteLoaded(By.ClassName("close"), 3))
                 {
                     if (driver.WaitForElementShown(By.ClassName("close"), 1))
                     {
@@ -324,6 +467,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Trying to login...");
             driver.Navigate().GoToUrl("https://splinterlands.com/?p=battle_history");
             WaitForLoadingBanner(driver);
+            ClosePopups(driver);
             if (!UnknownUsername && !logoutNeeded)
             {
                 // check if already logged in
@@ -346,7 +490,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             driver.ClickElementOnPage(By.Id("log_in_button"));
 
             driver.WaitForWebsiteLoadedAndElementShown(By.Id("email"));
-            driver.SetData(By.Id("email"), UnknownUsername ? Email : Username);
+            driver.SetData(By.Id("email"), Email.Length > 0 ? Email : Username);
             driver.SetData(By.Id("password"), Password);
             driver.ClickElementOnPage(By.Name("loginBtn"), 1);
 

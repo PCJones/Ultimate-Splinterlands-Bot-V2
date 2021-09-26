@@ -10,6 +10,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 {
     class Program
     {
+        private static object _TaskLock = new object();
         static void Main(string[] args)
         {
             handler = new ConsoleEventDelegate(ConsoleEventCallback);
@@ -37,16 +38,15 @@ namespace Ultimate_Splinterlands_Bot_V2
         {
             var instances = new HashSet<Task>();
             int nextBrowserInstance = 0;
+            int nextBotInstance = 0;
 
             bool logoutNeeded = Settings.BotInstances.Count != Settings.MaxBrowserInstances;
 
             for (int i = 0; i < Settings.MaxBrowserInstances; i++)
             {
-                instances.Add(Task.Run(async () => 
-                await Settings.BotInstances[i].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));
+                instances.Add(Task.Run(async () =>
+                await Settings.BotInstances[nextBotInstance++].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));
             }
-
-            int nextBotInstance = nextBrowserInstance;
 
             while (true)
             {
@@ -231,6 +231,8 @@ namespace Ultimate_Splinterlands_Bot_V2
             Settings.Summoners.Add("262", "dragon");
             Settings.Summoners.Add("278", "earth");
             Settings.Summoners.Add("73", "life");
+
+            Settings.CardsDetails = Newtonsoft.Json.Linq.JArray.Parse(File.ReadAllText(Settings.StartupPath + @"/data/cardsDetails.json"));
         }
 
         static void SetStartupPath()
