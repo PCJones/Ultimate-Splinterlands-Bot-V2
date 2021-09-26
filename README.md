@@ -9,3 +9,5 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - Install https://dotnet.microsoft.com/download/dotnet/5.0/runtime (for console applications)
 - Install google chrome
 - Download chromedriver https://chromedriver.chromium.org/downloads and put the .exe (not .zip) in bot main folder
+
+You only need what's in bin/Release/net5.0
