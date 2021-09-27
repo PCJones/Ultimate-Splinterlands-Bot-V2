@@ -9,6 +9,7 @@
       "Ultimate Splinterlands Bot V2/1.0.0": {
         "dependencies": {
           "Newtonsoft.Json": "13.0.1",
+          "Pastel": "2.1.0",
           "Selenium.WebDriver": "3.141.0"
         },
         "runtime": {
@@ -20,6 +21,14 @@
           "lib/netstandard2.0/Newtonsoft.Json.dll": {
             "assemblyVersion": "13.0.0.0",
             "fileVersion": "13.0.1.25517"
+          }
+        }
+      },
+      "Pastel/2.1.0": {
+        "runtime": {
+          "lib/net5.0/Pastel.dll": {
+            "assemblyVersion": "2.1.0.0",
+            "fileVersion": "2.1.0.0"
           }
         }
       },
@@ -48,6 +57,13 @@
       "sha512": "sha512-ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A==",
       "path": "newtonsoft.json/13.0.1",
       "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
+    },
+    "Pastel/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CYPB5mCTGdmhaW7FyiYerq8S5S6Sz1pBJMC6XmmWvk/APiKjqmCc5vIn4XX++3E1w56LadBUDpicWBc2k84kmQ==",
+      "path": "pastel/2.1.0",
+      "hashPath": "pastel.2.1.0.nupkg.sha512"
     },
     "Selenium.WebDriver/3.141.0": {
       "type": "package",
