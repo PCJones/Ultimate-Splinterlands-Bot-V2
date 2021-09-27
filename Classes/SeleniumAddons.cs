@@ -46,6 +46,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         ChromeOptions chromeOptions = new ChromeOptions();
                         //chromeOptions.AddArgument("--ignore-certificate-errors");
+                        if (Settings.ChromeBinaryPath != "")
+                        {
+                            chromeOptions.BinaryLocation = Settings.ChromeBinaryPath;
+                        }
                         if (userAgent != "")
                         {
                             chromeOptions.AddArgument("user-agent=" + userAgent);

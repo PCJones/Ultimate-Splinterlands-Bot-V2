@@ -6,6 +6,8 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Ultimate_Splinterlands_Bot_V2.Classes;
 using System.Threading;
+using Pastel;
+using System.Drawing;
 
 namespace Ultimate_Splinterlands_Bot_V2
 {
@@ -14,6 +16,8 @@ namespace Ultimate_Splinterlands_Bot_V2
         private static object _TaskLock = new object();
         static void Main(string[] args)
         {
+            Log.WriteToLog("This is a demonstration on how to use different colors in console:");
+            Log.WriteToLog($"Normal Color - { "Orange".Pastel(Color.Orange) } - {"Green".Pastel(Color.Green)} test", Log.LogType.CriticalError);
             handler = new ConsoleEventDelegate(ConsoleEventCallback);
             SetConsoleCtrlHandler(handler, true);
 
@@ -146,6 +150,12 @@ namespace Ultimate_Splinterlands_Bot_V2
                         break;
                     case "WRITE_LOG_TO_FILE":
                         Settings.WriteLogToFile = Boolean.Parse(temp[1]);
+                        break;
+                    case "CHROME_BINARY_PATH":
+                        Settings.ChromeBinaryPath = temp[1];
+                        break;
+                    case "CHROME_NO_SANDBOX":
+                        Settings.ChromeNoSandbox = Boolean.Parse(temp[1]);
                         break;
                     default:
                         break;

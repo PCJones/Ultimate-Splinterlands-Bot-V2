@@ -16,6 +16,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool ChromeNoSandbox = false;
         public static bool Headless = false;
+        public static string ChromeBinaryPath = "";
         public static int MaxBrowserInstances = 2;
 
         public static bool UseAPI = true;

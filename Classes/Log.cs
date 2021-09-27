@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Pastel;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 
@@ -31,38 +33,36 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
             string messagePrefix = $"[{ DateTime.Now }] ";
 
-            ConsoleColor textColor;
+            Color textColor;
 
             switch (logType)
             {
                 case LogType.Success:
-                    textColor = ConsoleColor.Green;
+                    textColor = Color.Green;
                     break;
                 case LogType.Information:
-                    textColor = Console.ForegroundColor;
+                    textColor = Color.LightGray;
                     break;
                 case LogType.Error:
-                    textColor = ConsoleColor.Red;
-                    messagePrefix += "Error: ";
+                    textColor = Color.Red;
+                    messagePrefix += "Error: ".Pastel(textColor);
                     break;
                 case LogType.CriticalError:
-                    textColor = ConsoleColor.Magenta;
-                    messagePrefix += "Critical Error: ";
+                    textColor = Color.Magenta;
+                    messagePrefix += "Critical Error: ".Pastel(textColor);
                     break;
                 case LogType.Warning:
-                    textColor = ConsoleColor.Yellow;
-                    //messagePrefix += "Warning: ";
+                    textColor = Color.Yellow;
+                    messagePrefix += "Warning: ".Pastel(textColor);
                     break;
                 default:
-                    textColor = Console.ForegroundColor;
+                    textColor = Color.LightGray;
                     break;
             }
 
             lock (_ConsoleLock)
             {
-                Console.ForegroundColor = textColor;
-                Console.WriteLine(messagePrefix + message);
-                Console.ResetColor();
+                Console.WriteLine(messagePrefix + message.Pastel(textColor));
 
                 if (Settings.WriteLogToFile)
                 {
