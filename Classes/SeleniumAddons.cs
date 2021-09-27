@@ -75,6 +75,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     Log.WriteToLog(ex.Message, Log.LogType.CriticalError);
                 }
+                catch (Exception ex)
+                {
+                    Log.WriteToLog(ex.Message, Log.LogType.CriticalError);
+                }
             }
 
             return driver;
