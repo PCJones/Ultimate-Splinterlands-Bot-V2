@@ -47,6 +47,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return null;
         }
 
+        public static void ReportLoss(string enemy, string username)
+        {
+            _ = DownloadPageAsync($"{ Settings.APIUrl }report_loss/{enemy}/{username}");
+        }
+
         public static async Task<JToken> GetPlayerQuestAsync(string username)
         {
             try
@@ -89,8 +94,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 DateTime oneDayAgo = DateTime.Now.AddDays(-1);
                 string[] cards = JToken.Parse(data)["cards"].Where(x =>
-                (x["delegated_to"].Type == JTokenType.Null || (string)x["delegated_to"] == username) &&
-                x["market_listing_type"].Type == JTokenType.Null && 
+                ((x["delegated_to"].Type == JTokenType.Null && x["market_listing_type"].Type == JTokenType.Null) 
+                || (string)x["delegated_to"] == username)
+                && 
                     !((string)x["last_used_player"] != username && 
                         (
                             x["last_used_date"].Type != JTokenType.Null && 

@@ -85,7 +85,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         /// </summary>
         /// <param name="by">By</param>
         /// <param name="elementIndex">Index of the element if there are multiple</param>
-        public static void ClickElementOnPage(this IWebDriver webDriver, By by, int elementIndex = 0, [CallerMemberName] string callerName = "")
+        public static void ClickElementOnPage(this IWebDriver webDriver, By by, int elementIndex = 0, bool suppressErrors = false, [CallerMemberName] string callerName = "")
         {
             try
             {
@@ -104,9 +104,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                StackFrame frame = new StackFrame(1);
-                string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
-                ReportError(calledMethod, ex, "By: " + by.ToString());
+                if (!suppressErrors)
+                {
+                    StackFrame frame = new StackFrame(1);
+                    string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
+                    ReportError(calledMethod, ex, "By: " + by.ToString());
+                }
             }
         }
 
@@ -588,7 +591,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         /// Executes a JavaScript at the form
         /// </summary>
         /// <param name="jsScript">JavaScript to execute</param>
-        public static void ExecuteJavaScript(this IWebDriver webDriver, string jsScript, [CallerMemberName] string callerName = "")
+        public static void ExecuteJavaScript(this IWebDriver webDriver, string jsScript, bool suppressErrors = false, [CallerMemberName] string callerName = "")
         {
             try
             {
@@ -597,9 +600,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                StackFrame frame = new StackFrame(1);
-                string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
-                ReportError(calledMethod, ex, "JS: " + jsScript);
+                if (!suppressErrors)
+                {
+                    StackFrame frame = new StackFrame(1);
+                    string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
+                    ReportError(calledMethod, ex, "JS: " + jsScript);
+                }
             }
         }
 
@@ -609,7 +615,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         /// </summary>
         /// <param name="jsScript">JavaScript to execute</param>
         /// <param name="argument">IWebElement for arguments[0]</param>
-        public static void ExecuteJavaScript(this IWebDriver webDriver, string jsScript, IWebElement argument, [CallerMemberName] string callerName = "")
+        public static void ExecuteJavaScript(this IWebDriver webDriver, string jsScript, IWebElement argument, bool suppressErrors = false, [CallerMemberName] string callerName = "")
         {
             try
             {
@@ -618,9 +624,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                StackFrame frame = new StackFrame(1);
-                string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
-                ReportError(calledMethod, ex, "JS: " + jsScript + Environment.NewLine + "argument: " + argument.ToString());
+                if (!suppressErrors)
+                {
+                    StackFrame frame = new StackFrame(1);
+                    string calledMethod = frame.GetMethod().DeclaringType.Name + "." + callerName;
+                    ReportError(calledMethod, ex, "JS: " + jsScript + Environment.NewLine + "argument: " + argument.ToString());
+                }
             }
         }
 
@@ -694,7 +703,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
-                ExecuteJavaScript(webDriver, "arguments[0].scrollIntoView();", Element, callerName);
+                ExecuteJavaScript(webDriver, "arguments[0].scrollIntoView();", Element);
                 OpenQA.Selenium.Interactions.Actions actions = new OpenQA.Selenium.Interactions.Actions(webDriver);
                 actions.MoveToElement(Element).ClickAndHold(Element).Release().Build().Perform();
             }
@@ -750,7 +759,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
-                webDriver.ExecuteJavaScript("window.open('');", callerName);
+                webDriver.ExecuteJavaScript("window.open('');");
             }
             catch (Exception ex)
             {

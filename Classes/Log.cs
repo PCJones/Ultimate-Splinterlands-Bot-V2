@@ -77,10 +77,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static void WriteStartupInfoToLog()
         {
             WriteToLog("--------------------------------------------------------------");
-            WriteToLog("Ultimate Splinderlands Bot by PC Jones V2");
+            WriteToLog("Ultimate Splinderlands Bot V2 by PC Jones");
             WriteToLog("Join the telegram group https://t.me/ultimatesplinterlandsbot");
             WriteToLog("Join the discord server https://discord.gg/hwSr7KNGs9");
-            WriteToLog("        Close this window to stop the bot");
+            WriteToLog("               Close this window to stop the bot");
             WriteToLog("-------------------------------------------------------------");
         }
 
@@ -89,12 +89,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         /// </summary>
         public static void WriteSupportInformationToLog()
         {
-            WriteToLog("--------------------------------------------------------------------------");
-            WriteToLog("Ultimate Splinderlands Bot by PC Jones (Based on bot by alfficcadenti)");
+            WriteToLog("-------------------------------------------------------------");
+            WriteToLog("Ultimate Splinderlands Bot V2 by PC Jones");
             WriteToLog("Join the telegram group https://t.me/ultimatesplinterlandsbot");
             WriteToLog("Join the discord server https://discord.gg/hwSr7KNGs9");
-            WriteToLog("                        Close this window to stop the bot");
-            WriteToLog("--------------------------------------------------------------------------");
+            WriteToLog("               Close this window to stop the bot");
+            WriteToLog("-------------------------------------------------------------");
         }
     }
 }

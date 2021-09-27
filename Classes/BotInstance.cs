@@ -55,20 +55,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             try
             {
-                if (SleepUntil.AddMinutes(Settings.SleepBetweenBattles) > DateTime.Now)
+                if (SleepUntil > DateTime.Now)
                 {
                     Log.WriteToLog($"{Username}: is sleeping until {SleepUntil}");
                     return SleepUntil;
                 }
                 if (!Login(driver, logoutNeeded))
                 {
-                    return null;
+                    return DateTime.Now.AddMinutes(5);
                 }
+                ClosePopups(driver);
                 if (UnknownUsername)
                 {
-                    driver.WaitForWebsiteLoaded(By.ClassName("bio__name__display"));
-                    Thread.Sleep(4000);
-                    driver.WaitForWebsiteLoadedAndElementShown(By.ClassName("bio__name__display"));
                     Username = driver.FindElement(By.ClassName("bio__name__display")).Text.Trim().ToLower();
                     Log.WriteToLog($"{Email}: Username is {Username}");
                     UnknownUsername = false;
@@ -144,10 +142,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 driver.ClickElementOnPage(By.Id("btnSkip"));
                 Log.WriteToLog($"{Username}: Skip button clicked");
 
-                Log.WriteToLog($"{Username}: Battle finished, winner log etc is not yet implemented");
-                Log.WriteToLog($"{Username}: Sleeping for 8 secs to see result, this will be removed after beta");
-                Thread.Sleep(8000);
-                
+                GetBattleResult(driver);
 
                 // todo: determine winner, show summary etc
                 Log.WriteToLog($"{Username}: Finished battle!", Log.LogType.Success);
@@ -168,6 +163,30 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
             }
             return null;
+        }
+
+        private void GetBattleResult(IWebDriver driver)
+        {
+            //driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("section.player.winner .bio__name__display"));
+            driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//h1[contains(., 'BATTLE RESULT')]"));
+            if (driver.FindElements(By.CssSelector("section.player.winner .bio__name__display")).Count > 0)
+            {
+                string winner = driver.FindElement(By.CssSelector("section.player.winner .bio__name__display")).Text.ToLower();
+                if (winner == Username)
+                {
+                    string decWon = driver.FindElement(By.CssSelector(".player.winner span.dec-reward span")).Text;
+                    Log.WriteToLog($"{Username}: You won! Reward: {decWon} DEC", Log.LogType.Success);
+                }
+                else
+                {
+                    Log.WriteToLog($"{Username}: You lost :(");
+                    API.ReportLoss(winner, Username);
+                }
+            }
+            else
+            {
+                Log.WriteToLog($"{Username}: DRAW!");
+            }
         }
 
         private void SelectTeam(IWebDriver driver, JToken team)
@@ -276,9 +295,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster3}]"));
                     driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
                     //element.Click();
-                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster3}]"));
                     Thread.Sleep(750);
-                    driver.ActionClick(By.XPath($"//div[@card_detail_id={monster3}]"));
+                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster3}]"));
+                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster3}]"));
                 }
 
                 if (monster4 != "")
@@ -320,7 +339,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Thread.Sleep(1000);
                 driver.ClickElementOnPage(By.CssSelector("button[class='btn-green']"));
                 Thread.Sleep(1000);
-                driver.ClickElementOnPage(By.CssSelector("button[class='btn-green']"));
+                driver.ClickElementOnPage(By.CssSelector("button[class='btn-green']"), suppressErrors: true);
                 //driver.ActionClick(By.CssSelector("button[class='btn-green']"));
             }
             catch (Exception ex)
@@ -357,7 +376,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private void StartBattle(IWebDriver driver)
         {
             Log.WriteToLog($"{Username}: Waiting for battle button...");
-            driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//button[contains(., 'BATTLE')]"));
+            if (!driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//button[contains(., 'BATTLE')]")))
+            {
+                Log.WriteToLog($"{Username}: Battle button not visible, reloading page...", Log.LogType.Warning);
+                driver.Navigate().GoToUrl("https://splinterlands.com/?p=battle_history");
+                Thread.Sleep(5000);
+                ClosePopups(driver);
+            }
             driver.ClickElementOnPage(By.XPath("//button[contains(., 'BATTLE')]"));
             Log.WriteToLog($"{Username}: Battle button clicked!");
         }
@@ -365,7 +390,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             if (!driver.Url.Contains("battle_history"))
             {
-                driver.ClickElementOnPage(By.Id("menu_item_battle"));
+                try
+                {
+                    driver.FindElement(By.Id("menu_item_battle")).Click();
+                }
+                catch (Exception)
+                {
+                    ClosePopups(driver);
+                    driver.ClickElementOnPage(By.Id("menu_item_battle"));
+                }
                 driver.WaitForWebsiteLoadedAndElementShown(By.Id("battle_category_btn"));
             }
         }
@@ -399,7 +432,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
-                if (driver.WaitForElementShown(By.Id("claim-btn"), 1))
+                if (driver.WaitForWebsiteLoadedAndElementShown(By.Id("quest_claim_btn"), 1))
                 {
                     Log.WriteToLog($"{Username}: Quest reward can be claimed", Log.LogType.Success);
                     if (!Settings.ClaimQuestReward)
@@ -431,46 +464,80 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private void ClosePopups(IWebDriver driver)
+        private void ClosePopups(IWebDriver driver, bool needNameVisible = true)
         {
             try
             {
-                if (driver.WaitForWebsiteLoaded(By.ClassName("close"), 3))
+                if (needNameVisible && !UnknownUsername)
                 {
-                    if (driver.WaitForElementShown(By.ClassName("close"), 1))
-                    {
-                        Log.WriteToLog($"{Username}: Closing popup #1");
-                        try
-                        {
-                            Thread.Sleep(300);
-                            driver.FindElement(By.ClassName("close")).Click();
-                        }
-                        catch (Exception)
-                        {
-                            // try again if popup wasn't ready yet
-                            Thread.Sleep(2500);
-                            driver.ClickElementOnPage(By.ClassName("close"));
-                        }
-                    }
+                    driver.WaitForSuccessMessage(Username);
+                    driver.ExecuteJavaScript("$('.modal').modal('hide');", suppressErrors: true);
                 }
-                if (driver.WaitForWebsiteLoaded(By.ClassName("modal-close-new"), 1))
+                else
                 {
-                    if (driver.WaitForElementShown(By.ClassName("modal-close-new"), 1))
-                    {
-                        Log.WriteToLog($"{Username}: Closing popup #2");
-                        try
-                        {
-                            Thread.Sleep(300);
-                            driver.FindElement(By.ClassName("modal-close-new")).Click();
-                        }
-                        catch (Exception)
-                        {
-                            // try again if popup wasn't ready yet
-                            Thread.Sleep(2500);
-                            driver.ClickElementOnPage(By.ClassName("modal-close-new"));
-                        }
-                    }
+                    Thread.Sleep(1000);
+                    driver.ExecuteJavaScript("$('.modal').modal('hide');", suppressErrors: true);
                 }
+                //if (needNameVisible)
+                //{
+                //    int counter = 0;
+                //    Thread.Sleep(500);
+                //    while (!driver.FindElement(By.ClassName("bio__name__display")).Displayed)
+                //    {
+                //        Thread.Sleep(500);
+                //        driver.ExecuteJavaScript("$('.modal').modal('hide');", suppressErrors: true);
+                //        if (counter++ > 30)
+                //        {
+                //            Log.WriteToLog($"{Username}: Error at closing popups loop - name not visible", Log.LogType.CriticalError);
+                //            break;
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    Thread.Sleep(500);
+                //    driver.ExecuteJavaScript("$('.modal').modal('hide');", suppressErrors: true);
+                //}
+                //driver.ExecuteJavaScript("$('#daily_update_dialog').modal('hide);");
+                //driver.ExecuteJavaScript("$('.modal-dialog modal-lg').modal('hide);");
+                //if (driver.WaitForWebsiteLoaded(By.ClassName("close"), 3))
+                //{
+                //    if (driver.WaitForElementShown(By.ClassName("close"), 1))
+                //    {
+                //        Log.WriteToLog($"{Username}: Closing popup #1");
+                //        driver.ExecuteJavaScript("$('.modal-dialog modal-lg').modal('hide);");
+                //        try
+                //        {
+                //            Thread.Sleep(500);
+                //            if (driver.WaitForElementShown(By.ClassName("close"), 1))
+                //                driver.FindElement(By.ClassName("close")).Click();
+                //        }
+                //        catch (Exception)
+                //        {
+                //            // try again if popup wasn't ready yet
+                //            Thread.Sleep(2500);
+                //            driver.ClickElementOnPage(By.ClassName("close"));
+                //        }
+                //    }
+                //}
+                //if (driver.WaitForWebsiteLoaded(By.ClassName("modal-close-new"), 1))
+                //{
+                //    if (driver.WaitForElementShown(By.ClassName("modal-close-new"), 1))
+                //    {
+                //        Log.WriteToLog($"{Username}: Closing popup #2");
+                //        try
+                //        {
+                //            Thread.Sleep(300);
+                //            driver.FindElement(By.ClassName("modal-close-new")).Click();
+                //        }
+                //        catch (Exception)
+                //        {
+                //            // try again if popup wasn't ready yet
+                //            Thread.Sleep(2500);
+                //            driver.ClickElementOnPage(By.ClassName("modal-close-new"));
+                //        }
+                //    }
+                //}
             }
             catch (Exception ex)
             {
@@ -511,7 +578,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Trying to login...");
             driver.Navigate().GoToUrl("https://splinterlands.com/?p=battle_history");
             WaitForLoadingBanner(driver);
-            ClosePopups(driver);
+            ClosePopups(driver, false);
             if (!UnknownUsername && !logoutNeeded)
             {
                 // check if already logged in
@@ -538,7 +605,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             driver.SetData(By.Id("password"), Password);
             driver.ClickElementOnPage(By.Name("loginBtn"), 1);
 
-            if (!driver.WaitForWebsiteLoadedAndElementShown(By.ClassName("close"), 12) && !driver.PageContainsString("Welcome back,"))
+            if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_text"), 60))
             {
                 Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Could not log in - skipping account.", Log.LogType.Error);
                 return false;
