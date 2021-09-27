@@ -17,7 +17,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public string Username { get; set; }
         public string Email { get; init; }
         public string Password { get; init; }
-        private DateTime LastBattle;
+        private DateTime SleepUntil;
 
         private bool UnknownUsername;
         public BotInstance(string username, string password)
@@ -35,21 +35,21 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
 
             Password = password;
-            LastBattle = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * - 1);
+            SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * - 1);
         }
 
-        public async Task DoBattleAsync(IWebDriver driver, bool logoutNeeded)
+        public async Task<object> DoBattleAsync(IWebDriver driver, bool logoutNeeded)
         {
             try
             {
-                if (LastBattle.AddMinutes(Settings.SleepBetweenBattles) > DateTime.Now)
+                if (SleepUntil.AddMinutes(Settings.SleepBetweenBattles) > DateTime.Now)
                 {
-                    Log.WriteToLog($"{Username}: is sleeping until {LastBattle.AddMinutes(Settings.SleepBetweenBattles)}");
-                    return;
+                    Log.WriteToLog($"{Username}: is sleeping until {SleepUntil}");
+                    return SleepUntil;
                 }
                 if (!Login(driver, logoutNeeded))
                 {
-                    return;
+                    return null;
                 }
                 if (UnknownUsername)
                 {
@@ -73,7 +73,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ERCThreshold}% - skipping this account.", Log.LogType.Warning);
                     // todo: maybe add sleep if logoutNeeded is false
-                    return;
+                    return null;
                 }
 
                 if (Settings.ClaimSeasonReward)
@@ -94,7 +94,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     if (counter++ > 7)
                     {
                         Log.WriteToLog($"{Username}: Can't seem to find an enemy{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
-                        return;
+                        return null;
                     }
                     // check if this is correct modal;
                 }
@@ -103,12 +103,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string rulesets = GetRulesets(driver);
                 string[] allowedSplinters = GetAllowedSplinters(driver);
                 driver.ClickElementOnPage(By.CssSelector("button[class='btn btn--create-team']"));
+                SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
                 WaitForLoadingBanner(driver);
                 var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters, cards, quest, Username);
                 if ((string)team["summoner_id"] == "")
                 {
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
-                    return;
+                    return null;
                 }
                 SelectTeam(driver, team);
 
@@ -116,9 +117,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     Thread.Sleep(5000);
                 }
-                LastBattle = DateTime.Now;
+                
                 driver.WaitForWebsiteLoadedAndElementShown(By.Id("btnRumble"));
-                Thread.Sleep(1000);
+                Thread.Sleep(3000);
                 driver.ClickElementOnPage(By.Id("btnRumble"));
                 Log.WriteToLog($"{Username}: Rumble button clicked");
                 driver.WaitForWebsiteLoadedAndElementShown(By.Id("btnSkip"));
@@ -145,6 +146,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     driver.ExecuteJavaScript("SM.Logout();");
                 }
             }
+            return null;
         }
 
         private void SelectTeam(IWebDriver driver, JToken team)

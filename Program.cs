@@ -48,6 +48,8 @@ namespace Ultimate_Splinterlands_Bot_V2
                 await Settings.BotInstances[nextBotInstance++].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));
             }
 
+            object[] sleepInfo = new object[Settings.BotInstances.Count];
+
             while (true)
             {
                 Task t = await Task.WhenAny(instances);
@@ -56,10 +58,17 @@ namespace Ultimate_Splinterlands_Bot_V2
                 {
                     Log.WriteSupportInformationToLog();
                     nextBotInstance = 0;
+                    if (sleepInfo.All(x => x is DateTime))
+                    {
+                        DateTime sleepUntil = (DateTime)sleepInfo.OrderBy(x => (DateTime)x).First();
+                        Log.WriteToLog($"All accounts sleeping - wait until {sleepUntil}");
+                        System.Threading.Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
+                        Array.Fill(sleepInfo, null);
+                    }
                 }
                 nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
                 instances.Add(Task.Run(async () => 
-                await Settings.BotInstances[nextBotInstance++].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));
+                sleepInfo[nextBotInstance] = await Settings.BotInstances[nextBotInstance++].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));
             }
         }
 
@@ -145,6 +154,10 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             foreach (string loginData in File.ReadAllLines(filePath))
             {
+                if (loginData.Trim().Length == 0 || loginData[0] == '#')
+                {
+                    continue;
+                }
                 string[] temp = loginData.Split(':');
                 if (temp.Length == 2)
                 {
