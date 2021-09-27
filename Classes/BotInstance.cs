@@ -17,9 +17,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public string Username { get; set; }
         public string Email { get; init; }
         public string Password { get; init; }
-        private DateTime SleepUntil;
+        public bool CurrentlyActive { get; private set; }
 
+        private object _activeLock;
+        private DateTime SleepUntil;
         private bool UnknownUsername;
+
         public BotInstance(string username, string password)
         {
             if (username.Contains("@"))
@@ -36,10 +39,20 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
             Password = password;
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * - 1);
+            _activeLock = new object();
         }
 
         public async Task<object> DoBattleAsync(IWebDriver driver, bool logoutNeeded)
         {
+            lock (_activeLock)
+            {
+                if (CurrentlyActive)
+                {
+                    Log.WriteToLog($"{Username} Skipped account because it is currently active", debugOnly: true);
+                    return DateTime.Now.AddSeconds(30);
+                }
+                CurrentlyActive = true;
+            }
             try
             {
                 if (SleepUntil.AddMinutes(Settings.SleepBetweenBattles) > DateTime.Now)
@@ -113,17 +126,21 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 SelectTeam(driver, team);
 
-                while (driver.WaitForWebsiteLoadedAndElementShown(By.Id("find-match-timer"), 8))
+                counter = 0;
+                while (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("btnRumble")))
                 {
-                    Thread.Sleep(5000);
+                    if (counter++ > 9)
+                    {
+                        Log.WriteToLog($"{Username}: Can't seem to find btnRumble{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
+                        return null;
+                    }
                 }
                 
-                driver.WaitForWebsiteLoadedAndElementShown(By.Id("btnRumble"));
-                Thread.Sleep(3000);
+                Thread.Sleep(1000);
                 driver.ClickElementOnPage(By.Id("btnRumble"));
                 Log.WriteToLog($"{Username}: Rumble button clicked");
                 driver.WaitForWebsiteLoadedAndElementShown(By.Id("btnSkip"));
-                Thread.Sleep(3000);
+                Thread.Sleep(2000);
                 driver.ClickElementOnPage(By.Id("btnSkip"));
                 Log.WriteToLog($"{Username}: Skip button clicked");
 
@@ -144,6 +161,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (logoutNeeded)
                 {
                     driver.ExecuteJavaScript("SM.Logout();");
+                }
+                lock (_activeLock)
+                {
+                    CurrentlyActive = false;
                 }
             }
             return null;
@@ -166,7 +187,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Thread.Sleep(300);
                 IWebElement element = driver.FindElement(By.XPath($"//div[@card_detail_id={summonerID}]"));
                 //driver.ExecuteJavaScript("arguments[0].click();", element);
-                driver.ActionClick(By.XPath($"//div[@card_detail_id={summonerID}]"));
+                driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={summonerID}]"));
+                //driver.ActionClick(By.XPath($"//div[@card_detail_id={summonerID}]"));
                 Thread.Sleep(1000);
                 if (GetSummonerColor(summonerID) == "Gold")
                 {
@@ -245,7 +267,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
                     Thread.Sleep(750);
                     driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster2}]"));
-                    driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
+                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
                 }
 
                 if (monster3 != "")
@@ -418,7 +440,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     if (driver.WaitForElementShown(By.ClassName("close"), 1))
                     {
                         Log.WriteToLog($"{Username}: Closing popup #1");
-                        driver.ClickElementOnPage(By.ClassName("close"));
+                        try
+                        {
+                            Thread.Sleep(300);
+                            driver.FindElement(By.ClassName("close")).Click();
+                        }
+                        catch (Exception)
+                        {
+                            // try again if popup wasn't ready yet
+                            Thread.Sleep(2500);
+                            driver.ClickElementOnPage(By.ClassName("close"));
+                        }
                     }
                 }
                 if (driver.WaitForWebsiteLoaded(By.ClassName("modal-close-new"), 1))
@@ -426,7 +458,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     if (driver.WaitForElementShown(By.ClassName("modal-close-new"), 1))
                     {
                         Log.WriteToLog($"{Username}: Closing popup #2");
-                        driver.ClickElementOnPage(By.ClassName("modal-close-new"));
+                        try
+                        {
+                            Thread.Sleep(300);
+                            driver.FindElement(By.ClassName("modal-close-new")).Click();
+                        }
+                        catch (Exception)
+                        {
+                            // try again if popup wasn't ready yet
+                            Thread.Sleep(2500);
+                            driver.ClickElementOnPage(By.ClassName("modal-close-new"));
+                        }
                     }
                 }
             }

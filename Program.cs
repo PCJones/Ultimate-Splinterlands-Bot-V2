@@ -61,9 +61,12 @@ namespace Ultimate_Splinterlands_Bot_V2
                     if (sleepInfo.All(x => x is DateTime))
                     {
                         DateTime sleepUntil = (DateTime)sleepInfo.OrderBy(x => (DateTime)x).First();
-                        Log.WriteToLog($"All accounts sleeping - wait until {sleepUntil}");
-                        System.Threading.Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
-                        Array.Fill(sleepInfo, null);
+                        if (sleepUntil > DateTime.Now)
+                        {
+                            Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil}");
+                            System.Threading.Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
+                            Array.Fill(sleepInfo, null);
+                        }
                     }
                 }
                 nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
@@ -122,6 +125,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "DEBUG":
                         Settings.DebugMode = Boolean.Parse(temp[1]);
                         break;
+                    case "WRITE_LOG_TO_FILE":
+                        Settings.WriteLogToFile = Boolean.Parse(temp[1]);
+                        break;
                     default:
                         break;
                 }
@@ -130,6 +136,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             Log.WriteToLog("Config loaded!", Log.LogType.Success);
             Log.WriteToLog($"Config parameters:{Environment.NewLine}" +
                 $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
+                $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                 $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
