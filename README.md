@@ -5,8 +5,19 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 
 ## PLEASE REPORT BUGS!
 
-## How to install
+# Support / Community
+
+[Discord](https://discord.gg/hwSr7KNGs9)
+[Telegram](https://t.me/ultimatesplinterlandsbot) 
+
+## How to install (Windows)
 - Install https://dotnet.microsoft.com/download/dotnet/5.0/runtime (for console applications)
 - Install google chrome
 - Download chromedriver https://chromedriver.chromium.org/downloads and put the .exe (not .zip) in bot main folder
 - You only need what's in bin/Release/net5.0, you can delete everything else
+
+## How to install (Linux / MacOS)
+- Coming soon, please ask for instructions on discord or Telegram
+
+[Discord](https://discord.gg/hwSr7KNGs9)
+[Telegram](https://t.me/ultimatesplinterlandsbot) 
