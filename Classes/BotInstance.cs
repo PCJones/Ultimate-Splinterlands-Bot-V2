@@ -68,6 +68,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (UnknownUsername)
                 {
                     Username = driver.FindElement(By.ClassName("bio__name__display")).Text.Trim().ToLower();
+                    if (Username.Trim().Length == 0)
+                    {
+                        Username = "";
+                        Log.WriteToLog($"{Email}: Error reading username, will try again in 3 minutes");
+                        return DateTime.Now.AddMinutes(3);
+                    }
                     Log.WriteToLog($"{Email}: Username is {Username}");
                     UnknownUsername = false;
                 }
@@ -95,6 +101,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Current Rating is: {currentRating}", Log.LogType.Warning);
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest)}", Log.LogType.Warning);
                 ClaimQuestReward(driver);
+
+                ClosePopups(driver);
 
                 // todo: implement selectCorrectBattleType
                 StartBattle(driver); // todo: try catch, return true/false
@@ -127,8 +135,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 counter = 0;
                 while (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("btnRumble")))
                 {
-                    if (counter++ > 9)
+                    if (counter++ > 12)
                     {
+                        if (driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//h1[contains(., 'BATTLE RESULT')]")))
+                        {
+                            // enemy probably didn't pick anything
+                            break;
+                        }
                         Log.WriteToLog($"{Username}: Can't seem to find btnRumble{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
                         return null;
                     }
@@ -155,7 +168,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 if (logoutNeeded)
                 {
-                    driver.ExecuteJavaScript("SM.Logout();");
+                    driver.ExecuteJavaScript("SM.Logout();", true);
                 }
                 lock (_activeLock)
                 {
@@ -187,6 +200,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 Log.WriteToLog($"{Username}: DRAW!");
             }
+
+            Thread.Sleep(1250);
+            ClosePopups(driver);
         }
 
         private void SelectTeam(IWebDriver driver, JToken team)
@@ -576,9 +592,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private bool Login(IWebDriver driver, bool logoutNeeded)
         {
             Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Trying to login...");
-            driver.Navigate().GoToUrl("https://splinterlands.com/?p=battle_history");
+            driver.Navigate().GoToUrl("https://splinterlands.com/");
             WaitForLoadingBanner(driver);
             ClosePopups(driver, false);
+            driver.ExecuteJavaScript("SM.Logout();", true);
             if (!UnknownUsername && !logoutNeeded)
             {
                 // check if already logged in
@@ -597,12 +614,28 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 // this shouldn't happen unless session is no longer valid, call logout to be sure
                 driver.ExecuteJavaScript("SM.Logout();");
             }
-            driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"));
+            if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"), 6))
+            {
+                // splinterlands bug, battle result still open
+                if (driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//h1[contains(., 'BATTLE RESULT')]"), 1))
+                {
+                    driver.ClickElementOnPage(By.CssSelector("button[class='btn btn--done']"));
+                }
+
+            }
+            driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"), 6);
+            ClosePopups(driver, false);
             driver.ClickElementOnPage(By.Id("log_in_button"));
 
             driver.WaitForWebsiteLoadedAndElementShown(By.Id("email"));
             driver.SetData(By.Id("email"), Email.Length > 0 ? Email : Username);
             driver.SetData(By.Id("password"), Password);
+            // endless circle workaround
+            if (driver.FindElements(By.ClassName("loading")).Count > 0)
+            {
+                Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Splinterlands not loading, trying to reload...");
+                Login(driver, logoutNeeded);
+            }
             driver.ClickElementOnPage(By.Name("loginBtn"), 1);
 
             if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_text"), 60))

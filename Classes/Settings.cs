@@ -29,7 +29,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static int ERCThreshold = 75;
 
         public static List<BotInstance> BotInstances;
-        public static IWebDriver[] SeleniumInstances;
+        public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }
 
         public static JArray CardsDetails;
         public static Dictionary<string, string> QuestTypes;

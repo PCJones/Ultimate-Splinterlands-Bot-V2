@@ -18,8 +18,11 @@ namespace Ultimate_Splinterlands_Bot_V2
         {
             Log.WriteToLog("This is a demonstration on how to use different colors in console:");
             Log.WriteToLog($"Normal Color - { "Orange".Pastel(Color.Orange) } - {"Green".Pastel(Color.Green)} test", Log.LogType.CriticalError);
-            handler = new ConsoleEventDelegate(ConsoleEventCallback);
-            SetConsoleCtrlHandler(handler, true);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                handler = new ConsoleEventDelegate(ConsoleEventCallback);
+                SetConsoleCtrlHandler(handler, true);
+            }
 
             Log.WriteStartupInfoToLog();
             SetStartupPath();
@@ -30,7 +33,6 @@ namespace Ultimate_Splinterlands_Bot_V2
             }
 
             Initialize();
-
 
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             CancellationToken token = cancellationTokenSource.Token;
@@ -63,7 +65,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             for (int i = 0; i < Settings.MaxBrowserInstances; i++)
             {
                 instances.Add(Task.Run(async () =>
-                await Settings.BotInstances[nextBotInstance++].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));
+                await Task.Delay(2000)));
             }
 
             object[] sleepInfo = new object[Settings.BotInstances.Count];
@@ -82,19 +84,32 @@ namespace Ultimate_Splinterlands_Bot_V2
                         if (sleepUntil > DateTime.Now)
                         {
                             Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil}");
-                            System.Threading.Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
+                            Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
                         }
                         Array.Fill(sleepInfo, null);
                     }
                 }
-                nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
-                instances.Add(Task.Run(async () => 
-                sleepInfo[nextBotInstance] = await Settings.BotInstances[nextBotInstance++].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++], logoutNeeded)));
+
+                // lock probably not needed
+                lock (_TaskLock)
+                {
+                    nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
+                    while (!Settings.SeleniumInstances.ElementAt(nextBrowserInstance).isAvailable)
+                    {
+                        nextBrowserInstance++;
+                        nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
+                    }
+
+                    Settings.SeleniumInstances[nextBrowserInstance] = (Settings.SeleniumInstances[nextBrowserInstance].driver, false);
+                    instances.Add(Task.Run(async () =>
+                    sleepInfo[nextBotInstance] = await Settings.BotInstances[nextBotInstance++].DoBattleAsync(Settings.SeleniumInstances[nextBrowserInstance++].driver, logoutNeeded)));
+                    Settings.SeleniumInstances[nextBrowserInstance] = (Settings.SeleniumInstances[nextBrowserInstance].driver, true);
+                }
             }
 
             Log.WriteToLog("Stopping bot...");
             await Task.WhenAll(instances);
-            _ = Task.Run(async () => Parallel.ForEach(Settings.SeleniumInstances, x => x.Quit())).Result;
+            _ = Task.Run(async () => Parallel.ForEach(Settings.SeleniumInstances, x => x.driver.Quit())).Result;
             Log.WriteToLog("Bot stopped!");
         }
 
@@ -111,7 +126,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             foreach (string setting in File.ReadAllLines(filePath))
             {
                 string[] temp = setting.Split('=');
-                if (setting[0] == '#' || temp.Length != 2)
+                if (temp.Length != 2 || setting[0] == '#')
                 {
                     continue;
                 }
@@ -221,11 +236,11 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Settings.MaxBrowserInstances = Settings.BotInstances.Count;
             }
 
-            Settings.SeleniumInstances = new OpenQA.Selenium.IWebDriver[Settings.MaxBrowserInstances];
+            Settings.SeleniumInstances = new List<(OpenQA.Selenium.IWebDriver driver, bool isAvailable)>();
             Log.WriteToLog($"Creating {Settings.MaxBrowserInstances} browser instances...");
             for (int i = 0; i < Settings.MaxBrowserInstances; i++)
             {
-                Settings.SeleniumInstances[i] = SeleniumAddons.CreateSeleniumInstance();
+                Settings.SeleniumInstances.Add((SeleniumAddons.CreateSeleniumInstance(), true));
                 Thread.Sleep(1000);
             }
             Log.WriteToLog("Browser instances created!", Log.LogType.Success);
@@ -308,7 +323,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             if (eventType == 2)
             {
 #pragma warning disable CS1998
-                _ = Task.Run(async () => Parallel.ForEach(Settings.SeleniumInstances, x => x.Quit())).ConfigureAwait(false);
+                _ = Task.Run(async () => Parallel.ForEach(Settings.SeleniumInstances, x => x.driver.Quit())).ConfigureAwait(false);
 #pragma warning restore CS1998
                 Log.WriteToLog("Closing browsers...");
                 System.Threading.Thread.Sleep(4500);

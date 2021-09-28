@@ -30,7 +30,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 );
 
                 string APIResponse = await PostJSONToApi(matchDetails, $"{Settings.APIUrl}get_team/",  username);
-                if (APIResponse == null)
+                if (APIResponse == null || APIResponse.Length < 5)
                 {
                     Log.WriteToLog($"{username}: API Error: Response was empty", Log.LogType.CriticalError);
                     return null;
