@@ -15,7 +15,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private const string SplinterlandsAPI = "https://game-api.splinterlands.io";
         private const string SplinterlandsAPIFallback = "https://api2.splinterlands.com";
 
-        public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, string[] cards, JToken quest, string username)
+        public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, string[] cards, JToken quest, string username, bool secondTry = false)
         {
             Log.WriteToLog($"{username}: Requesting team from API...");
             try
@@ -44,6 +44,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             catch (Exception ex)
             {
                 Log.WriteToLog($"{username}: API Error: {ex}", Log.LogType.CriticalError);
+                Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
+                if (!secondTry)
+                {
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
+                }
             }
             return null;
         }
