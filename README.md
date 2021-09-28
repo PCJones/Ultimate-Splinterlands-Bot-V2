@@ -8,6 +8,7 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 # Support / Community
 
 [Discord](https://discord.gg/hwSr7KNGs9)
+
 [Telegram](https://t.me/ultimatesplinterlandsbot) 
 
 ## How to install (Windows)
@@ -20,4 +21,5 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - Coming soon, please ask for instructions on discord or Telegram
 
 [Discord](https://discord.gg/hwSr7KNGs9)
+
 [Telegram](https://t.me/ultimatesplinterlandsbot) 
