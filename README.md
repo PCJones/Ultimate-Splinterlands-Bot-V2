@@ -18,7 +18,7 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - Setup config.txt and accounts.txt in data folder
 
 ## How to install (Linux / MacOS)
-- Coming soon, please ask for instructions on discord or Telegram
+- Instructions oming soon, please ask for instructions on discord or Telegram
 
 [Discord](https://discord.gg/hwSr7KNGs9)
 
