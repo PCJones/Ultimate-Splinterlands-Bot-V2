@@ -72,13 +72,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        public static void LogTable()
+        public static void LogBattleSummaryToTable()
         {
-            var t = new TablePrinter("id", "Column A".Pastel(Color.Green), "Column B");
-            t.AddRow(1, "Val A1", "Val B1");
-            t.AddRow(2, "Val A2", "Val B2");
-            t.AddRow(100, "Val A100", "Val B100".Pastel(Color.Yellow));
-            t.Print();
+            var t = new TablePrinter("#", "Account", "Result", "Rating", "ECR", "QuestStatus");
+            Settings.LogSummaryList.ForEach(x => t.AddRow(x.index, x.account, x.battleResult, x.rating, x.ECR, x.questStatus));
+            Settings.LogSummaryList.Clear();
+            lock (_ConsoleLock)
+            {
+                t.Print();
+            }
         }
 
         /// <summary>

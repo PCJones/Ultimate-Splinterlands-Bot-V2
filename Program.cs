@@ -16,8 +16,6 @@ namespace Ultimate_Splinterlands_Bot_V2
         private static object _TaskLock = new object();
         static void Main(string[] args)
         {
-            Log.WriteToLog("This is a demonstration on how to use different colors in console:");
-            Log.WriteToLog($"Normal Color - { "Orange".Pastel(Color.Orange) } - {"Green".Pastel(Color.Green)} test", Log.LogType.CriticalError);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 handler = new ConsoleEventDelegate(ConsoleEventCallback);
@@ -64,59 +62,60 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             object[] sleepInfo = new object[Settings.BotInstances.Count];
 
-            while (!token.IsCancellationRequested)
+            while (instances.Count < Settings.MaxBrowserInstances && !token.IsCancellationRequested)
             {
-                while (instances.Count < Settings.MaxBrowserInstances)
+                lock (_TaskLock)
                 {
-                    lock (_TaskLock)
+                    if (++nextBotInstance >= Settings.BotInstances.Count)
                     {
-                        if (++nextBotInstance >= Settings.BotInstances.Count)
-                        {
-                            Log.WriteSupportInformationToLog();
-                            nextBotInstance = 0;
-                            if (sleepInfo.All(x => x is DateTime))
-                            {
-                                DateTime sleepUntil = (DateTime)sleepInfo.OrderBy(x => (DateTime)x).First();
-                                if (sleepUntil > DateTime.Now)
-                                {
-                                    Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil}");
-                                    Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
-                                }
-                                Array.Fill(sleepInfo, null);
-                            }
-                        }
-
-                        nextBrowserInstance = ++nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
-                        while (!Settings.SeleniumInstances.ElementAt(nextBrowserInstance).isAvailable)
-                        {
-                            nextBrowserInstance++;
-                            nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
-                        }
-
-                        while (!Settings.BotInstances.ElementAt(nextBotInstance).isAvailable)
-                        {
-                            nextBotInstance++;
-                            nextBotInstance = nextBotInstance >= Settings.BotInstances.Count ? 0 : nextBotInstance;
-                        }
-
-
-                        Settings.SeleniumInstances[nextBrowserInstance] = (Settings.SeleniumInstances[nextBrowserInstance].driver, false);
-                        Settings.BotInstances[nextBotInstance] = (Settings.BotInstances[nextBotInstance].botInstance, false);
-
-                        // create local copies for thread safety
-                        int botInstance = nextBotInstance;
-                        int browserInstance = nextBrowserInstance;
-
-                        instances.Add(Task.Run(async () =>
-                        {
-                            sleepInfo[nextBotInstance] = await Settings.BotInstances[botInstance].botInstance.DoBattleAsync(browserInstance, logoutNeeded);
-                            lock (_TaskLock)
-                            {
-                                Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
-                                Settings.BotInstances[botInstance] = (Settings.BotInstances[botInstance].botInstance, true);
-                            }
-                        }));
+                        Log.LogBattleSummaryToTable();
+                        Log.WriteSupportInformationToLog();
+                        nextBotInstance = 0;
                     }
+
+                    if (Settings.SleepBetweenBattles > 0
+                        && Settings.SeleniumInstances.All(x => !x.isAvailable
+                        || (sleepInfo[Settings.SeleniumInstances.IndexOf(x)] != null
+                    && (DateTime)sleepInfo[Settings.SeleniumInstances.IndexOf(x)] > DateTime.Now)))
+                    {
+                        DateTime sleepUntil = (DateTime)sleepInfo.Where(x => x is DateTime).OrderBy(x => (DateTime)x).First();
+                        if (sleepUntil > DateTime.Now)
+                        {
+                            Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil}");
+                            Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
+                        }
+                        Array.Fill(sleepInfo, null);
+                    }
+
+                    nextBrowserInstance = ++nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
+                    while (!Settings.SeleniumInstances.ElementAt(nextBrowserInstance).isAvailable)
+                    {
+                        nextBrowserInstance++;
+                        nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
+                    }
+
+                    while (!Settings.BotInstances.ElementAt(nextBotInstance).isAvailable)
+                    {
+                        nextBotInstance++;
+                        nextBotInstance = nextBotInstance >= Settings.BotInstances.Count ? 0 : nextBotInstance;
+                    }
+
+                    Settings.SeleniumInstances[nextBrowserInstance] = (Settings.SeleniumInstances[nextBrowserInstance].driver, false);
+                    Settings.BotInstances[nextBotInstance] = (Settings.BotInstances[nextBotInstance].botInstance, false);
+
+                    // create local copies for thread safety
+                    int botInstance = nextBotInstance;
+                    int browserInstance = nextBrowserInstance;
+
+                    instances.Add(Task.Run(async () =>
+                    {
+                        sleepInfo[nextBotInstance] = await Settings.BotInstances[botInstance].botInstance.DoBattleAsync(browserInstance, logoutNeeded, botInstance);
+                        lock (_TaskLock)
+                        {
+                            Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
+                            Settings.BotInstances[botInstance] = (Settings.BotInstances[botInstance].botInstance, true);
+                        }
+                    }));
                 }
 
                 _ = await Task.WhenAny(instances);
@@ -155,8 +154,12 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "SLEEP_BETWEEN_BATTLES":
                         Settings.SleepBetweenBattles = Convert.ToInt32(temp[1]);
                         break;
+                    case "ECR_THRESHOLD":
+                        Settings.ECRThreshold = Convert.ToInt32(temp[1]);
+                        break;
+                    // legacy:
                     case "ERC_THRESHOLD":
-                        Settings.ERCThreshold = Convert.ToInt32(temp[1]);
+                        Settings.ECRThreshold = Convert.ToInt32(temp[1]);
                         break;
                     case "MAX_BROWSER_INSTANCES":
                         Settings.MaxBrowserInstances = Convert.ToInt32(temp[1]);
@@ -206,10 +209,12 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                 $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
+                $"REQUEST_NEW_QUEST: {Settings.BadQuests}{Environment.NewLine}" +
                 $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
-                $"ERC_THRESHOLD: {Settings.ERCThreshold}{Environment.NewLine}" +
+                $"ECR_THRESHOLD: {Settings.ECRThreshold}{Environment.NewLine}" +
                 $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
-                $"HEADLESS: {Settings.Headless}{Environment.NewLine}");
+                $"HEADLESS: {Settings.Headless}{Environment.NewLine}" +
+                $"MAX_BROWSER_INSTANCES: {Settings.MaxBrowserInstances}{Environment.NewLine}");
             return true;
         }
 
@@ -225,6 +230,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Settings.BotInstances = new List<(BotInstance, bool isAvailable)>();
 
+            int indexCounter = 0;
             foreach (string loginData in File.ReadAllLines(filePath))
             {
                 if (loginData.Trim().Length == 0 || loginData[0] == '#')
@@ -234,7 +240,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 string[] temp = loginData.Split(':');
                 if (temp.Length == 2)
                 {
-                    Settings.BotInstances.Add((new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim()), true));
+                    Settings.BotInstances.Add((new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++), true));
                 }
             }
 
@@ -320,6 +326,10 @@ namespace Ultimate_Splinterlands_Bot_V2
             Settings.Summoners.Add("73", "life");
 
             Settings.CardsDetails = Newtonsoft.Json.Linq.JArray.Parse(File.ReadAllText(Settings.StartupPath + @"/data/cardsDetails.json"));
+
+            Settings.LogSummaryList = new List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)>();
+
+            API._httpClient.Timeout = new TimeSpan(0, 3, 0);
         }
 
         static void SetStartupPath()

@@ -27,11 +27,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool ClaimQuestReward = false;
         public static bool ClaimSeasonReward = false;
         public static int SleepBetweenBattles = 30;
-        public static int ERCThreshold = 75;
+        public static int ECRThreshold = 75;
         public static string[] BadQuests = new string[0];
 
         public static List<(BotInstance botInstance, bool isAvailable)> BotInstances { get; set; }
         public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }
+        public static List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)> LogSummaryList { get; set; }
 
         public static JArray CardsDetails;
         public static Dictionary<string, string> QuestTypes;

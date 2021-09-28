@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
+using Pastel;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -11,6 +13,30 @@ using System.Threading.Tasks;
 
 namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
+    public record LogSummary
+    {
+        public int Index { get; init; }
+        public string Account { get; set; }
+        public string BattleResult { get; set; }
+        public string Rating { get; set; }
+        public string ECR { get; set; }
+        public string QuestStatus { get; set; }
+
+        public LogSummary(int index, string account)
+        {
+            Index = index;
+            Account = account;
+            Reset();
+        }
+
+        public void Reset()
+        {
+            BattleResult = "N/A";
+            Rating = "N/A";
+            ECR = "N/A";
+            QuestStatus = "N/A";
+        }
+    }
     public class BotInstance
     {
         // todo: check which parameters need to be public / can be private
@@ -22,8 +48,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private object _activeLock;
         private DateTime SleepUntil;
         private bool UnknownUsername;
+        private LogSummary LogSummary;
 
-        public BotInstance(string username, string password)
+        public BotInstance(string username, string password, int index)
         {
             if (username.Contains("@"))
             {
@@ -39,10 +66,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
             Password = password;
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * - 1);
+            LogSummary = new LogSummary(index, username);
             _activeLock = new object();
         }
 
-        public async Task<object> DoBattleAsync(int browserInstance, bool logoutNeeded)
+        public async Task<object> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance)
         {
             Log.WriteToLog($"Browser #{ browserInstance}", debugOnly: true);
             IWebDriver driver =  Settings.SeleniumInstances[browserInstance].driver;
@@ -57,6 +85,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             try
             {
+                LogSummary.Reset();
                 if (SleepUntil > DateTime.Now)
                 {
                     Log.WriteToLog($"{Username}: is sleeping until {SleepUntil}");
@@ -73,9 +102,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     if (Username.Trim().Length == 0)
                     {
                         Username = "";
-                        Log.WriteToLog($"{Email}: Error reading username, will try again in 3 minutes");
+                        Log.WriteToLog($"{Email}: { "Error reading username, will try again in 3 minutes".Pastel(Color.Red) }");
                         return DateTime.Now.AddMinutes(3);
                     }
+                    LogSummary.Account = Username;
                     Log.WriteToLog($"{Email}: Username is {Username}");
                     UnknownUsername = false;
                 }
@@ -85,12 +115,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Deck size: {cards.Length - 1}"); // Minus 1 because phantom card array has an empty string in it
                 ClosePopups(driver);
                 NavigateToBattlePage(driver);
-                double erc = GetERC(driver);
+                double ecr = GetECR(driver);
+                LogSummary.ECR = $"{ecr} %";
                 // todo: add log with different colors in same line
-                Log.WriteToLog($"{Username}: Current Energy Capture Rate is {erc}%");
-                if (erc < Settings.ERCThreshold)
+                Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
+                if (ecr < Settings.ECRThreshold)
                 {
-                    Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ERCThreshold}% - skipping this account.", Log.LogType.Warning);
+                    Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
                     // todo: maybe add sleep if logoutNeeded is false
                     return null;
                 }
@@ -100,13 +131,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     ClaimSeasonRewards(driver);
                 }
                 string currentRating = GetCurrentRating(driver);
-                Log.WriteToLog($"{Username}: Current Rating is: {currentRating}", Log.LogType.Warning);
-                Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest)}", Log.LogType.Warning);
+                Log.WriteToLog($"{Username}: Current Rating is: {currentRating.Pastel(Color.Yellow)}");
+                Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest).Pastel(Color.Yellow)}");
                 if (Settings.BadQuests.Contains((string)quest["splinter"]))
                 {
                     RequestNewQuest(driver, quest);
                 }
-                ClaimQuestReward(driver);
+                ClaimQuestReward(driver, quest);
 
                 ClosePopups(driver);
 
@@ -161,10 +192,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 driver.ClickElementOnPage(By.Id("btnSkip"));
                 Log.WriteToLog($"{Username}: Skip button clicked");
 
-                GetBattleResult(driver);
+                GetBattleResult(driver, currentRating);
 
                 // todo: determine winner, show summary etc
-                Log.WriteToLog($"{Username}: Finished battle!", Log.LogType.Success);
+                Log.WriteToLog($"{Username}: Finished battle!");
             }
             catch (Exception ex)
             {
@@ -176,6 +207,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     driver.ExecuteJavaScript("SM.Logout();", true);
                 }
+                Settings.LogSummaryList.Add((LogSummary.Index, LogSummary.Account, LogSummary.BattleResult, LogSummary.Rating, LogSummary.ECR, LogSummary.QuestStatus));
                 lock (_activeLock)
                 {
                     CurrentlyActive = false;
@@ -184,28 +216,46 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return null;
         }
 
-        private void GetBattleResult(IWebDriver driver)
+        private void GetBattleResult(IWebDriver driver, string oldRating)
         {
             //driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("section.player.winner .bio__name__display"));
             driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//h1[contains(., 'BATTLE RESULT')]"));
+            string logTextBattleResult;
+            string rating;
+            string ratingChange;
             if (driver.FindElements(By.CssSelector("section.player.winner .bio__name__display")).Count > 0)
             {
                 string winner = driver.FindElement(By.CssSelector("section.player.winner .bio__name__display")).Text.ToLower();
                 if (winner == Username)
                 {
+                    rating = driver.FindElement(By.CssSelector("section.player.winner .rating-total")).Text;
+                    ratingChange = driver.FindElement(By.CssSelector("section.player.winner .rating-delta")).Text;
                     string decWon = driver.FindElement(By.CssSelector(".player.winner span.dec-reward span")).Text;
-                    Log.WriteToLog($"{Username}: You won! Reward: {decWon} DEC", Log.LogType.Success);
+                    logTextBattleResult = $"You won! Reward: {decWon} DEC";
+                    Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
+                    Log.WriteToLog($"{Username}: New rating is {rating} ({ ratingChange.Pastel(Color.Green) })");
                 }
                 else
                 {
-                    Log.WriteToLog($"{Username}: You lost :(");
+                    rating = driver.FindElement(By.CssSelector("section.player.loser .rating-total")).Text.ToLower();
+                    ratingChange = driver.FindElement(By.CssSelector("section.player.loser .rating-delta")).Text;
+                    logTextBattleResult = $"You lost :(";
+                    Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
+                    Log.WriteToLog($"{Username}: New rating is {rating} ({ ratingChange.Pastel(Color.Red) })");
                     API.ReportLoss(winner, Username);
                 }
             }
             else
             {
-                Log.WriteToLog($"{Username}: DRAW!");
+                rating = oldRating;
+                ratingChange = "+- 0";
+                logTextBattleResult = "DRAW";
+                Log.WriteToLog($"{Username}: { logTextBattleResult}");
+                Log.WriteToLog($"{Username}: Rating has not changed ({ rating })");
             }
+
+            LogSummary.Rating = $"{ rating } ({ ratingChange })";
+            LogSummary.BattleResult = logTextBattleResult;
 
             Thread.Sleep(4500);
             ClosePopups(driver);
@@ -452,13 +502,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private void ClaimQuestReward(IWebDriver driver)
+        private void ClaimQuestReward(IWebDriver driver, JToken quest)
         {
             try
             {
+                string logText;
                 if (driver.WaitForWebsiteLoadedAndElementShown(By.Id("quest_claim_btn"), 1))
                 {
-                    Log.WriteToLog($"{Username}: Quest reward can be claimed", Log.LogType.Success);
+                    logText = "Quest reward can be claimed";
+                    Log.WriteToLog($"{Username}: {logText.Pastel(Color.Green)}");
+                    // short logText:
+                    logText = "Quest reward available!";
                     if (!Settings.ClaimQuestReward)
                     {
                         return;
@@ -475,12 +529,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Thread.Sleep(3000);
                     ClosePopups(driver);
                     Thread.Sleep(1000);
-                    Log.WriteToLog($"{Username}: Claimed quest reward", Log.LogType.Success);
+                    Log.WriteToLog($"{Username}: { "Claimed quest reward".Pastel(Color.Green) }");
                 }
                 else
                 {
-                    Log.WriteToLog($"{Username}: No quest reward to be claimed ");
+                    Log.WriteToLog($"{Username}: No quest reward to be claimed");
+                    // short logText:
+                    logText = "No quest reward...";
                 }
+
+                LogSummary.QuestStatus = $" { (string)quest["completed"] }/{ (string)quest["total"] } {logText}";
             }
             catch (Exception ex)
             {
@@ -496,30 +554,23 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     return;
                 }
-                if (driver.WaitForWebsiteLoadedAndElementShown(By.Id("quest_claim_btn"), 1))
+                if (driver.WaitForWebsiteLoadedAndElementShown(By.Id("quest_new_btn"), 1))
                 {
                     Log.WriteToLog($"{ Username }: Quest type is { (string)quest["splinter"] } - requesting new one.");
-                    if (!Settings.ClaimQuestReward)
-                    {
-                        return;
-                    }
 
-                    Log.WriteToLog($"{Username}: Claiming quest reward...");
-                    driver.ClickElementOnPage(By.Id("quest_claim_btn"));
-                    Thread.Sleep(5000);
+                    driver.ClickElementOnPage(By.Id("quest_new_btn"));
+                    Thread.Sleep(1500);
+                    driver.SwitchTo().Alert().Accept();
                     WaitForLoadingBanner(driver);
                     Thread.Sleep(3000);
-                    driver.Navigate().Refresh();
-                    Thread.Sleep(3000);
                     WaitForLoadingBanner(driver);
-                    Thread.Sleep(3000);
                     ClosePopups(driver);
                     Thread.Sleep(1000);
-                    Log.WriteToLog($"{Username}: Claimed quest reward", Log.LogType.Success);
+                    Log.WriteToLog($"{Username}: {"Renewed quest!".Pastel(Color.Green)}");
                 }
                 else
                 {
-                    Log.WriteToLog($"{Username}: Can't change quest");
+                    Log.WriteToLog($"{Username}: { "Can't change quest".Pastel(Color.Red) }");
                 }
             }
             catch (Exception ex)
@@ -609,12 +660,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private double GetERC(IWebDriver driver)
+        private double GetECR(IWebDriver driver)
         {
             try
             {
-                var erc = driver.FindElement(By.XPath("//div[@class='dec-options'][1]/div[@class='value'][2]/div")).GetAttribute("innerHTML");
-                return Convert.ToDouble(erc[..^1], CultureInfo.InvariantCulture);
+                var ecr = driver.FindElement(By.XPath("//div[@class='dec-options'][1]/div[@class='value'][2]/div")).GetAttribute("innerHTML");
+                return Convert.ToDouble(ecr[..^1], CultureInfo.InvariantCulture);
             }
             catch (Exception ex)
             {
@@ -693,7 +744,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 return false;
             }
 
-            Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Login successful", Log.LogType.Success);
+            Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Login successful");
             return true;
         }
 

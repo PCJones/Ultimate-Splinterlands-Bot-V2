@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Pastel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +37,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return null;
                 }
 
-                Log.WriteToLog($"{username}: API Response: {APIResponse}");
+                Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(System.Drawing.Color.Yellow) }");
 
                 return JToken.Parse(APIResponse);
             }
@@ -118,7 +119,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return Settings.PhantomCards;
         }
 
-        private readonly static HttpClient _httpClient = new HttpClient();
+        public readonly static HttpClient _httpClient = new HttpClient();
         private async static Task<string> DownloadPageAsync(string url)
         {
             // Use static HttpClient to avoid exhausting system resources for network connections.
