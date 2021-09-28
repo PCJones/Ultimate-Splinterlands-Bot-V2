@@ -62,60 +62,63 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             object[] sleepInfo = new object[Settings.BotInstances.Count];
 
-            while (instances.Count < Settings.MaxBrowserInstances && !token.IsCancellationRequested)
+            while (!token.IsCancellationRequested)
             {
-                lock (_TaskLock)
+                while (instances.Count < Settings.MaxBrowserInstances && !token.IsCancellationRequested)
                 {
-                    if (++nextBotInstance >= Settings.BotInstances.Count)
+                    lock (_TaskLock)
                     {
-                        Log.LogBattleSummaryToTable();
-                        Log.WriteSupportInformationToLog();
-                        nextBotInstance = 0;
-                    }
-
-                    if (Settings.SleepBetweenBattles > 0
-                        && Settings.SeleniumInstances.All(x => !x.isAvailable
-                        || (sleepInfo[Settings.SeleniumInstances.IndexOf(x)] != null
-                    && (DateTime)sleepInfo[Settings.SeleniumInstances.IndexOf(x)] > DateTime.Now)))
-                    {
-                        DateTime sleepUntil = (DateTime)sleepInfo.Where(x => x is DateTime).OrderBy(x => (DateTime)x).First();
-                        if (sleepUntil > DateTime.Now)
+                        if (++nextBotInstance >= Settings.BotInstances.Count)
                         {
-                            Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil}");
-                            Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
+                            Log.LogBattleSummaryToTable();
+                            Log.WriteSupportInformationToLog();
+                            nextBotInstance = 0;
                         }
-                        Array.Fill(sleepInfo, null);
-                    }
 
-                    nextBrowserInstance = ++nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
-                    while (!Settings.SeleniumInstances.ElementAt(nextBrowserInstance).isAvailable)
-                    {
-                        nextBrowserInstance++;
-                        nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
-                    }
-
-                    while (!Settings.BotInstances.ElementAt(nextBotInstance).isAvailable)
-                    {
-                        nextBotInstance++;
-                        nextBotInstance = nextBotInstance >= Settings.BotInstances.Count ? 0 : nextBotInstance;
-                    }
-
-                    Settings.SeleniumInstances[nextBrowserInstance] = (Settings.SeleniumInstances[nextBrowserInstance].driver, false);
-                    Settings.BotInstances[nextBotInstance] = (Settings.BotInstances[nextBotInstance].botInstance, false);
-
-                    // create local copies for thread safety
-                    int botInstance = nextBotInstance;
-                    int browserInstance = nextBrowserInstance;
-
-                    instances.Add(Task.Run(async () =>
-                    {
-                        sleepInfo[nextBotInstance] = await Settings.BotInstances[botInstance].botInstance.DoBattleAsync(browserInstance, logoutNeeded, botInstance);
-                        lock (_TaskLock)
+                        if (Settings.SleepBetweenBattles > 0
+                            && Settings.SeleniumInstances.All(x => !x.isAvailable 
+                            || (sleepInfo[Settings.SeleniumInstances.IndexOf(x)] != null
+                        && (DateTime)sleepInfo[Settings.SeleniumInstances.IndexOf(x)] > DateTime.Now)))
                         {
-                            Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
-                            Settings.BotInstances[botInstance] = (Settings.BotInstances[botInstance].botInstance, true);
+                            DateTime sleepUntil = (DateTime)sleepInfo.Where(x => x is DateTime).OrderBy(x => (DateTime)x).First();
+                            if (sleepUntil > DateTime.Now)
+                            {
+                                Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil}");
+                                Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
+                            }
+                            Array.Fill(sleepInfo, null);
                         }
-                    }));
+
+                        nextBrowserInstance = ++nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
+                        while (!Settings.SeleniumInstances.ElementAt(nextBrowserInstance).isAvailable)
+                        {
+                            nextBrowserInstance++;
+                            nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
+                        }
+
+                        while (!Settings.BotInstances.ElementAt(nextBotInstance).isAvailable)
+                        {
+                            nextBotInstance++;
+                            nextBotInstance = nextBotInstance >= Settings.BotInstances.Count ? 0 : nextBotInstance;
+                        }
+
+                        Settings.SeleniumInstances[nextBrowserInstance] = (Settings.SeleniumInstances[nextBrowserInstance].driver, false);
+                        Settings.BotInstances[nextBotInstance] = (Settings.BotInstances[nextBotInstance].botInstance, false);
+
+                        // create local copies for thread safety
+                        int botInstance = nextBotInstance;
+                        int browserInstance = nextBrowserInstance;
+
+                        instances.Add(Task.Run(async () =>
+                        {
+                            sleepInfo[nextBotInstance] = await Settings.BotInstances[botInstance].botInstance.DoBattleAsync(browserInstance, logoutNeeded, botInstance);
+                            lock (_TaskLock)
+                            {
+                                Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
+                                Settings.BotInstances[botInstance] = (Settings.BotInstances[botInstance].botInstance, true);
+                            }
+                        }));
+                    }
                 }
 
                 _ = await Task.WhenAny(instances);
