@@ -1,6 +1,7 @@
 ﻿using Pastel;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -69,6 +70,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     System.IO.File.AppendAllText(Settings.StartupPath + @"/log.txt", messagePrefix + message + Environment.NewLine);
                 }
             }
+        }
+
+        public static void LogTable()
+        {
+            var t = new TablePrinter("id", "Column A".Pastel(Color.Green), "Column B");
+            t.AddRow(1, "Val A1", "Val B1");
+            t.AddRow(2, "Val A2", "Val B2");
+            t.AddRow(100, "Val A100", "Val B100".Pastel(Color.Yellow));
+            t.Print();
         }
 
         /// <summary>

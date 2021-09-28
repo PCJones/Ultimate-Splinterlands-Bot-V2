@@ -17,6 +17,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool ChromeNoSandbox = false;
         public static bool Headless = false;
         public static string ChromeBinaryPath = "";
+        public static string ChromeDriverPath = "";
         public static int MaxBrowserInstances = 2;
 
         public static bool UseAPI = true;
@@ -27,8 +28,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool ClaimSeasonReward = false;
         public static int SleepBetweenBattles = 30;
         public static int ERCThreshold = 75;
+        public static string[] BadQuests = new string[0];
 
-        public static List<BotInstance> BotInstances;
+        public static List<(BotInstance botInstance, bool isAvailable)> BotInstances { get; set; }
         public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }
 
         public static JArray CardsDetails;

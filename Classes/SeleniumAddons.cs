@@ -10,6 +10,7 @@ using OpenQA.Selenium.Support.UI;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
@@ -70,7 +71,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         //chromeOptions.AddArgument("--window-size=1920,1080");
                         chromeOptions.AddArgument("--window-size=1800,1500");
                         var chromeDriverService = ChromeDriverService.CreateDefaultService(Settings.StartupPath);
-                        chromeDriverService.HideCommandPromptWindow = true;
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        {
+                            chromeDriverService.HideCommandPromptWindow = true;
+                        }
                         driver = new ChromeDriver(chromeDriverService, chromeOptions, TimeSpan.FromSeconds(timeOut));
                     }
                     driver.Manage().Window.Position = new System.Drawing.Point(0, 0);

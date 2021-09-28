@@ -42,8 +42,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             _activeLock = new object();
         }
 
-        public async Task<object> DoBattleAsync(IWebDriver driver, bool logoutNeeded)
+        public async Task<object> DoBattleAsync(int browserInstance, bool logoutNeeded)
         {
+            Log.WriteToLog($"Browser #{ browserInstance}", debugOnly: true);
+            IWebDriver driver =  Settings.SeleniumInstances[browserInstance].driver;
             lock (_activeLock)
             {
                 if (CurrentlyActive)
@@ -100,6 +102,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string currentRating = GetCurrentRating(driver);
                 Log.WriteToLog($"{Username}: Current Rating is: {currentRating}", Log.LogType.Warning);
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest)}", Log.LogType.Warning);
+                if (Settings.BadQuests.Contains((string)quest["splinter"]))
+                {
+                    RequestNewQuest(driver, quest);
+                }
                 ClaimQuestReward(driver);
 
                 ClosePopups(driver);
@@ -201,7 +207,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: DRAW!");
             }
 
-            Thread.Sleep(1250);
+            Thread.Sleep(4500);
             ClosePopups(driver);
         }
 
@@ -371,6 +377,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private int GetMana(IWebDriver driver)
         {
+            driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("div.col-md-12 > div.mana-cap__icon"));
+            Thread.Sleep(100);
             int mana = Convert.ToInt32(driver.FindElement(By.CssSelector("div.col-md-12 > div.mana-cap__icon"))
                     .GetAttribute("data-original-title").Split(':')[1].Trim());
             return mana;
@@ -477,6 +485,46 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at claiming quest rewards: {ex}", Log.LogType.Error);
+            }
+        }
+
+        private void RequestNewQuest(IWebDriver driver, JToken quest)
+        {
+            try
+            {
+                if ((int)quest["completed"] > 3)
+                {
+                    return;
+                }
+                if (driver.WaitForWebsiteLoadedAndElementShown(By.Id("quest_claim_btn"), 1))
+                {
+                    Log.WriteToLog($"{ Username }: Quest type is { (string)quest["splinter"] } - requesting new one.");
+                    if (!Settings.ClaimQuestReward)
+                    {
+                        return;
+                    }
+
+                    Log.WriteToLog($"{Username}: Claiming quest reward...");
+                    driver.ClickElementOnPage(By.Id("quest_claim_btn"));
+                    Thread.Sleep(5000);
+                    WaitForLoadingBanner(driver);
+                    Thread.Sleep(3000);
+                    driver.Navigate().Refresh();
+                    Thread.Sleep(3000);
+                    WaitForLoadingBanner(driver);
+                    Thread.Sleep(3000);
+                    ClosePopups(driver);
+                    Thread.Sleep(1000);
+                    Log.WriteToLog($"{Username}: Claimed quest reward", Log.LogType.Success);
+                }
+                else
+                {
+                    Log.WriteToLog($"{Username}: Can't change quest");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at changing quest: {ex}", Log.LogType.Error);
             }
         }
 
@@ -623,9 +671,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
             }
-            driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"), 6);
+            driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"), 8);
             ClosePopups(driver, false);
-            driver.ClickElementOnPage(By.Id("log_in_button"));
+            Thread.Sleep(1000);
+            driver.ExecuteJavaScript("SM.ShowLogin(SM.ShowAbout);");
 
             driver.WaitForWebsiteLoadedAndElementShown(By.Id("email"));
             driver.SetData(By.Id("email"), Email.Length > 0 ? Email : Username);
