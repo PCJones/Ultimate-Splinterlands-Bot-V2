@@ -18,7 +18,8 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - Setup config.txt and accounts.txt in data folder
 
 ## How to install (Linux / MacOS)
-- Instructions oming soon, please ask for instructions on discord or Telegram
+- [Chrome download](https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb)
+- Instructions coming soon, please ask for instructions on discord or Telegram
 
 [Discord](https://discord.gg/hwSr7KNGs9)
 
