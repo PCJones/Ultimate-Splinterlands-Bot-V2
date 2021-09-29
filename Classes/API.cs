@@ -31,6 +31,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 );
 
                 string APIResponse = await PostJSONToApi(matchDetails, $"{Settings.APIUrl}get_team/",  username);
+                if (APIResponse.Contains("api limit reached"))
+                {
+                    Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
+                    System.Threading.Thread.Sleep(25000);
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
+                }
                 if (APIResponse == null || APIResponse.Length < 5)
                 {
                     Log.WriteToLog($"{username}: API Error: Response was empty", Log.LogType.CriticalError);
@@ -48,6 +54,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (!secondTry)
                 {
                     return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
+                } else if (secondTry)
+                {
+                    Log.WriteToLog($"{username}: API overloaded or down?: Waiting 2.5 minutes...", Log.LogType.Warning);
+                    System.Threading.Thread.Sleep(150000);
                 }
             }
             return null;

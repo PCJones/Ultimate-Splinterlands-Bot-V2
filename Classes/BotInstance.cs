@@ -162,7 +162,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
                 WaitForLoadingBanner(driver);
                 var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters, cards, quest, Username);
-                if ((string)team["summoner_id"] == "")
+                if (team == null || (string)team["summoner_id"] == "")
                 {
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
                     return null;
@@ -711,7 +711,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 }
                 // this shouldn't happen unless session is no longer valid, call logout to be sure
-                driver.ExecuteJavaScript("SM.Logout();");
+                driver.ExecuteJavaScript("SM.Logout();", suppressErrors: true);
             }
             if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"), 6))
             {
