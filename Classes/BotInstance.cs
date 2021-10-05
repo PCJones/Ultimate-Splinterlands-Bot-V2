@@ -70,7 +70,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             _activeLock = new object();
         }
 
-        public async Task<object> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance)
+        public async Task<DateTime> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance)
         {
             Log.WriteToLog($"Browser #{ browserInstance}", debugOnly: true);
             IWebDriver driver =  Settings.SeleniumInstances[browserInstance].driver;
@@ -93,7 +93,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 if (!Login(driver, logoutNeeded))
                 {
-                    return DateTime.Now.AddMinutes(5);
+                    SleepUntil = DateTime.Now.AddMinutes(5);
+                    return SleepUntil;
                 }
                 ClosePopups(driver);
                 if (UnknownUsername)
@@ -103,7 +104,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         Username = "";
                         Log.WriteToLog($"{Email}: { "Error reading username, will try again in 3 minutes".Pastel(Color.Red) }");
-                        return DateTime.Now.AddMinutes(3);
+                        SleepUntil = DateTime.Now.AddMinutes(3);
+                        return SleepUntil;
                     }
                     LogSummary.Account = Username;
                     Log.WriteToLog($"{Email}: Username is {Username}");
@@ -111,8 +113,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 JToken quest = await API.GetPlayerQuestAsync(Username);
-                string[] cards = await API.GetPlayerCardsAsync(Username);
-                Log.WriteToLog($"{Username}: Deck size: {cards.Length - 1}"); // Minus 1 because phantom card array has an empty string in it
+                Card[] cards = await API.GetPlayerCardsAsync(Username);
+                Log.WriteToLog($"{Username}: Deck size: {cards.Length - 1} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
                 ClosePopups(driver);
                 NavigateToBattlePage(driver);
                 double ecr = GetECR(driver);
@@ -122,8 +124,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (ecr < Settings.ECRThreshold)
                 {
                     Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
-                    // todo: maybe add sleep if logoutNeeded is false
-                    return null;
+                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                    return SleepUntil;
                 }
 
                 if (Settings.ClaimSeasonReward)
@@ -150,7 +152,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     if (counter++ > 7)
                     {
                         Log.WriteToLog($"{Username}: Can't seem to find an enemy{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
-                        return null;
+                        SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                        return SleepUntil;
                     }
                     // check if this is correct modal;
                 }
@@ -165,7 +168,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
-                    return null;
+                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                    return SleepUntil;
                 }
                 SelectTeam(driver, team);
 
@@ -180,7 +184,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             break;
                         }
                         Log.WriteToLog($"{Username}: Can't seem to find btnRumble{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
-                        return null;
+                        SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                        return SleepUntil;
                     }
                 }
                 
@@ -213,7 +218,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     CurrentlyActive = false;
                 }
             }
-            return null;
+            return SleepUntil;
         }
 
         private void GetBattleResult(IWebDriver driver, string oldRating)
@@ -481,6 +486,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
+                ClosePopups(driver);
+                Thread.Sleep(400);
                 if (driver.WaitForElementShown(By.Id("claim-btn"), 1))
                 {
                     Log.WriteToLog($"{Username}: Claiming season rewards");
@@ -694,7 +701,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             driver.Navigate().GoToUrl("https://splinterlands.com/");
             WaitForLoadingBanner(driver);
             ClosePopups(driver, false);
-            driver.ExecuteJavaScript("SM.Logout();", true);
             if (!UnknownUsername && !logoutNeeded)
             {
                 // check if already logged in
@@ -711,8 +717,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 }
                 // this shouldn't happen unless session is no longer valid, call logout to be sure
-                driver.ExecuteJavaScript("SM.Logout();", suppressErrors: true);
             }
+            driver.ExecuteJavaScript("SM.Logout();", true);
             if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"), 6))
             {
                 // splinterlands bug, battle result still open

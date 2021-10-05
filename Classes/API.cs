@@ -15,7 +15,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private const string SplinterlandsAPI = "https://game-api.splinterlands.io";
         private const string SplinterlandsAPIFallback = "https://api2.splinterlands.com";
 
-        public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, string[] cards, JToken quest, string username, bool secondTry = false)
+        public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, Card[] cards, JToken quest, string username, bool secondTry = false)
         {
             Log.WriteToLog($"{username}: Requesting team from API...");
             try
@@ -24,7 +24,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     new JProperty("mana", mana),
                     new JProperty("rules", rules),
                     new JProperty("splinters", splinters),
-                    new JProperty("myCards", cards),
+                    new JProperty("myCardsV2", JsonConvert.SerializeObject(cards)),
                     new JProperty("quest", Settings.PrioritizeQuest && quest != null
                     && ((int)quest["total"] != (int)quest["completed"]) ? 
                    quest : "")
@@ -53,7 +53,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                 if (!secondTry)
                 {
-                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, false);
                 } else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: API overloaded or down?: Waiting 2.5 minutes...", Log.LogType.Warning);
@@ -96,7 +96,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return null;
         }
 
-        public static async Task<string[]> GetPlayerCardsAsync(string username)
+        public static async Task<Card[]> GetPlayerCardsAsync(string username)
         {
             try
             {
@@ -109,7 +109,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 DateTime oneDayAgo = DateTime.Now.AddDays(-1);
-                string[] cards = JToken.Parse(data)["cards"].Where(x =>
+                List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(x =>
                 ((x["delegated_to"].Type == JTokenType.Null && x["market_listing_type"].Type == JTokenType.Null) 
                 || (string)x["delegated_to"] == username)
                 && 
@@ -120,18 +120,25 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         )
                     )
                 )
-                .Select(x => (string)x["card_detail_id"]).Distinct().ToArray();
-                var combinedCards = new string[cards.Length + Settings.PhantomCards.Length];
-                cards.CopyTo(combinedCards, 0);
-                Settings.PhantomCards.CopyTo(combinedCards, cards.Length);
-                return combinedCards;
+                .Select(x => new Card((string)x["card_detail_id"], (string)x["level"], (bool)x["gold"]))
+                .Distinct().OrderByDescending(x => x.SortValue()).ToArray());
 
+                // add basic cards
+                foreach (string cardId in Settings.PhantomCards)
+                {
+                    cards.Add(new Card(cardId, "1", false));
+                }
+
+                // only use highest level/gold cards
+                Card[] cardsFiltered = cards.Select(x => cards.Where(y => x.card_detail_id == y.card_detail_id).First()).Distinct().ToArray();
+
+                return cardsFiltered;
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{username}: Could not get cards from splinterlands api: {ex}{Environment.NewLine}Bot will play with phantom cards only.", Log.LogType.Error);
             }
-            return Settings.PhantomCards;
+            return Settings.PhantomCards.Select(x => new Card(x, "1", false)).ToArray();
         }
 
         public readonly static HttpClient _httpClient = new HttpClient();

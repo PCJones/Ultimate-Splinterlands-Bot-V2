@@ -60,12 +60,13 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             bool logoutNeeded = Settings.BotInstances.Count != Settings.MaxBrowserInstances;
 
-            object[] sleepInfo = new object[Settings.BotInstances.Count];
+            DateTime[] sleepInfo = new DateTime[Settings.BotInstances.Count];
 
             while (!token.IsCancellationRequested)
             {
                 while (instances.Count < Settings.MaxBrowserInstances && !token.IsCancellationRequested)
                 {
+                    int sleepTime = 0;
                     lock (_TaskLock)
                     {
                         if (++nextBotInstance >= Settings.BotInstances.Count)
@@ -76,19 +77,28 @@ namespace Ultimate_Splinterlands_Bot_V2
                         }
 
                         if (Settings.SleepBetweenBattles > 0
-                            && Settings.SeleniumInstances.All(x => !x.isAvailable 
-                            || (sleepInfo[Settings.SeleniumInstances.IndexOf(x)] != null
-                        && (DateTime)sleepInfo[Settings.SeleniumInstances.IndexOf(x)] > DateTime.Now)))
+                            && Settings.BotInstances.All(x => x.CurrentlyActive
+                            || (DateTime)sleepInfo[Settings.BotInstances.IndexOf(x)] > DateTime.Now))
                         {
-                            DateTime sleepUntil = (DateTime)sleepInfo.Where(x => x is DateTime).OrderBy(x => (DateTime)x).First();
+                            DateTime sleepUntil = sleepInfo.Where(x => 
+                            !Settings.BotInstances[Array.IndexOf(sleepInfo, x)].CurrentlyActive)
+                                .OrderBy(x => x).First();
+
                             if (sleepUntil > DateTime.Now)
                             {
                                 Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil}");
-                                Thread.Sleep((int)(sleepUntil - DateTime.Now).TotalMilliseconds);
+                                sleepTime = (int)(sleepUntil - DateTime.Now).TotalMilliseconds;
                             }
-                            Array.Fill(sleepInfo, null);
                         }
+                    }
 
+                    if (sleepTime != 0)
+                    {
+                        await Task.Delay(sleepTime);
+                    }
+
+                    lock (_TaskLock)
+                    {
                         nextBrowserInstance = ++nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
                         while (!Settings.SeleniumInstances.ElementAt(nextBrowserInstance).isAvailable)
                         {
@@ -96,14 +106,13 @@ namespace Ultimate_Splinterlands_Bot_V2
                             nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
                         }
 
-                        while (!Settings.BotInstances.ElementAt(nextBotInstance).isAvailable)
+                        while (Settings.BotInstances.ElementAt(nextBotInstance).CurrentlyActive)
                         {
                             nextBotInstance++;
                             nextBotInstance = nextBotInstance >= Settings.BotInstances.Count ? 0 : nextBotInstance;
                         }
 
                         Settings.SeleniumInstances[nextBrowserInstance] = (Settings.SeleniumInstances[nextBrowserInstance].driver, false);
-                        Settings.BotInstances[nextBotInstance] = (Settings.BotInstances[nextBotInstance].botInstance, false);
 
                         // create local copies for thread safety
                         int botInstance = nextBotInstance;
@@ -111,11 +120,11 @@ namespace Ultimate_Splinterlands_Bot_V2
 
                         instances.Add(Task.Run(async () =>
                         {
-                            sleepInfo[nextBotInstance] = await Settings.BotInstances[botInstance].botInstance.DoBattleAsync(browserInstance, logoutNeeded, botInstance);
+                            var result = await Settings.BotInstances[botInstance].DoBattleAsync(browserInstance, logoutNeeded, botInstance);
                             lock (_TaskLock)
                             {
+                                sleepInfo[nextBotInstance] = result;
                                 Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
-                                Settings.BotInstances[botInstance] = (Settings.BotInstances[botInstance].botInstance, true);
                             }
                         }));
                     }
@@ -212,7 +221,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                 $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
-                $"REQUEST_NEW_QUEST: {Settings.BadQuests}{Environment.NewLine}" +
+                $"REQUEST_NEW_QUEST: {String.Join(",", Settings.BadQuests )}{Environment.NewLine}" +
                 $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
                 $"ECR_THRESHOLD: {Settings.ECRThreshold}{Environment.NewLine}" +
                 $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
@@ -231,7 +240,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 return false;
             }
 
-            Settings.BotInstances = new List<(BotInstance, bool isAvailable)>();
+            Settings.BotInstances = new List<BotInstance>();
 
             int indexCounter = 0;
             foreach (string loginData in File.ReadAllLines(filePath))
@@ -243,7 +252,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 string[] temp = loginData.Split(':');
                 if (temp.Length == 2)
                 {
-                    Settings.BotInstances.Add((new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++), true));
+                    Settings.BotInstances.Add((new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++)));
                 }
             }
 
