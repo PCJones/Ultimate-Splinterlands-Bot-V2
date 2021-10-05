@@ -9,7 +9,8 @@ HEADLESS=false
 ####MAX_BROWSER_INSTANCES = MultiThreading!
 MAX_BROWSER_INSTANCES=2
 USE_API=true
-API_URL=http://splinterlandsapi.pcjones.de:8080/
+API_URL=http://splinterlandsapi2.pcjones.de:8080/
+API_URL_FALLBACK=http://splinterlandsapi.pcjones.de:8080/
 DEBUG=false
 WRITE_LOG_TO_FILE=false
 
