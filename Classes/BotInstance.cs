@@ -89,6 +89,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (SleepUntil > DateTime.Now)
                 {
                     Log.WriteToLog($"{Username}: is sleeping until {SleepUntil}");
+                    Linenotify.lineNotify($"USB V2:{Username}: is sleeping until {SleepUntil}");
                     return SleepUntil;
                 }
                 if (!Login(driver, logoutNeeded))
@@ -104,11 +105,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         Username = "";
                         Log.WriteToLog($"{Email}: { "Error reading username, will try again in 3 minutes".Pastel(Color.Red) }");
+                        Linenotify.lineNotify($"USB V2:{Email}: { "Error reading username, will try again in 3 minutes" }");
                         SleepUntil = DateTime.Now.AddMinutes(3);
                         return SleepUntil;
                     }
                     LogSummary.Account = Username;
                     Log.WriteToLog($"{Email}: Username is {Username}");
+                    Linenotify.lineNotify($"USB V2:{Email}: Username is {Username}");
                     UnknownUsername = false;
                 }
 
@@ -121,9 +124,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 LogSummary.ECR = $"{ecr} %";
                 // todo: add log with different colors in same line
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
+                Linenotify.lineNotify($"USB V2:{Username}: Current Energy Capture Rate is {(ecr >= 50 ? ecr.ToString() : ecr.ToString())}%");
                 if (ecr < Settings.ECRThreshold)
                 {
                     Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
+                    Linenotify.lineNotify($"USB V2:{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.");
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                     return SleepUntil;
                 }
@@ -134,7 +139,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 string currentRating = GetCurrentRating(driver);
                 Log.WriteToLog($"{Username}: Current Rating is: {currentRating.Pastel(Color.Yellow)}");
+                Linenotify.lineNotify($"USB V2:{Username}: Current Rating is: {currentRating}");
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest).Pastel(Color.Yellow)}");
+                Linenotify.lineNotify($"USB V2:{Username}: Quest details: {JsonConvert.SerializeObject(quest)}");
                 if (Settings.BadQuests.Contains((string)quest["splinter"]))
                 {
                     RequestNewQuest(driver, quest);
@@ -168,6 +175,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
+                    Linenotify.lineNotify($"USB V2:{Username}: API didn't find any team - Skipping Account");
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                     return SleepUntil;
                 }
@@ -184,6 +192,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             break;
                         }
                         Log.WriteToLog($"{Username}: Can't seem to find btnRumble{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
+                        Linenotify.lineNotify($"USB V2:{Username}: Can't seem to find btnRumble{Environment.NewLine}Skipping Account");
                         SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                         return SleepUntil;
                     }
@@ -201,10 +210,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 // todo: determine winner, show summary etc
                 Log.WriteToLog($"{Username}: Finished battle!");
+                Linenotify.lineNotify($"USB V2:{Username}: Finished battle!");
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: {ex}{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
+                Linenotify.lineNotify($"USB V2:{Username}There was an error, please check the bot. Skipping Account");
             }
             finally
             {
@@ -238,7 +249,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     string decWon = driver.FindElement(By.CssSelector(".player.winner span.dec-reward span")).Text;
                     logTextBattleResult = $"You won! Reward: {decWon} DEC";
                     Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
+                    Linenotify.lineNotify($"USB V2:{Username}: { logTextBattleResult }");
                     Log.WriteToLog($"{Username}: New rating is {rating} ({ ratingChange.Pastel(Color.Green) })");
+                    Linenotify.lineNotify($"USB V2:{Username}: New rating is {rating} ({ ratingChange })");
                 }
                 else
                 {
@@ -246,7 +259,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     ratingChange = driver.FindElement(By.CssSelector("section.player.loser .rating-delta")).Text;
                     logTextBattleResult = $"You lost :(";
                     Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
+                    Linenotify.lineNotify($"USB V2:{Username}: { logTextBattleResult }");
                     Log.WriteToLog($"{Username}: New rating is {rating} ({ ratingChange.Pastel(Color.Red) })");
+                    Linenotify.lineNotify($"USB V2:{Username}: New rating is {rating} ({ ratingChange })");
                     API.ReportLoss(winner, Username);
                 }
             }
@@ -256,7 +271,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 ratingChange = "+- 0";
                 logTextBattleResult = "DRAW";
                 Log.WriteToLog($"{Username}: { logTextBattleResult}");
+                Linenotify.lineNotify($"USB V2:{Username}: { logTextBattleResult}");
                 Log.WriteToLog($"{Username}: Rating has not changed ({ rating })");
+                Linenotify.lineNotify($"USB V2:{Username}: Rating has not changed ({ rating })");
             }
 
             LogSummary.Rating = $"{ rating } ({ ratingChange })";
@@ -491,6 +508,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (driver.WaitForElementShown(By.Id("claim-btn"), 1))
                 {
                     Log.WriteToLog($"{Username}: Claiming season rewards");
+                    Linenotify.lineNotify($"USB V2:{Username}: Claiming season rewards");
                     driver.ClickElementOnPage(By.Id("claim-btn"));
                     Thread.Sleep(5000);
                     WaitForLoadingBanner(driver);
@@ -501,11 +519,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Thread.Sleep(10000);
                     ClosePopups(driver);
                     Log.WriteToLog($"{Username}: Claimed season rewards", Log.LogType.Success);
+                    Linenotify.lineNotify($"USB V2:{Username}: Claimed season rewards");
                 }
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at claiming season rewards: {ex}", Log.LogType.Error);
+                Linenotify.lineNotify($"USB V2:{Username}: Error at claiming season rewards: {ex}");
             }
         }
 
@@ -518,6 +538,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     logText = "Quest reward can be claimed";
                     Log.WriteToLog($"{Username}: {logText.Pastel(Color.Green)}");
+                    Linenotify.lineNotify($"USB V2:{Username}: {logText}");
                     // short logText:
                     logText = "Quest reward available!";
                     if (!Settings.ClaimQuestReward)
@@ -526,6 +547,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                     
                     Log.WriteToLog($"{Username}: Claiming quest reward...");
+                    Linenotify.lineNotify($"USB V2:{Username}: Claiming quest reward...");
                     driver.ClickElementOnPage(By.Id("quest_claim_btn"));
                     Thread.Sleep(5000);
                     WaitForLoadingBanner(driver);
@@ -537,10 +559,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     ClosePopups(driver);
                     Thread.Sleep(1000);
                     Log.WriteToLog($"{Username}: { "Claimed quest reward".Pastel(Color.Green) }");
+                    Linenotify.lineNotify($"USB V2:{Username}: Claimed quest reward");
                 }
                 else
                 {
                     Log.WriteToLog($"{Username}: No quest reward to be claimed");
+                    Linenotify.lineNotify($"USB V2:{Username}: No quest reward to be claimed");
                     // short logText:
                     logText = "No quest reward...";
                 }
@@ -550,6 +574,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at claiming quest rewards: {ex}", Log.LogType.Error);
+                Linenotify.lineNotify($"USB V2:{Username}: Error at claiming quest rewards: {ex}");
             }
         }
 
@@ -564,6 +589,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (driver.WaitForWebsiteLoadedAndElementShown(By.Id("quest_new_btn"), 1))
                 {
                     Log.WriteToLog($"{ Username }: Quest type is { (string)quest["splinter"] } - requesting new one.");
+                    Linenotify.lineNotify($"USB V2:{ Username }: Quest type is { (string)quest["splinter"] } - requesting new one.");
 
                     driver.ClickElementOnPage(By.Id("quest_new_btn"));
                     Thread.Sleep(1500);
@@ -574,15 +600,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     ClosePopups(driver);
                     Thread.Sleep(1000);
                     Log.WriteToLog($"{Username}: {"Renewed quest!".Pastel(Color.Green)}");
+                    Linenotify.lineNotify($"USB V2:{Username}: {"Renewed quest!".Pastel(Color.Green)}");
                 }
                 else
                 {
                     Log.WriteToLog($"{Username}: { "Can't change quest".Pastel(Color.Red) }");
+                    Linenotify.lineNotify($"USB V2:{Username}: { "Can't change quest".Pastel(Color.Red) }");
                 }
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at changing quest: {ex}", Log.LogType.Error);
+                Linenotify.lineNotify($"USB V2:{Username}: Error at changing quest: {ex}");
             }
         }
 
@@ -677,6 +706,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Couldn't get Energy Capture Rate: {ex}", Log.LogType.Error);
+                Linenotify.lineNotify($"USB V2:{Username}: Couldn't get Energy Capture Rate: {ex}");
             }
             return 0;
         }
@@ -685,12 +715,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
-                var rating = driver.FindElement(By.XPath("//div[@class='league_status_panel_progress_bar_pos']//span[@class='number_text']")).GetAttribute("innerHTML");
+                var rating = driver.FindElement(By.XPath("//div[@class='progress__info']/span[@class='number_text']")).GetAttribute("innerHTML");
                 return rating;
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Couldn't get current rating: {ex}", Log.LogType.Warning);
+                Linenotify.lineNotify($"USB V2:{Username}: Couldn't get current rating: {ex}");
             }
             return "unknown";
         }
@@ -712,6 +743,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         if (usernameIngame == Username)
                         {
                             Log.WriteToLog($"{Username}: Already logged in!");
+                            Linenotify.lineNotify($"USB V2:{Username}: Already logged in!");
                             return true;
                         }
                     }
@@ -740,6 +772,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             if (driver.FindElements(By.ClassName("loading")).Count > 0)
             {
                 Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Splinterlands not loading, trying to reload...");
+                Linenotify.lineNotify($"USB V2:{ (UnknownUsername ? Email : Username) }: Splinterlands not loading, trying to reload...");
                 Login(driver, logoutNeeded);
             }
             driver.ClickElementOnPage(By.Name("loginBtn"), 1);
@@ -747,10 +780,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_text"), 60))
             {
                 Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Could not log in - skipping account.", Log.LogType.Error);
+                Linenotify.lineNotify($"USB V2:{ (UnknownUsername ? Email : Username) }:  Could not log in - skipping account."); //dee
                 return false;
             }
 
             Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Login successful");
+            Linenotify.lineNotify($"USB V2:{ (UnknownUsername ? Email : Username) }: Login successful"); //dee
             return true;
         }
 
