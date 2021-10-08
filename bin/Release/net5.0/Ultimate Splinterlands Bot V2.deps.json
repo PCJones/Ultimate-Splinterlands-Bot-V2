@@ -42,6 +42,15 @@
             "fileVersion": "3.141.0.0"
           }
         }
+      },
+      "Splinterlands Rental Bot/1.0.0": {
+        "dependencies": {
+          "Pastel": "2.1.0",
+          "Selenium.WebDriver": "3.141.0"
+        },
+        "runtime": {
+          "Splinterlands Rental Bot.dll": {}
+        }
       }
     }
   },
@@ -71,6 +80,11 @@
       "sha512": "sha512-wPqzXO3f79DzqauTZSzLMKiaBCN0Z2Mv7KvWP+hnV6EL88zh/pJJnFtdIR1X5wa3hsTOpF/bBJs45rz7kArsiA==",
       "path": "selenium.webdriver/3.141.0",
       "hashPath": "selenium.webdriver.3.141.0.nupkg.sha512"
+    },
+    "Splinterlands Rental Bot/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }

@@ -8,6 +8,7 @@ using Ultimate_Splinterlands_Bot_V2.Classes;
 using System.Threading;
 using Pastel;
 using System.Drawing;
+using System.Reflection;
 
 namespace Ultimate_Splinterlands_Bot_V2
 {
@@ -15,8 +16,7 @@ namespace Ultimate_Splinterlands_Bot_V2
     {
         private static object _TaskLock = new object();
         static void Main(string[] args)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 handler = new ConsoleEventDelegate(ConsoleEventCallback);
                 SetConsoleCtrlHandler(handler, true);
@@ -209,6 +209,24 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "CHROME_NO_SANDBOX":
                         Settings.ChromeNoSandbox = Boolean.Parse(temp[1]);
                         break;
+                    case "RENTAL_BOT_DLL_PATH":
+                        Settings.RentalBotDllPath = temp[1];
+                        break;
+                    case "RENTAL_BOT":
+                        if (Boolean.Parse(temp[1]))
+                        {
+                            SetupRentalBot();
+                        }
+                        break;
+                    case "RENT_DAYS":
+                        Settings.DaysToRent = Convert.ToInt32(temp[1]);
+                        break;
+                    case "RENT_POWER":
+                        Settings.DesiredRentalPower = Convert.ToInt32(temp[1]);
+                        break;
+                    case "RENT_MAX_PRICE_PER_500":
+                        Settings.MaxRentalPricePer500 = Convert.ToDecimal(temp[1], System.Globalization.CultureInfo.InvariantCulture);
+                        break;
                     default:
                         break;
                 }
@@ -230,6 +248,19 @@ namespace Ultimate_Splinterlands_Bot_V2
             return true;
         }
 
+        static void SetupRentalBot()
+        {
+            // Assuming moduleFileName contains full or valid relative path to assembly    
+            var moduleInstance = Activator.CreateInstanceFrom(Settings.RentalBotDllPath, "Splinterlands_Rental_Bot.RentalBot");
+            Settings.RentalBot = moduleInstance;
+            MethodInfo mi = moduleInstance.Unwrap().GetType().GetMethod("Setup");
+            // Assuming the method returns a boolean and accepts a single string parameter
+            mi.Invoke(moduleInstance.Unwrap(), new object[] { Settings._httpClient });
+            Settings.RentalBotMethodCheckRentals = moduleInstance.Unwrap().GetType().GetMethod("CheckRentals");
+            Settings.RentalBotMethodIsAvailable = moduleInstance.Unwrap().GetType().GetMethod("IsAvailable");
+            Settings.RentalBotMethodSetActive = moduleInstance.Unwrap().GetType().GetMethod("SetActive");
+            Settings.RentalBotActivated = true;
+        }
         static bool ReadAccounts()
         {
             Log.WriteToLog("Reading accounts.txt...");
@@ -280,7 +311,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             Log.WriteToLog($"Creating {Settings.MaxBrowserInstances} browser instances...");
             for (int i = 0; i < Settings.MaxBrowserInstances; i++)
             {
-                Settings.SeleniumInstances.Add((SeleniumAddons.CreateSeleniumInstance(), true));
+                Settings.SeleniumInstances.Add((SeleniumAddons.CreateSeleniumInstance(disableImages: false), true));
                 Thread.Sleep(1000);
             }
             Log.WriteToLog("Browser instances created!", Log.LogType.Success);
@@ -341,7 +372,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Settings.LogSummaryList = new List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)>();
 
-            API._httpClient.Timeout = new TimeSpan(0, 3, 0);
+            Settings._httpClient.Timeout = new TimeSpan(0, 3, 0);
         }
 
         static void SetStartupPath()
