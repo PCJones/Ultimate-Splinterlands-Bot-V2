@@ -86,7 +86,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
                             if (sleepUntil > DateTime.Now)
                             {
-                                Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil}");
+                                Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil.ToString().Pastel(Color.Red)}");
                                 sleepTime = (int)(sleepUntil - DateTime.Now).TotalMilliseconds;
                             }
                         }
@@ -258,7 +258,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             if (Settings.BotInstances.Count > 0)
             {
-                Log.WriteToLog($"Loaded {Settings.BotInstances.Count} accounts!", Log.LogType.Success);
+                Log.WriteToLog($"Loaded {Settings.BotInstances.Count.ToString().Pastel(Color.Red)} accounts!", Log.LogType.Success);
                 return true;
             }
             else
@@ -272,12 +272,12 @@ namespace Ultimate_Splinterlands_Bot_V2
         {
             if (Settings.MaxBrowserInstances > Settings.BotInstances.Count)
             {
-                Log.WriteToLog($"MAX_BROWSER_INSTANCES is larger than total number of accounts, reducing it to {Settings.BotInstances.Count}", Log.LogType.Warning);
+                Log.WriteToLog($"MAX_BROWSER_INSTANCES is larger than total number of accounts, reducing it to {Settings.BotInstances.Count.ToString().Pastel(Color.Red)}", Log.LogType.Warning);
                 Settings.MaxBrowserInstances = Settings.BotInstances.Count;
             }
 
             Settings.SeleniumInstances = new List<(OpenQA.Selenium.IWebDriver driver, bool isAvailable)>();
-            Log.WriteToLog($"Creating {Settings.MaxBrowserInstances} browser instances...");
+            Log.WriteToLog($"Creating {Settings.MaxBrowserInstances.ToString().Pastel(Color.Red)} browser instances...");
             for (int i = 0; i < Settings.MaxBrowserInstances; i++)
             {
                 Settings.SeleniumInstances.Add((SeleniumAddons.CreateSeleniumInstance(), true));
