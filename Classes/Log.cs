@@ -105,7 +105,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             WriteToLog("Ultimate Splinderlands Bot V2 by PC Jones");
             WriteToLog("Join the telegram group https://t.me/ultimatesplinterlandsbot");
             WriteToLog("Join the discord server https://discord.gg/hwSr7KNGs9");
-            WriteToLog("               Close this window to stop the bot");
             WriteToLog("-------------------------------------------------------------");
         }
     }

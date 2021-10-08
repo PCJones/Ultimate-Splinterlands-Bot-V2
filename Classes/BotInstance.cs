@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -115,11 +116,35 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     UnknownUsername = false;
                 }
 
+                ClosePopups(driver);
+                NavigateToBattlePage(driver);
+
+                
+                if (Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), new object[] { })))
+                {
+                    Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { true });
+                    try
+                    {
+                        Log.WriteToLog($"{Username}: Starting rental bot!");
+                        Settings.RentalBotMethodCheckRentals.Invoke(Settings.RentalBot.Unwrap(), new object[] { driver, Settings.MaxRentalPricePer500, Settings.DesiredRentalPower, Settings.DaysToRent, Username });
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteToLog($"{Username}: Error at rental bot: {ex}", Log.LogType.CriticalError);
+                    }
+                    finally
+                    {
+                        Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { false });
+                        ClosePopups(driver);
+                        NavigateToBattlePage(driver);
+                        ClosePopups(driver);
+                    }
+                }
+
                 JToken quest = await API.GetPlayerQuestAsync(Username);
                 Card[] cards = await API.GetPlayerCardsAsync(Username);
                 Log.WriteToLog($"{Username}: Deck size: {cards.Length - 1} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
-                ClosePopups(driver);
-                NavigateToBattlePage(driver);
+
                 double ecr = GetECR(driver);
                 LogSummary.ECR = $"{ecr} %";
                 // todo: add log with different colors in same line

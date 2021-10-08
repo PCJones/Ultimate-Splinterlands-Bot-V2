@@ -140,12 +140,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             return Settings.PhantomCards.Select(x => new Card(x, "1", false)).ToArray();
         }
-
-        public readonly static HttpClient _httpClient = new HttpClient();
         private async static Task<string> DownloadPageAsync(string url)
         {
             // Use static HttpClient to avoid exhausting system resources for network connections.
-            var result = await _httpClient.GetAsync(url);
+            var result = await Settings._httpClient.GetAsync(url);
             var response = await result.Content.ReadAsStringAsync();
             // Write status code.
             return response;
@@ -155,7 +153,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             using (var content = new StringContent(JsonConvert.SerializeObject(json), Encoding.UTF8, "application/json"))
             {
-                HttpResponseMessage result = await _httpClient.PostAsync(url, content);
+                HttpResponseMessage result = await Settings._httpClient.PostAsync(url, content);
                 if (result.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     string returnValue = await result.Content.ReadAsStringAsync();
