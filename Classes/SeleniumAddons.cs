@@ -19,7 +19,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
     {
         public static object WebDriver { get; private set; }
 
-        public static IWebDriver CreateSeleniumInstance(bool fireFox = false, int timeOut = 60, string userAgent = "")
+        public static IWebDriver CreateSeleniumInstance(bool fireFox = false, int timeOut = 120, bool disableImages = false, string userAgent = "")
         {
             IWebDriver driver = null;
             while (driver == null)
@@ -40,7 +40,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                         FirefoxDriverService service = FirefoxDriverService.CreateDefaultService();
                         service.FirefoxBinaryPath = @"C:\Program Files (x86)\Mozilla Firefox\firefox.exe";
-                        TimeSpan timeout = new TimeSpan(0, 0, 60);
+                        TimeSpan timeout = new TimeSpan(0, 0, timeOut);
                         driver = new FirefoxDriver(service, options, timeout);
                     }
                     else
@@ -68,6 +68,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         chromeOptions.AddArgument("--disable-site-isolation-trials");
                         chromeOptions.AddArgument("--mute-audio");
                         chromeOptions.AddArgument("--disable-notifications");
+                        if (disableImages)
+                        {
+                            chromeOptions.AddArgument("--blink-settings=imagesEnabled=false");
+                        }
                         //chromeOptions.AddArgument("--window-size=1920,1080");
                         chromeOptions.AddArgument("--window-size=1800,1500");
                         var chromeDriverService = ChromeDriverService.CreateDefaultService(Settings.StartupPath);

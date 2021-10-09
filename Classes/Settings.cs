@@ -3,6 +3,9 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Runtime.Remoting;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,10 +33,22 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static int ECRThreshold = 75;
         public static string[] BadQuests = new string[0];
 
+        public static string RentalBotDllPath = "";
+        public static bool RentalBotActivated = false;
+        public static int DaysToRent = 0;
+        public static int DesiredRentalPower = 0;
+        public static decimal MaxRentalPricePer500 = 0;
+        public static ObjectHandle RentalBot = null;
+        public static MethodInfo RentalBotMethodCheckRentals = null;
+        public static MethodInfo RentalBotMethodIsAvailable = null;
+        public static MethodInfo RentalBotMethodSetActive = null;
+
         public static List<BotInstance> BotInstances { get; set; }
         public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }
         public static List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)> LogSummaryList { get; set; }
 
+        public readonly static HttpClient _httpClient = new HttpClient();
+        
         public static JArray CardsDetails;
         public static Dictionary<string, string> QuestTypes;
         public static Dictionary<string, string> Summoners;
