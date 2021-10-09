@@ -89,7 +89,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 LogSummary.Reset();
                 if (SleepUntil > DateTime.Now)
                 {
-                    Log.WriteToLog($"{Username}: is sleeping until {SleepUntil}");
+                    Log.WriteToLog($"{Username}: is sleeping until {SleepUntil.ToString().Pastel(Color.Red)}");
                     return SleepUntil;
                 }
                 if (!Login(driver, logoutNeeded))
@@ -109,7 +109,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         return SleepUntil;
                     }
                     LogSummary.Account = Username;
-                    Log.WriteToLog($"{Email}: Username is {Username}");
+                    Log.WriteToLog($"{Email}: Username is {Username.Pastel(Color.Yellow)}");
                     UnknownUsername = false;
                 }
 
@@ -140,7 +140,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 JToken quest = await API.GetPlayerQuestAsync(Username);
                 Card[] cards = await API.GetPlayerCardsAsync(Username);
-                Log.WriteToLog($"{Username}: Deck size: {cards.Length - 1} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
+                Log.WriteToLog($"{Username}: Deck size: {(cards.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
 
                 double ecr = GetECR(driver);
                 LogSummary.ECR = $"{ecr} %";
@@ -736,7 +736,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         string usernameIngame = driver.FindElement(By.ClassName("bio__name__display")).Text.Trim().ToLower();
                         if (usernameIngame == Username)
                         {
-                            Log.WriteToLog($"{Username}: Already logged in!");
+                            Log.WriteToLog($"{Username}: {"Already logged in!".Pastel(Color.Yellow)}");
                             return true;
                         }
                     }
@@ -775,7 +775,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 return false;
             }
 
-            Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Login successful");
+            Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Login successful", Log.LogType.Success);
             return true;
         }
 
