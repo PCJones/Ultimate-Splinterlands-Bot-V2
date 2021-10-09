@@ -66,7 +66,6 @@ namespace Ultimate_Splinterlands_Bot_V2
             {
                 while (instances.Count < Settings.MaxBrowserInstances && !token.IsCancellationRequested)
                 {
-                    int sleepTime = 0;
                     lock (_TaskLock)
                     {
                         if (++nextBotInstance >= Settings.BotInstances.Count)
@@ -87,14 +86,11 @@ namespace Ultimate_Splinterlands_Bot_V2
                             if (sleepUntil > DateTime.Now)
                             {
                                 Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil}");
-                                sleepTime = (int)(sleepUntil - DateTime.Now).TotalMilliseconds;
+                                int sleepTime = (int)(sleepUntil - DateTime.Now).TotalMilliseconds;
+                                instances.Add(Task.Delay(sleepTime));
+                                break;
                             }
                         }
-                    }
-
-                    if (sleepTime != 0)
-                    {
-                        await Task.Delay(sleepTime);
                     }
 
                     lock (_TaskLock)
@@ -250,11 +246,10 @@ namespace Ultimate_Splinterlands_Bot_V2
 
         static void SetupRentalBot()
         {
-            // Assuming moduleFileName contains full or valid relative path to assembly    
             var moduleInstance = Activator.CreateInstanceFrom(Settings.RentalBotDllPath, "Splinterlands_Rental_Bot.RentalBot");
             Settings.RentalBot = moduleInstance;
             MethodInfo mi = moduleInstance.Unwrap().GetType().GetMethod("Setup");
-            // Assuming the method returns a boolean and accepts a single string parameter
+            
             mi.Invoke(moduleInstance.Unwrap(), new object[] { Settings._httpClient });
             Settings.RentalBotMethodCheckRentals = moduleInstance.Unwrap().GetType().GetMethod("CheckRentals");
             Settings.RentalBotMethodIsAvailable = moduleInstance.Unwrap().GetType().GetMethod("IsAvailable");
