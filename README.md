@@ -15,7 +15,7 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - Install https://dotnet.microsoft.com/download/dotnet/5.0/runtime (for console applications)
 - Install google chrome
 - Download chromedriver https://chromedriver.chromium.org/downloads and put the .exe (not .zip) in bot main folder
-- Setup config.txt and accounts.txt in data folder
+- Setup config.txt and accounts.txt in config folder
 
 ## How to install (Linux / MacOS)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=kTS0FdAei7c)
