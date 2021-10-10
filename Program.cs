@@ -178,6 +178,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "CLAIM_QUEST_REWARD":
                         Settings.ClaimQuestReward = Boolean.Parse(temp[1]);
                         break;
+                    case "DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE":
+                        Settings.DontClaimQuestNearHigherLeague = Boolean.Parse(temp[1]);
+                        break;
                     case "REQUEST_NEW_QUEST":
                         Settings.BadQuests = temp[1].Split(',');
                         break;

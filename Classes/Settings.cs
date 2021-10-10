@@ -29,6 +29,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
         public static bool ClaimSeasonReward = false;
+        public static bool DontClaimQuestNearHigherLeague = false;
         public static int SleepBetweenBattles = 30;
         public static int ECRThreshold = 75;
         public static string[] BadQuests = new string[0];

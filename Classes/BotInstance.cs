@@ -166,7 +166,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     RequestNewQuest(driver, quest);
                 }
-                ClaimQuestReward(driver, quest);
+                ClaimQuestReward(driver, quest, currentRating);
 
                 ClosePopups(driver);
 
@@ -536,7 +536,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private void ClaimQuestReward(IWebDriver driver, JToken quest)
+        private void ClaimQuestReward(IWebDriver driver, JToken quest, string currentRating)
         {
             try
             {
@@ -551,7 +551,28 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         return;
                     }
-                    
+                    if (Settings.DontClaimQuestNearHigherLeague)
+                    {
+                        if (currentRating == "unknown")
+                        {
+                            return;
+                        }
+                        int ratingMinus100 = Convert.ToInt32(currentRating.Replace(".", "").Replace(",", "")) - 100;
+                        bool waitForHigherLeague = ratingMinus100 is >= 300 and < 400 ||
+                            ratingMinus100 is >= 300 and < 400 ||
+                            ratingMinus100 is >= 550 and < 700 ||
+                            ratingMinus100 is >= 800 and < 1000 ||
+                            ratingMinus100 is >= 1200 and < 1300 ||
+                            ratingMinus100 is >= 1500 and < 1600 ||
+                            ratingMinus100 is >= 1800 and < 1900; // gold 3
+
+                        if (waitForHigherLeague)
+                        {
+                            Log.WriteToLog($"{Username}: Don't claim quest - wait for higher league");
+                            return;
+                        }
+                    }
+
                     Log.WriteToLog($"{Username}: Claiming quest reward...");
                     driver.ClickElementOnPage(By.Id("quest_claim_btn"));
                     Thread.Sleep(5000);
