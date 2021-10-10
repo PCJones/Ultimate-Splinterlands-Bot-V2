@@ -278,7 +278,11 @@ namespace Ultimate_Splinterlands_Bot_V2
                 string[] temp = loginData.Split(':');
                 if (temp.Length == 2)
                 {
-                    Settings.BotInstances.Add((new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++)));
+                    Settings.BotInstances.Add(new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++));
+                }
+                else if (temp.Length == 3)
+                {
+                    Settings.BotInstances.Add(new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++, key: temp[2].Trim()));
                 }
             }
 

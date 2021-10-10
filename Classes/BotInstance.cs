@@ -44,6 +44,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public string Username { get; set; }
         public string Email { get; init; }
         public string Password { get; init; }
+        public string Key { get; init; } // only needed for plugins, not used by normal bot
         public bool CurrentlyActive { get; private set; }
 
         private object _activeLock;
@@ -51,7 +52,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private bool UnknownUsername;
         private LogSummary LogSummary;
 
-        public BotInstance(string username, string password, int index)
+        public BotInstance(string username, string password, int index, string key = "")
         {
             if (username.Contains("@"))
             {
@@ -66,6 +67,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
 
             Password = password;
+            Key = key;
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * - 1);
             LogSummary = new LogSummary(index, username);
             _activeLock = new object();
@@ -123,7 +125,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     try
                     {
                         Log.WriteToLog($"{Username}: Starting rental bot!");
-                        Settings.RentalBotMethodCheckRentals.Invoke(Settings.RentalBot.Unwrap(), new object[] { driver, Settings.MaxRentalPricePer500, Settings.DesiredRentalPower, Settings.DaysToRent, Username });
+                        Settings.RentalBotMethodCheckRentals.Invoke(Settings.RentalBot.Unwrap(), new object[] { driver, Settings.MaxRentalPricePer500, Settings.DesiredRentalPower, Settings.DaysToRent, Username, Key });
                     }
                     catch (Exception ex)
                     {

@@ -75,7 +75,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         //chromeOptions.AddArgument("--window-size=1920,1080");
                         chromeOptions.AddArgument("--window-size=1800,1500");
                         var chromeDriverService = ChromeDriverService.CreateDefaultService(Settings.StartupPath);
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !Settings.DebugMode)
                         {
                             chromeDriverService.HideCommandPromptWindow = true;
                         }
