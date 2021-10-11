@@ -26,3 +26,13 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 [Discord](https://discord.gg/hwSr7KNGs9)
 
 [Telegram](https://t.me/ultimatesplinterlandsbot) 
+
+# Donations
+
+In case you want to donate to me for creating this bot, I would be very happy!
+
+- DEC/SPS into the game to the player **pcjones** 
+- Bitcoin 3KU85k1HFTqCC4geQz3XUFk84R6uekuzD8
+- Ethereum 0xcFE8c78F07e0190EBdD9077cF9d9E3A8DCED8d91 
+- WAX to account **lshru.wam** (please copy the name)
+- Text me on Discord or Telegram for PayPal or any other crypto
