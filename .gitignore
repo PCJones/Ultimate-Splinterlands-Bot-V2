@@ -10,6 +10,8 @@ accounts.txt
 log.txt
 chromedriver.exe
 Splinterlands Rental Bot.*
+compile.bat
+*.zip
 
 # User-specific files
 *.rsuser

@@ -155,11 +155,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return SleepUntil;
                 }
 
+                string currentRating = GetCurrentRating(driver);
+                if (Settings.AdvanceLeague)
+                {
+                    AdvanceLeague(driver, currentRating);
+                }
                 if (Settings.ClaimSeasonReward)
                 {
                     ClaimSeasonRewards(driver);
                 }
-                string currentRating = GetCurrentRating(driver);
                 Log.WriteToLog($"{Username}: Current Rating is: {currentRating.Pastel(Color.Yellow)}");
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest).Pastel(Color.Yellow)}");
                 if (Settings.BadQuests.Contains((string)quest["splinter"]))
@@ -248,6 +252,32 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return SleepUntil;
         }
 
+        private void AdvanceLeague(IWebDriver driver, string currentRating)
+        {
+            try
+            {
+                if (!Settings.AdvanceLeague || currentRating == "unknown" || Convert.ToInt32(currentRating.Replace(",", "").Replace(".", "")) < 1000)
+                {
+                    return;
+                }
+                if (driver.FindElement(By.ClassName("bh_advance_btn")).Displayed)
+                {
+                    Log.WriteToLog($"{Username}: { "Advancing to higher league!".Pastel(Color.Green)}");
+                    driver.ExecuteJavaScript("SM.AdvanceLeaderboard(true);");
+                    Thread.Sleep(3000);
+                    driver.SwitchTo().Alert().Accept();
+                    Thread.Sleep(5000);
+                    WaitForLoadingBanner(driver);
+                    Thread.Sleep(5000);
+                    ClosePopups(driver);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at advancing league: {ex}");
+            }
+        }
         private void GetBattleResult(IWebDriver driver, string oldRating)
         {
             //driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("section.player.winner .bio__name__display"));
@@ -315,7 +345,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Thread.Sleep(1000);
                 if (GetSummonerColor(summonerID) == "Gold")
                 {
-                    string colorToPlay = "";
+                    string colorToPlay = "fire";
                     if (monster1 != "")
                     {
                         string mobColor = GetSummonerColor(monster1);
@@ -557,14 +587,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         {
                             return;
                         }
-                        int ratingMinus100 = Convert.ToInt32(currentRating.Replace(".", "").Replace(",", "")) - 100;
-                        bool waitForHigherLeague = ratingMinus100 is >= 300 and < 400 ||
-                            ratingMinus100 is >= 300 and < 400 ||
-                            ratingMinus100 is >= 550 and < 700 ||
-                            ratingMinus100 is >= 800 and < 1000 ||
-                            ratingMinus100 is >= 1200 and < 1300 ||
-                            ratingMinus100 is >= 1500 and < 1600 ||
-                            ratingMinus100 is >= 1800 and < 1900; // gold 3
+                        // todo: check if league can be reached
+                        int rating = Convert.ToInt32(currentRating.Replace(".", "").Replace(",", ""));
+                        int power = (int)Convert.ToDecimal(driver.FindElement(By.CssSelector("div#power_progress div.progress__info span.number_text")).Text, CultureInfo.InvariantCulture);
+                        bool waitForHigherLeague = (rating is >= 300 and < 400) && (power is >= 1000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 1000)) || // bronze 2
+                            (rating is >= 550 and < 700) && (power is >= 5000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 5000)) || // bronze 1 
+                            (rating is >= 840 and < 1000) && (power is >= 15000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 15000)) || // silver 3
+                            (rating is >= 1200 and < 1300) && (power is >= 40000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 40000)) || // silver 2
+                            (rating is >= 1500 and < 1600) && (power is >= 70000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 70000)) || // silver 1
+                            (rating is >= 1800 and < 1900) && (power is >= 100000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 100000)); // gold 
 
                         if (waitForHigherLeague)
                         {
