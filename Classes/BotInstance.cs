@@ -44,6 +44,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public string Username { get; set; }
         public string Email { get; init; }
         public string Password { get; init; }
+        public string Key { get; init; } // only needed for plugins, not used by normal bot
         public bool CurrentlyActive { get; private set; }
 
         private object _activeLock;
@@ -51,7 +52,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private bool UnknownUsername;
         private LogSummary LogSummary;
 
-        public BotInstance(string username, string password, int index)
+        public BotInstance(string username, string password, int index, string key = "")
         {
             if (username.Contains("@"))
             {
@@ -66,6 +67,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
 
             Password = password;
+            Key = key;
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * - 1);
             LogSummary = new LogSummary(index, username);
             _activeLock = new object();
@@ -89,8 +91,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 LogSummary.Reset();
                 if (SleepUntil > DateTime.Now)
                 {
-                    Log.WriteToLog($"{Username}: is sleeping until {SleepUntil}");
-                    Linenotify.lineNotify($"USB V2:{Username}: is sleeping until {SleepUntil}");
+
+                    Log.WriteToLog($"{Username}: is sleeping until {SleepUntil.ToString().Pastel(Color.Red)}");
+                    Linenotify.lineNotify($"USB V2:{Username}: is sleeping until {SleepUntil}");     
+
                     return SleepUntil;
                 }
                 if (!Login(driver, logoutNeeded))
@@ -111,8 +115,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         return SleepUntil;
                     }
                     LogSummary.Account = Username;
-                    Log.WriteToLog($"{Email}: Username is {Username}");
+
+                    Log.WriteToLog($"{Email}: Username is {Username.Pastel(Color.Yellow)}");
                     Linenotify.lineNotify($"USB V2:{Email}: Username is {Username}");
+
                     UnknownUsername = false;
                 }
 
@@ -126,7 +132,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     try
                     {
                         Log.WriteToLog($"{Username}: Starting rental bot!");
-                        Settings.RentalBotMethodCheckRentals.Invoke(Settings.RentalBot.Unwrap(), new object[] { driver, Settings.MaxRentalPricePer500, Settings.DesiredRentalPower, Settings.DaysToRent, Username });
+                        Settings.RentalBotMethodCheckRentals.Invoke(Settings.RentalBot.Unwrap(), new object[] { driver, Settings.MaxRentalPricePer500, Settings.DesiredRentalPower, Settings.DaysToRent, Username, Key });
                     }
                     catch (Exception ex)
                     {
@@ -143,7 +149,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 JToken quest = await API.GetPlayerQuestAsync(Username);
                 Card[] cards = await API.GetPlayerCardsAsync(Username);
-                Log.WriteToLog($"{Username}: Deck size: {cards.Length - 1} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
+                Log.WriteToLog($"{Username}: Deck size: {(cards.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
 
                 double ecr = GetECR(driver);
                 LogSummary.ECR = $"{ecr} %";
@@ -158,11 +164,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return SleepUntil;
                 }
 
+                string currentRating = GetCurrentRating(driver);
+                if (Settings.AdvanceLeague)
+                {
+                    AdvanceLeague(driver, currentRating);
+                }
                 if (Settings.ClaimSeasonReward)
                 {
                     ClaimSeasonRewards(driver);
                 }
-                string currentRating = GetCurrentRating(driver);
                 Log.WriteToLog($"{Username}: Current Rating is: {currentRating.Pastel(Color.Yellow)}");
                 Linenotify.lineNotify($"USB V2:{Username}: Current Rating is: {currentRating}");
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest).Pastel(Color.Yellow)}");
@@ -171,7 +181,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     RequestNewQuest(driver, quest);
                 }
-                ClaimQuestReward(driver, quest);
+                ClaimQuestReward(driver, quest, currentRating);
 
                 ClosePopups(driver);
 
@@ -257,6 +267,32 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return SleepUntil;
         }
 
+        private void AdvanceLeague(IWebDriver driver, string currentRating)
+        {
+            try
+            {
+                if (!Settings.AdvanceLeague || currentRating == "unknown" || Convert.ToInt32(currentRating.Replace(",", "").Replace(".", "")) < 1000)
+                {
+                    return;
+                }
+                if (driver.FindElement(By.ClassName("bh_advance_btn")).Displayed)
+                {
+                    Log.WriteToLog($"{Username}: { "Advancing to higher league!".Pastel(Color.Green)}");
+                    driver.ExecuteJavaScript("SM.AdvanceLeaderboard(true);");
+                    Thread.Sleep(3000);
+                    driver.SwitchTo().Alert().Accept();
+                    Thread.Sleep(5000);
+                    WaitForLoadingBanner(driver);
+                    Thread.Sleep(5000);
+                    ClosePopups(driver);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at advancing league: {ex}");
+            }
+        }
         private void GetBattleResult(IWebDriver driver, string oldRating)
         {
             //driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("section.player.winner .bio__name__display"));
@@ -330,7 +366,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Thread.Sleep(1000);
                 if (GetSummonerColor(summonerID) == "Gold")
                 {
-                    string colorToPlay = "";
+                    string colorToPlay = "fire";
                     if (monster1 != "")
                     {
                         string mobColor = GetSummonerColor(monster1);
@@ -554,7 +590,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private void ClaimQuestReward(IWebDriver driver, JToken quest)
+        private void ClaimQuestReward(IWebDriver driver, JToken quest, string currentRating)
         {
             try
             {
@@ -570,7 +606,29 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         return;
                     }
-                    
+                    if (Settings.DontClaimQuestNearHigherLeague)
+                    {
+                        if (currentRating == "unknown")
+                        {
+                            return;
+                        }
+                        // todo: check if league can be reached
+                        int rating = Convert.ToInt32(currentRating.Replace(".", "").Replace(",", ""));
+                        int power = (int)Convert.ToDecimal(driver.FindElement(By.CssSelector("div#power_progress div.progress__info span.number_text")).Text, CultureInfo.InvariantCulture);
+                        bool waitForHigherLeague = (rating is >= 300 and < 400) && (power is >= 1000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 1000)) || // bronze 2
+                            (rating is >= 550 and < 700) && (power is >= 5000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 5000)) || // bronze 1 
+                            (rating is >= 840 and < 1000) && (power is >= 15000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 15000)) || // silver 3
+                            (rating is >= 1200 and < 1300) && (power is >= 40000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 40000)) || // silver 2
+                            (rating is >= 1500 and < 1600) && (power is >= 70000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 70000)) || // silver 1
+                            (rating is >= 1800 and < 1900) && (power is >= 100000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 100000)); // gold 
+
+                        if (waitForHigherLeague)
+                        {
+                            Log.WriteToLog($"{Username}: Don't claim quest - wait for higher league");
+                            return;
+                        }
+                    }
+
                     Log.WriteToLog($"{Username}: Claiming quest reward...");
                     Linenotify.lineNotify($"USB V2:{Username}: Claiming quest reward...");
                     driver.ClickElementOnPage(By.Id("quest_claim_btn"));
@@ -767,7 +825,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         string usernameIngame = driver.FindElement(By.ClassName("bio__name__display")).Text.Trim().ToLower();
                         if (usernameIngame == Username)
                         {
-                            Log.WriteToLog($"{Username}: Already logged in!");
+                            Log.WriteToLog($"{Username}: {"Already logged in!".Pastel(Color.Yellow)}");
                             Linenotify.lineNotify($"USB V2:{Username}: Already logged in!");
                             return true;
                         }
@@ -809,7 +867,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 return false;
             }
 
-            Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Login successful");
+            Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Login successful", Log.LogType.Success);
             Linenotify.lineNotify($"USB V2:{ (UnknownUsername ? Email : Username) }: Login successful"); //dee
             return true;
         }
