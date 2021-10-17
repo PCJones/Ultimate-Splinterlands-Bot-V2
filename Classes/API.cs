@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Pastel;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -31,19 +32,27 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 );
 
                 string APIResponse = await PostJSONToApi(matchDetails, $"{Settings.APIUrl}get_team/",  username);
+                Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(System.Drawing.Color.Yellow) }");
+
                 if (APIResponse.Contains("api limit reached"))
                 {
-                    Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
-                    System.Threading.Thread.Sleep(25000);
-                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
+                    if (APIResponse.Contains("overload"))
+                    {
+                        Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
+                        System.Threading.Thread.Sleep(25000);
+                        return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
+                    }
+                    else
+                    {
+                        Log.WriteToLog($"{username}: API Rate Limit reached! Waiting until no longer blocked...", Log.LogType.Warning);
+                        await CheckRateLimitLoopAsync(username);
+                    }
                 }
                 if (APIResponse == null || APIResponse.Length < 5)
                 {
                     Log.WriteToLog($"{username}: API Error: Response was empty", Log.LogType.CriticalError);
                     return null;
                 }
-
-                Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(System.Drawing.Color.Yellow) }");
 
                 return JToken.Parse(APIResponse);
             }
@@ -162,6 +171,45 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{username}: Failed to POST data to API: ({result.StatusCode})");
             }
             return null;
+        }
+
+        public async static Task CheckRateLimitLoopAsync(string username)
+        {
+            bool alreadyChecking = false;
+            lock (Settings.RateLimitedLock)
+            {
+                if (Settings.RateLimited)
+                {
+                    alreadyChecking = true;
+                }
+                else
+                {
+                    Settings.RateLimited = true;
+                }
+            }
+
+            if (alreadyChecking)
+            {
+                while (Settings.RateLimited)
+                {
+                    await Task.Delay(20000);
+                }
+            }
+            else
+            {
+                string APIResponse = "rate limit";
+                do
+                {
+                    await Task.Delay(80000);
+                    APIResponse = await DownloadPageAsync($"{Settings.APIUrl}rate_limited/");
+                    Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }");
+                } while (APIResponse.Contains("rate limit"));
+                lock (Settings.RateLimitedLock)
+                {
+                    Settings.RateLimited = false;
+                    Log.WriteToLog($"{username}: { "No longer rate limited!".Pastel(Color.Green) }");
+                }
+            }
         }
     }
 }

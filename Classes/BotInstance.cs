@@ -144,17 +144,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Card[] cards = await API.GetPlayerCardsAsync(Username);
                 Log.WriteToLog($"{Username}: Deck size: {(cards.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
 
-                double ecr = GetECR(driver);
-                LogSummary.ECR = $"{ecr} %";
-                // todo: add log with different colors in same line
-                Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
-                if (ecr < Settings.ECRThreshold)
-                {
-                    Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
-                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
-                    return SleepUntil;
-                }
-
                 string currentRating = GetCurrentRating(driver);
                 if (Settings.AdvanceLeague)
                 {
@@ -171,6 +160,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     RequestNewQuest(driver, quest);
                 }
                 ClaimQuestReward(driver, quest, currentRating);
+
+                double ecr = GetECR(driver);
+                LogSummary.ECR = $"{ecr} %";
+                // todo: add log with different colors in same line
+                Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
+                if (ecr < Settings.ECRThreshold)
+                {
+                    Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
+                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                    return SleepUntil;
+                }
 
                 ClosePopups(driver);
 
@@ -592,7 +592,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         int power = (int)Convert.ToDecimal(driver.FindElement(By.CssSelector("div#power_progress div.progress__info span.number_text")).Text, CultureInfo.InvariantCulture);
                         bool waitForHigherLeague = (rating is >= 300 and < 400) && (power is >= 1000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 1000)) || // bronze 2
                             (rating is >= 550 and < 700) && (power is >= 5000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 5000)) || // bronze 1 
-                            (rating is >= 840 and < 1000) && (power is >= 15000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 15000)) || // silver 3
+                            (rating is >= 900 and < 1000) && (power is >= 15000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 15000)) || // silver 3
                             (rating is >= 1200 and < 1300) && (power is >= 40000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 40000)) || // silver 2
                             (rating is >= 1500 and < 1600) && (power is >= 70000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 70000)) || // silver 1
                             (rating is >= 1800 and < 1900) && (power is >= 100000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 100000)); // gold 

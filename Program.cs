@@ -79,10 +79,9 @@ namespace Ultimate_Splinterlands_Bot_V2
 
                             //if (Settings.SleepBetweenBattles > 0
                                 //&& Settings.BotInstances.All(x => x.CurrentlyActive
-                                while (Settings.BotInstances.All(x => x.CurrentlyActive
+                                while (Settings.RateLimited || Settings.BotInstances.All(x => x.CurrentlyActive
                                 || (DateTime)sleepInfo[Settings.BotInstances.IndexOf(x)] > DateTime.Now))
                             {
-                                Log.WriteToLog($"BotLoopSleep");
                                 Thread.Sleep(20000);
                                 //DateTime sleepUntil = sleepInfo.Where(x =>
                                 //!Settings.BotInstances[Array.IndexOf(sleepInfo, x)].CurrentlyActive)
