@@ -53,6 +53,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (!secondTry)
                 {
                     Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
+                    await Task.Delay(2000);
                     return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
                 } else if (secondTry)
                 {
