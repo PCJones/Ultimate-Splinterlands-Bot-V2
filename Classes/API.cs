@@ -68,6 +68,26 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             _ = DownloadPageAsync($"{ Settings.APIUrl }report_loss/{enemy}/{username}");
         }
 
+        public static async Task<int> GetPlayerCollectionPowerAsync(string username)
+        {
+            try
+            {
+                string data = await DownloadPageAsync($"{SplinterlandsAPI}/players/details?name={ username }");
+                if (data == null || data.Trim().Length < 10)
+                {
+                    // Fallback API
+                    Log.WriteToLog($"{username}: Error with splinterlands API for collection power, trying fallback api...", Log.LogType.Warning);
+                    data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/quests?username={ username }");
+                }
+                return (int)(JToken.Parse(data)["collection_power"]);
+
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{username}: Could not get collection power from splinterlands api: {ex}", Log.LogType.Error);
+            }
+            return -1;
+        }
         public static async Task<JToken> GetPlayerBalancesAsync(string username)
         {
             try

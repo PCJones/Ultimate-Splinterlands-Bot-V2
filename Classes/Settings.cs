@@ -4,6 +4,7 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Remoting;
@@ -18,6 +19,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public const string SPLINTERLANDS_APP = "splinterlands/0.7.139";
         public static char[] Subset = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
         public static Random _Random = new Random();
+        public static CookieContainer CookieContainer = new();
 
         public static string StartupPath = "";
         public static bool DebugMode = false;

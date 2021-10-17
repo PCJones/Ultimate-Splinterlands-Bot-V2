@@ -28,7 +28,7 @@ namespace HiveAPI.CS
 		#endregion
 
 		#region private Methods
-		private class CTransaction
+		public class CTransaction
 		{
 			public UInt16 ref_block_num;
 			public UInt32 ref_block_prefix;
@@ -37,7 +37,7 @@ namespace HiveAPI.CS
 			public Object[] extensions = { };
 			public string[] signatures = { };
 		}
-		private class CtransactionData
+		public class CtransactionData
 		{
 			public CTransaction tx;
 			public string txid;
@@ -61,9 +61,8 @@ namespace HiveAPI.CS
 			}
 			return new CtransactionData { tx = oTransaction, txid = Hex.ToString(Sha256Manager.GetHash(msg)).Substring(0, 40) };
 		}
-		private CtransactionData CreateTransaction(Object[] aOperations, string[] astrPrivateKeys)
+		public CtransactionData CreateTransaction(Object[] aOperations, string[] astrPrivateKeys)
 		{
-
 			JObject oDGP = get_dynamic_global_properties();
 			CTransaction oTransaction = new CTransaction {
 				ref_block_num = Convert.ToUInt16((UInt32)oDGP["head_block_number"] & 0xFFFF),
