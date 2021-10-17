@@ -144,17 +144,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Card[] cards = await API.GetPlayerCardsAsync(Username);
                 Log.WriteToLog($"{Username}: Deck size: {(cards.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
 
-                double ecr = GetECR(driver);
-                LogSummary.ECR = $"{ecr} %";
-                // todo: add log with different colors in same line
-                Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
-                if (ecr < Settings.ECRThreshold)
-                {
-                    Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
-                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
-                    return SleepUntil;
-                }
-
                 string currentRating = GetCurrentRating(driver);
                 if (Settings.AdvanceLeague)
                 {
@@ -173,6 +162,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 ClaimQuestReward(driver, quest, currentRating);
 
                 ClosePopups(driver);
+
+                double ecr = GetECR(driver);
+                LogSummary.ECR = $"{ecr} %";
+                // todo: add log with different colors in same line
+                Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
+                if (ecr < Settings.ECRThreshold)
+                {
+                    Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
+                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                    return SleepUntil;
+                }
 
                 // todo: implement selectCorrectBattleType
                 StartBattle(driver); // todo: try catch, return true/false
@@ -548,6 +548,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (driver.WaitForElementShown(By.Id("claim-btn"), 1))
                 {
                     Log.WriteToLog($"{Username}: Claiming season rewards");
+                    Thread.Sleep(1000);
                     driver.ClickElementOnPage(By.Id("claim-btn"));
                     Thread.Sleep(5000);
                     WaitForLoadingBanner(driver);

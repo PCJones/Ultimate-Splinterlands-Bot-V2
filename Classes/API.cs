@@ -50,10 +50,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             catch (Exception ex)
             {
                 Log.WriteToLog($"{username}: API Error: {ex}", Log.LogType.CriticalError);
-                Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                 if (!secondTry)
                 {
-                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, false);
+                    Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
                 } else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: API overloaded or down?: Waiting 2.5 minutes...", Log.LogType.Warning);
@@ -68,6 +68,27 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             _ = DownloadPageAsync($"{ Settings.APIUrl }report_loss/{enemy}/{username}");
         }
 
+        public static async Task<JToken> GetPlayerBalancesAsync(string username)
+        {
+            try
+            {
+                string data = await DownloadPageAsync($"{SplinterlandsAPI}/players/balances?username={ username }");
+                if (data == null || data.Trim().Length < 10)
+                {
+                    // Fallback API
+                    Log.WriteToLog($"{username}: Error with splinterlands API for balances, trying fallback api...", Log.LogType.Warning);
+                    data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/quests?username={ username }");
+                }
+                JToken balances = JToken.Parse(data);
+                return balances;
+
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{username}: Could not get balances from splinterlands api: {ex}", Log.LogType.Error);
+            }
+            return null;
+        }
         public static async Task<JToken> GetPlayerQuestAsync(string username)
         {
             try
@@ -120,13 +141,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         )
                     )
                 )
-                .Select(x => new Card((string)x["card_detail_id"], (string)x["level"], (bool)x["gold"]))
+                .Select(x => new Card((string)x["card_detail_id"], (string)x["uid"],(string)x["level"], (bool)x["gold"]))
                 .Distinct().OrderByDescending(x => x.SortValue()).ToArray());
 
                 // add basic cards
                 foreach (string cardId in Settings.PhantomCards)
                 {
-                    cards.Add(new Card(cardId, "1", false));
+                    cards.Add(new Card(cardId, "starter-" + cardId + "-" + Helper.GenerateRandomString(5), "1", false));
                 }
 
                 // only use highest level/gold cards
@@ -138,7 +159,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 Log.WriteToLog($"{username}: Could not get cards from splinterlands api: {ex}{Environment.NewLine}Bot will play with phantom cards only.", Log.LogType.Error);
             }
-            return Settings.PhantomCards.Select(x => new Card(x, "1", false)).ToArray();
+            return Settings.PhantomCards.Select(x => new Card(x, "starter-" + x + "-" + Helper.GenerateRandomString(5), "1", false)).ToArray();
         }
         private async static Task<string> DownloadPageAsync(string url)
         {
