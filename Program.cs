@@ -233,10 +233,13 @@ namespace Ultimate_Splinterlands_Bot_V2
                         }
                         break;
                     case "USE_PRIVATE_API":
-                        Settings.UsePrivateAPI = true;
-                        string[] loginData = File.ReadAllText(Settings.StartupPath + @"/config/login.txt").Split(':');
-                        Settings.PrivateAPIUsername = loginData[0];
-                        Settings.PrivateAPIPassword= loginData[1];
+                        Settings.UsePrivateAPI = Boolean.Parse(temp[1]);
+                        if (Settings.UsePrivateAPI)
+                        {
+                            string[] loginData = File.ReadAllText(Settings.StartupPath + @"/config/login.txt").Split(':');
+                            Settings.PrivateAPIUsername = loginData[0];
+                            Settings.PrivateAPIPassword = loginData[1];
+                        }
                         break;
                     case "PRIVATE_API_SHOP":
                         Settings.PrivateAPIShop = temp[1];

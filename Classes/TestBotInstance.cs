@@ -33,6 +33,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private object _activeLock;
         private DateTime SleepUntil;
+        private DateTime LastCacheUpdate;
         private bool UnknownUsername;
         private LogSummary LogSummary;
 
@@ -79,66 +80,67 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private async Task RevealTeam(string trxId, JToken matchDetails, Card[] cards, JToken quest)
         {
-            int mana = (int)matchDetails["mana_cap"];
-            string rulesets = (string)matchDetails["ruleset"];
-            string[] inactive = ((string)matchDetails["inactive"]).Split(',');
-            // blue, black
-            List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };
-            foreach (string inactiveSplinter in inactive)
-            {
-                if (inactiveSplinter.Length == 0)
-                {
-                    continue;
-                }
-                switch (inactiveSplinter.ToLower())
-                {
-                    case "blue":
-                        allowedSplinters.Remove("water");
-                        break;
-                    case "green":
-                        allowedSplinters.Remove("earth");
-                        break;
-                    case "black":
-                        allowedSplinters.Remove("death");
-                        break;
-                    case "white":
-                        allowedSplinters.Remove("life");
-                        break;
-                    case "gold":
-                        allowedSplinters.Remove("dragon");
-                        break;
-                    case "red":
-                        allowedSplinters.Remove("fire");
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), cards, quest, Username);
-
-            string summoner = cards.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
-            string monsters = "";
-            for (int i = 0; i < 6; i++)
-            {
-                var monster = cards.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
-                if (monster.card_detail_id.Length == 0)
-                {
-                    break;
-                }
-
-                monsters += "\"" + monster.card_long_id + "\",";
-            }
-            monsters = monsters[..^1];
-
-            string secret = Helper.GenerateRandomString(10);
-            string n = Helper.GenerateRandomString(10);
-
-            string json = "{\"trx_id\":\"" + trxId + "\",\"summoner\":\"" + summoner + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret +"\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
-
-            COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_team_reveal", json);
             try
             {
+                int mana = (int)matchDetails["mana_cap"];
+                string rulesets = (string)matchDetails["ruleset"];
+                string[] inactive = ((string)matchDetails["inactive"]).Split(',');
+                // blue, black
+                List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };
+                foreach (string inactiveSplinter in inactive)
+                {
+                    if (inactiveSplinter.Length == 0)
+                    {
+                        continue;
+                    }
+                    switch (inactiveSplinter.ToLower())
+                    {
+                        case "blue":
+                            allowedSplinters.Remove("water");
+                            break;
+                        case "green":
+                            allowedSplinters.Remove("earth");
+                            break;
+                        case "black":
+                            allowedSplinters.Remove("death");
+                            break;
+                        case "white":
+                            allowedSplinters.Remove("life");
+                            break;
+                        case "gold":
+                            allowedSplinters.Remove("dragon");
+                            break;
+                        case "red":
+                            allowedSplinters.Remove("fire");
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), cards, quest, Username);
+
+                string summoner = cards.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
+                string monsters = "";
+                for (int i = 0; i < 6; i++)
+                {
+                    var monster = cards.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
+                    if (monster.card_detail_id.Length == 0)
+                    {
+                        break;
+                    }
+
+                    monsters += "\"" + monster.card_long_id + "\",";
+                }
+                monsters = monsters[..^1];
+
+                string secret = Helper.GenerateRandomString(10);
+                string n = Helper.GenerateRandomString(10);
+
+                string json = "{\"trx_id\":\"" + trxId + "\",\"summoner\":\"" + summoner + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+
+                COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_team_reveal", json);
+
                 Log.WriteToLog($"{Username}: Submitting team...");
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
@@ -194,6 +196,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             PostingKey = password;
             ActiveKey = key;
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * -1);
+            LastCacheUpdate = DateTime.MinValue;
             LogSummary = new LogSummary(index, username);
             _activeLock = new object();
             APICounter = 100;
@@ -220,9 +223,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 APICounter++;
-                if (APICounter >= 12)
+                if (APICounter >= 12 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 40)
                 {
                     APICounter = 0;
+                    LastCacheUpdate = DateTime.Now;
                     var playerDetails = await API.GetPlayerDetailsAsync(Username);
                     PowerCached = playerDetails.power;
                     RatingCached = playerDetails.rating;
