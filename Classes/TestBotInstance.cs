@@ -24,6 +24,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private string ActiveKey { get; init; } // only needed for plugins, not used by normal bot
         private int APICounter { get; set; }
         private int PowerCached { get; set; }
+        private int LeagueCached { get; set; }
+        private int RatingCached { get; set; }
         private double ECRCached { get; set; }
         private JToken QuestCached { get; set; }
         private Card[] CardsCached { get; set; }
@@ -221,9 +223,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (APICounter >= 12)
                 {
                     APICounter = 0;
-                    PowerCached = await API.GetPlayerCollectionPowerAsync(Username);
+                    var playerDetails = await API.GetPlayerDetailsAsync(Username);
+                    PowerCached = playerDetails.power;
+                    RatingCached = playerDetails.rating;
+                    LeagueCached = playerDetails.league;
                     QuestCached = await API.GetPlayerQuestAsync(Username);
                     CardsCached = await API.GetPlayerCardsAsync(Username);
+                    if (Settings.UsePrivateAPI)
+                    {
+                        API.UpdateCardsForPrivateAPI(Username, CardsCached);
+                    }
                     ECRCached = await GetECRFromAPI();
                 } else if (APICounter % 3 == 0) {
                     if ((int)QuestCached["completed"] != 5)
@@ -233,10 +242,20 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     ECRCached = await GetECRFromAPI();
                 }
 
-
                 Log.WriteToLog($"{Username}: Deck size: {(CardsCached.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(QuestCached).Pastel(Color.Yellow)}");
-                // todo: add log with different colors in same line
+
+                AdvanceLeague();
+
+                if (Settings.BadQuests.Contains((string)QuestCached["splinter"]))
+                {
+                    RequestNewQuestViaAPI(QuestCached);
+                }
+                else
+                {
+                    ClaimQuestReward();
+                }
+
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
                 if (ECRCached < Settings.ECRThreshold)
                 {
@@ -255,11 +274,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Splinterlands Response: {trxId}");
                 trxId = Helper.DoQuickRegex("id\":\"(.*?)\"", trxId);
 
-                SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles >= 3? Settings.SleepBetweenBattles : 3);
-                if (Settings.BadQuests.Contains((string)QuestCached["splinter"]))
-                {
-                    RequestNewQuestViaAPI(QuestCached);
-                }
+                SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles >= 3 ? Settings.SleepBetweenBattles : 3);
 
                 JToken matchDetails = await WaitForMatchDetails(trxId);
                 if (matchDetails == null)
@@ -286,7 +301,70 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             return SleepUntil;
         }
-        
+
+        private void ClaimQuestReward()
+        {
+            try
+            {
+                string logText;
+                if ((int)QuestCached["total_items"] == (int)QuestCached["completed_items"]
+                    && QuestCached["rewards"].Type == JTokenType.Null)
+                {
+                    logText = "Quest reward can be claimed";
+                    Log.WriteToLog($"{Username}: {logText.Pastel(Color.Green)}");
+                    // short logText:
+                    logText = "Quest reward available!";
+                    if (Settings.ClaimQuestReward)
+                    {
+                        if (Settings.DontClaimQuestNearHigherLeague)
+                        {
+                            if (RatingCached == -1)
+                            {
+                                return;
+                            }
+
+                            int rating = RatingCached;
+                            bool waitForHigherLeague = (rating is >= 300 and < 400) && (PowerCached is >= 1000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 1000)) || // bronze 2
+                                (rating is >= 600 and < 700) && (PowerCached is >= 5000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 5000)) || // bronze 1 
+                                (rating is >= 840 and < 1000) && (PowerCached is >= 15000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 15000)) || // silver 3
+                                (rating is >= 1200 and < 1300) && (PowerCached is >= 40000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 40000)) || // silver 2
+                                (rating is >= 1500 and < 1600) && (PowerCached is >= 70000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 70000)) || // silver 1
+                                (rating is >= 1800 and < 1900) && (PowerCached is >= 100000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 100000)); // gold 
+
+                            if (waitForHigherLeague)
+                            {
+                                Log.WriteToLog($"{Username}: Don't claim quest - wait for higher league");
+                                return;
+                            }
+                        }
+
+                        string n = Helper.GenerateRandomString(10);
+                        string json = "{\"type\":\"quest\",\"quest_id\":\"" + (string)QuestCached["id"] +"\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+
+                        COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_claim_reward", json);
+
+                        Log.WriteToLog($"{Username}: { "Claimed quest reward".Pastel(Color.Green) }");
+                        CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
+                        var postData = GetStringForSplinterlandsAPI(oTransaction);
+                        HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://bcast.splinterlands.com/send", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
+                        APICounter = 100; // set api counter to 100 to reload quest
+                    }
+                }
+                else
+                {
+                    Log.WriteToLog($"{Username}: No quest reward to be claimed");
+                    // short logText:
+                    logText = "No quest reward...";
+                }
+
+                LogSummary.QuestStatus = $" { (string)QuestCached["completed_items"] }/{ (string)QuestCached["total_items"] } {logText}";
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at claiming quest rewards: {ex}", Log.LogType.Error);
+            }
+        }
+
         private async Task<double> GetECRFromAPI()
         {
             var balanceInfo = ((JArray)await API.GetPlayerBalancesAsync(Username)).Where(x => (string)x["token"] == "ECR").First();
@@ -297,24 +375,22 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return Math.Min(ecr, 10000) / 100;
         }
 
-        private void AdvanceLeague(IWebDriver driver, string currentRating)
+        private void AdvanceLeague()
         {
             try
             {
-                if (!Settings.AdvanceLeague || currentRating == "unknown" || Convert.ToInt32(currentRating.Replace(",", "").Replace(".", "")) < 1000)
+                if (!Settings.AdvanceLeague || RatingCached == -1|| RatingCached < 1000)
                 {
                     return;
                 }
-                if (driver.FindElement(By.ClassName("bh_advance_btn")).Displayed)
+
+                int highestPossibleLeage = GetMaxLeagueByRankAndPower();
+                if (highestPossibleLeage > LeagueCached)
                 {
                     Log.WriteToLog($"{Username}: { "Advancing to higher league!".Pastel(Color.Green)}");
-                    driver.ExecuteJavaScript("SM.AdvanceLeaderboard(true);");
-                    Thread.Sleep(3000);
-                    driver.SwitchTo().Alert().Accept();
-                    Thread.Sleep(5000);
-                    WaitForLoadingBanner(driver);
-                    Thread.Sleep(5000);
-                    ClosePopups(driver);
+                    APICounter = 100; // set api counter to 100 to reload details
+
+                    // api call
                 }
 
             }
@@ -322,50 +398,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 Log.WriteToLog($"{Username}: Error at advancing league: {ex}");
             }
-        }
-        private void GetBattleResult(IWebDriver driver, string oldRating)
-        {
-            //driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("section.player.winner .bio__name__display"));
-            driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//h1[contains(., 'BATTLE RESULT')]"));
-            string logTextBattleResult;
-            string rating;
-            string ratingChange;
-            if (driver.FindElements(By.CssSelector("section.player.winner .bio__name__display")).Count > 0)
-            {
-                string winner = driver.FindElement(By.CssSelector("section.player.winner .bio__name__display")).Text.ToLower();
-                if (winner == Username)
-                {
-                    rating = driver.FindElement(By.CssSelector("section.player.winner .rating-total")).Text;
-                    ratingChange = driver.FindElement(By.CssSelector("section.player.winner .rating-delta")).Text;
-                    string decWon = driver.FindElement(By.CssSelector(".player.winner span.dec-reward span")).Text;
-                    logTextBattleResult = $"You won! Reward: {decWon} DEC";
-                    Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
-                    Log.WriteToLog($"{Username}: New rating is {rating} ({ ratingChange.Pastel(Color.Green) })");
-                }
-                else
-                {
-                    rating = driver.FindElement(By.CssSelector("section.player.loser .rating-total")).Text.ToLower();
-                    ratingChange = driver.FindElement(By.CssSelector("section.player.loser .rating-delta")).Text;
-                    logTextBattleResult = $"You lost :(";
-                    Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
-                    Log.WriteToLog($"{Username}: New rating is {rating} ({ ratingChange.Pastel(Color.Red) })");
-                    API.ReportLoss(winner, Username);
-                }
-            }
-            else
-            {
-                rating = oldRating;
-                ratingChange = "+- 0";
-                logTextBattleResult = "DRAW";
-                Log.WriteToLog($"{Username}: { logTextBattleResult}");
-                Log.WriteToLog($"{Username}: Rating has not changed ({ rating })");
-            }
-
-            LogSummary.Rating = $"{ rating } ({ ratingChange })";
-            LogSummary.BattleResult = logTextBattleResult;
-
-            Thread.Sleep(4500);
-            ClosePopups(driver);
         }
 
         private void SelectTeam(IWebDriver driver, JToken team)
@@ -554,129 +586,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 .Select(x => x.GetAttribute("data-original-title").Split(':')[0].Trim().ToLower()).ToArray();
             return splinters;
         }
-        private void StartBattle(IWebDriver driver)
-        {
-            Log.WriteToLog($"{Username}: Waiting for battle button...");
-            if (!driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//button[contains(., 'BATTLE')]")))
-            {
-                Log.WriteToLog($"{Username}: Battle button not visible, reloading page...", Log.LogType.Warning);
-                driver.Navigate().GoToUrl("https://splinterlands.com/?p=battle_history");
-                Thread.Sleep(5000);
-                ClosePopups(driver);
-            }
-            driver.ClickElementOnPage(By.XPath("//button[contains(., 'BATTLE')]"));
-            Log.WriteToLog($"{Username}: Battle button clicked!");
-        }
-        private void NavigateToBattlePage(IWebDriver driver)
-        {
-            if (!driver.Url.Contains("battle_history"))
-            {
-                try
-                {
-                    driver.FindElement(By.Id("menu_item_battle")).Click();
-                }
-                catch (Exception)
-                {
-                    ClosePopups(driver);
-                    driver.ClickElementOnPage(By.Id("menu_item_battle"));
-                }
-                driver.WaitForWebsiteLoadedAndElementShown(By.Id("battle_category_btn"));
-            }
-        }
-
-        private void ClaimSeasonRewards(IWebDriver driver)
-        {
-            try
-            {
-                ClosePopups(driver);
-                Thread.Sleep(400);
-                if (driver.WaitForElementShown(By.Id("claim-btn"), 1))
-                {
-                    Log.WriteToLog($"{Username}: Claiming season rewards");
-                    Thread.Sleep(1000);
-                    driver.ClickElementOnPage(By.Id("claim-btn"));
-                    Thread.Sleep(5000);
-                    WaitForLoadingBanner(driver);
-                    Thread.Sleep(3000);
-                    driver.Navigate().Refresh();
-                    Thread.Sleep(5000);
-                    WaitForLoadingBanner(driver);
-                    Thread.Sleep(10000);
-                    ClosePopups(driver);
-                    Log.WriteToLog($"{Username}: Claimed season rewards", Log.LogType.Success);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.WriteToLog($"{Username}: Error at claiming season rewards: {ex}", Log.LogType.Error);
-            }
-        }
-
-        private void ClaimQuestReward(IWebDriver driver, JToken quest, string currentRating)
-        {
-            try
-            {
-                string logText;
-                if (driver.WaitForWebsiteLoadedAndElementShown(By.Id("quest_claim_btn"), 1))
-                {
-                    logText = "Quest reward can be claimed";
-                    Log.WriteToLog($"{Username}: {logText.Pastel(Color.Green)}");
-                    // short logText:
-                    logText = "Quest reward available!";
-                    if (!Settings.ClaimQuestReward)
-                    {
-                        return;
-                    }
-                    if (Settings.DontClaimQuestNearHigherLeague)
-                    {
-                        if (currentRating == "unknown")
-                        {
-                            return;
-                        }
-                        // todo: check if league can be reached
-                        int rating = Convert.ToInt32(currentRating.Replace(".", "").Replace(",", ""));
-                        int power = (int)Convert.ToDecimal(driver.FindElement(By.CssSelector("div#power_progress div.progress__info span.number_text")).Text, CultureInfo.InvariantCulture);
-                        bool waitForHigherLeague = (rating is >= 300 and < 400) && (power is >= 1000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 1000)) || // bronze 2
-                            (rating is >= 550 and < 700) && (power is >= 5000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 5000)) || // bronze 1 
-                            (rating is >= 840 and < 1000) && (power is >= 15000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 15000)) || // silver 3
-                            (rating is >= 1200 and < 1300) && (power is >= 40000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 40000)) || // silver 2
-                            (rating is >= 1500 and < 1600) && (power is >= 70000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 70000)) || // silver 1
-                            (rating is >= 1800 and < 1900) && (power is >= 100000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 100000)); // gold 
-
-                        if (waitForHigherLeague)
-                        {
-                            Log.WriteToLog($"{Username}: Don't claim quest - wait for higher league");
-                            return;
-                        }
-                    }
-
-                    Log.WriteToLog($"{Username}: Claiming quest reward...");
-                    driver.ClickElementOnPage(By.Id("quest_claim_btn"));
-                    Thread.Sleep(5000);
-                    WaitForLoadingBanner(driver);
-                    Thread.Sleep(3000);
-                    driver.Navigate().Refresh();
-                    Thread.Sleep(3000);
-                    WaitForLoadingBanner(driver);
-                    Thread.Sleep(3000);
-                    ClosePopups(driver);
-                    Thread.Sleep(1000);
-                    Log.WriteToLog($"{Username}: { "Claimed quest reward".Pastel(Color.Green) }");
-                }
-                else
-                {
-                    Log.WriteToLog($"{Username}: No quest reward to be claimed");
-                    // short logText:
-                    logText = "No quest reward...";
-                }
-
-                LogSummary.QuestStatus = $" { (string)quest["completed"] }/{ (string)quest["total"] } {logText}";
-            }
-            catch (Exception ex)
-            {
-                Log.WriteToLog($"{Username}: Error at claiming quest rewards: {ex}", Log.LogType.Error);
-            }
-        }
+  
         private void RequestNewQuestViaAPI(JToken quest)
         {
             try
@@ -700,214 +610,51 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Error at changing quest: {ex}", Log.LogType.Error);
             }
         }
-
-        private void RequestNewQuest(IWebDriver driver, JToken quest)
+      
+        private int GetMaxLeagueByRankAndPower()
         {
-            try
+            // bronze
+            if ((RatingCached is >= 100 and <= 399) && (PowerCached is >= 0))
             {
-                if ((int)quest["completed"] > 3)
-                {
-                    return;
-                }
-                if (driver.WaitForWebsiteLoadedAndElementShown(By.Id("quest_new_btn"), 1))
-                {
-                    Log.WriteToLog($"{ Username }: Quest type is { (string)quest["splinter"] } - requesting new one.");
+                return 1;
+            }
+            if ((RatingCached is >= 400 and <= 699) && (PowerCached is >= 1000))
+            {
+                return 2;
+            }
+            if ((RatingCached is >= 700 and <= 999) && (PowerCached is >= 5000))
+            {
+                return 3;
+            }
+            // silver
+            if ((RatingCached is >= 1000 and <= 1299) && (PowerCached is >= 15000))
+            {
+                return 4;
+            }
+            if ((RatingCached is >= 1300 and <= 1599) && (PowerCached is >= 40000))
+            {
+                return 5;
+            }
+            if ((RatingCached is >= 1600 and <= 1899) && (PowerCached is >= 70000))
+            {
+                return 6;
+            }
+            // gold
+            if ((RatingCached is >= 1900 and <= 2199) && (PowerCached is >= 100000))
+            {
+                return 7;
+            }
+            if ((RatingCached is >= 2200 and <= 2499) && (PowerCached is >= 150000))
+            {
+                return 8;
+            }
+            if ((RatingCached is >= 2500 and <= 2799) && (PowerCached is >= 200000))
+            {
+                return 9;
+            }
 
-                    driver.ClickElementOnPage(By.Id("quest_new_btn"));
-                    Thread.Sleep(1500);
-                    driver.SwitchTo().Alert().Accept();
-                    WaitForLoadingBanner(driver);
-                    Thread.Sleep(3000);
-                    WaitForLoadingBanner(driver);
-                    ClosePopups(driver);
-                    Thread.Sleep(1000);
-                    Log.WriteToLog($"{Username}: {"Renewed quest!".Pastel(Color.Green)}");
-                }
-                else
-                {
-                    Log.WriteToLog($"{Username}: { "Can't change quest".Pastel(Color.Red) }");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.WriteToLog($"{Username}: Error at changing quest: {ex}", Log.LogType.Error);
-            }
-        }
-
-        private void ClosePopups(IWebDriver driver, bool needNameVisible = true)
-        {
-            try
-            {
-                if (needNameVisible && !UnknownUsername)
-                {
-                    driver.WaitForSuccessMessage(Username);
-                    driver.ExecuteJavaScript("$('.modal').modal('hide');", suppressErrors: true);
-                }
-                else
-                {
-                    Thread.Sleep(1000);
-                    driver.ExecuteJavaScript("$('.modal').modal('hide');", suppressErrors: true);
-                }
-                //if (needNameVisible)
-                //{
-                //    int counter = 0;
-                //    Thread.Sleep(500);
-                //    while (!driver.FindElement(By.ClassName("bio__name__display")).Displayed)
-                //    {
-                //        Thread.Sleep(500);
-                //        driver.ExecuteJavaScript("$('.modal').modal('hide');", suppressErrors: true);
-                //        if (counter++ > 30)
-                //        {
-                //            Log.WriteToLog($"{Username}: Error at closing popups loop - name not visible", Log.LogType.CriticalError);
-                //            break;
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    Thread.Sleep(500);
-                //    driver.ExecuteJavaScript("$('.modal').modal('hide');", suppressErrors: true);
-                //}
-                //driver.ExecuteJavaScript("$('#daily_update_dialog').modal('hide);");
-                //driver.ExecuteJavaScript("$('.modal-dialog modal-lg').modal('hide);");
-                //if (driver.WaitForWebsiteLoaded(By.ClassName("close"), 3))
-                //{
-                //    if (driver.WaitForElementShown(By.ClassName("close"), 1))
-                //    {
-                //        Log.WriteToLog($"{Username}: Closing popup #1");
-                //        driver.ExecuteJavaScript("$('.modal-dialog modal-lg').modal('hide);");
-                //        try
-                //        {
-                //            Thread.Sleep(500);
-                //            if (driver.WaitForElementShown(By.ClassName("close"), 1))
-                //                driver.FindElement(By.ClassName("close")).Click();
-                //        }
-                //        catch (Exception)
-                //        {
-                //            // try again if popup wasn't ready yet
-                //            Thread.Sleep(2500);
-                //            driver.ClickElementOnPage(By.ClassName("close"));
-                //        }
-                //    }
-                //}
-                //if (driver.WaitForWebsiteLoaded(By.ClassName("modal-close-new"), 1))
-                //{
-                //    if (driver.WaitForElementShown(By.ClassName("modal-close-new"), 1))
-                //    {
-                //        Log.WriteToLog($"{Username}: Closing popup #2");
-                //        try
-                //        {
-                //            Thread.Sleep(300);
-                //            driver.FindElement(By.ClassName("modal-close-new")).Click();
-                //        }
-                //        catch (Exception)
-                //        {
-                //            // try again if popup wasn't ready yet
-                //            Thread.Sleep(2500);
-                //            driver.ClickElementOnPage(By.ClassName("modal-close-new"));
-                //        }
-                //    }
-                //}
-            }
-            catch (Exception ex)
-            {
-                Log.WriteToLog($"{Username}: Error at closing popups: {ex}", Log.LogType.Error);
-            }
-        }
-
-        private double GetECR(IWebDriver driver)
-        {
-            try
-            {
-                var ecr = driver.FindElement(By.XPath("//div[@class='dec-options'][1]/div[@class='value'][2]/div")).GetAttribute("innerHTML");
-                return Convert.ToDouble(ecr[..^1], CultureInfo.InvariantCulture);
-            }
-            catch (Exception ex)
-            {
-                Log.WriteToLog($"{Username}: Couldn't get Energy Capture Rate: {ex}", Log.LogType.Error);
-            }
             return 0;
         }
 
-        private string GetCurrentRating(IWebDriver driver)
-        {
-            try
-            {
-                var rating = driver.FindElement(By.XPath("//div[@class='league_status_panel_progress_bar_pos']//span[@class='number_text']")).GetAttribute("innerHTML");
-                return rating;
-            }
-            catch (Exception ex)
-            {
-                Log.WriteToLog($"{Username}: Couldn't get current rating: {ex}", Log.LogType.Warning);
-            }
-            return "unknown";
-        }
-
-        private bool Login(IWebDriver driver, bool logoutNeeded)
-        {
-            Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Trying to login...");
-            driver.Navigate().GoToUrl("https://splinterlands.com/");
-            WaitForLoadingBanner(driver);
-            ClosePopups(driver, false);
-            if (!UnknownUsername && !logoutNeeded)
-            {
-                // check if already logged in
-                if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"), 3))
-                {
-                    if (driver.FindElements(By.ClassName("bio__name__display")).Count > 0)
-                    {
-                        string usernameIngame = driver.FindElement(By.ClassName("bio__name__display")).Text.Trim().ToLower();
-                        if (usernameIngame == Username)
-                        {
-                            Log.WriteToLog($"{Username}: {"Already logged in!".Pastel(Color.Yellow)}");
-                            return true;
-                        }
-                    }
-                }
-                // this shouldn't happen unless session is no longer valid, call logout to be sure
-            }
-            driver.ExecuteJavaScript("SM.Logout();", true);
-            if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"), 6))
-            {
-                // splinterlands bug, battle result still open
-                if (driver.WaitForWebsiteLoadedAndElementShown(By.XPath("//h1[contains(., 'BATTLE RESULT')]"), 1))
-                {
-                    driver.ClickElementOnPage(By.CssSelector("button[class='btn btn--done']"));
-                }
-
-            }
-            driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_button"), 8);
-            ClosePopups(driver, false);
-            Thread.Sleep(1000);
-            driver.ExecuteJavaScript("SM.ShowLogin(SM.ShowAbout);");
-
-            driver.WaitForWebsiteLoadedAndElementShown(By.Id("email"));
-            driver.SetData(By.Id("email"), Email.Length > 0 ? Email : Username);
-            driver.SetData(By.Id("password"), PostingKey);
-            // endless circle workaround
-            if (driver.FindElements(By.ClassName("loading")).Count > 0)
-            {
-                Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Splinterlands not loading, trying to reload...");
-                Login(driver, logoutNeeded);
-            }
-            driver.ClickElementOnPage(By.Name("loginBtn"), 1);
-
-            if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_text"), 60))
-            {
-                Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Could not log in - skipping account.", Log.LogType.Error);
-                return false;
-            }
-
-            Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Login successful", Log.LogType.Success);
-            return true;
-        }
-
-        private void WaitForLoadingBanner(IWebDriver driver)
-        {
-            do
-            {
-                Thread.Sleep(500);
-            } while (driver.FindElements(By.ClassName("loading")).Count > 0);
-        }
     }
 }

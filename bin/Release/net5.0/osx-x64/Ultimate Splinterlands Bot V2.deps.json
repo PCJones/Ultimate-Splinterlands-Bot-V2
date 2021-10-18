@@ -9,6 +9,7 @@
     ".NETCoreApp,Version=v5.0/osx-x64": {
       "Ultimate Splinterlands Bot V2/1.0.0": {
         "dependencies": {
+          "Cryptography.ECDSA.Secp256K1": "1.1.3",
           "Newtonsoft.Json": "13.0.1",
           "Pastel": "2.1.0",
           "Selenium.WebDriver": "3.141.0",
@@ -734,6 +735,14 @@
           }
         }
       },
+      "Cryptography.ECDSA.Secp256K1/1.1.3": {
+        "runtime": {
+          "lib/netstandard2.0/Cryptography.ECDSA.dll": {
+            "assemblyVersion": "1.1.3.0",
+            "fileVersion": "1.1.3.0"
+          }
+        }
+      },
       "Newtonsoft.Json/13.0.1": {
         "runtime": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {
@@ -773,6 +782,13 @@
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""
+    },
+    "Cryptography.ECDSA.Secp256K1/1.1.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-imHmS/4npo6AzcUA7KpXehZIUq8h7iBRJsvEK/pwH6ysVJUow7bWft9yrODSgq5SYuFm8aYhsSCODFvDKq7dUQ==",
+      "path": "cryptography.ecdsa.secp256k1/1.1.3",
+      "hashPath": "cryptography.ecdsa.secp256k1.1.1.3.nupkg.sha512"
     },
     "Newtonsoft.Json/13.0.1": {
       "type": "package",
