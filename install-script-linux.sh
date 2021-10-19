@@ -17,6 +17,7 @@ dpkg -i google-chrome-stable_current_amd64.deb
 wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip
 unzip chromedriver_linux64.zip
 rm chromedriver_linux64.zip
+rm google-chrome-stable_current_amd64.deb
 
 touch chromedriver.exe
 chmod +x Ultimate\ Splinterlands\ Bot\ V2
