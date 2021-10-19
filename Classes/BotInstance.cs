@@ -823,7 +823,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             driver.ClickElementOnPage(By.Name("loginBtn"), 1);
 
-            if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_text"), 60))
+            if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_text"), 110))
             {
                 Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Could not log in - skipping account.", Log.LogType.Error);
                 return false;

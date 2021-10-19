@@ -3,6 +3,7 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Remoting;
@@ -12,7 +13,13 @@ using System.Threading.Tasks;
 namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
     public static class Settings
-    {         
+    {
+        public const string HIVE_NODE = "https://api.deathwing.me/";
+        public const string SPLINTERLANDS_APP = "splinterlands/0.7.139";
+        public static char[] Subset = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
+        public static Random _Random = new Random();
+        public static CookieContainer CookieContainer = new();
+
         public static string StartupPath = "";
         public static bool DebugMode = false;
         public static bool WriteLogToFile = false;
@@ -25,6 +32,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool UseAPI = true;
         public static string APIUrl = "";
+        public static bool UsePrivateAPI = true;
+        public static string PrivateAPIUrl = "";
+        public static string PrivateAPIShop = "";
+        public static string PrivateAPIUsername = "";
+        public static string PrivateAPIPassword = "";
 
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
