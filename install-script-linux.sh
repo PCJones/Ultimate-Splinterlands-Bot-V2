@@ -22,4 +22,4 @@ touch chromedriver.exe
 chmod +x Ultimate\ Splinterlands\ Bot\ V2
 
 
-echo "./Ultimate\ Splinterlands\ Bot\ V2" to start
+echo Launch "./Ultimate\ Splinterlands\ Bot\ V2" to start
