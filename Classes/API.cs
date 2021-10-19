@@ -16,23 +16,46 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private const string SplinterlandsAPI = "https://game-api.splinterlands.io";
         private const string SplinterlandsAPIFallback = "https://api2.splinterlands.com";
 
-        public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, Card[] cards, JToken quest, string username, bool secondTry = false)
+        public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, Card[] cards, JToken quest, string username, bool secondTry = false, bool ignorePrivateAPI = false)
         {
             Log.WriteToLog($"{username}: Requesting team from API...");
             try
-            {   
-                var matchDetails = new JObject(
-                    new JProperty("mana", mana),
-                    new JProperty("rules", rules),
-                    new JProperty("splinters", splinters),
-                    new JProperty("myCardsV2", JsonConvert.SerializeObject(cards)),
-                    new JProperty("quest", Settings.PrioritizeQuest && quest != null
-                    && ((int)quest["total"] != (int)quest["completed"]) ? 
-                   quest : "")
-                );
+            {
+                var questLessDetails = new JObject(
+                    new JProperty("name", quest["name"]),
+                    new JProperty("splinter", Settings.QuestTypes[(string)quest["name"]]),
+                    new JProperty("total", quest["total_items"]),
+                    new JProperty("completed", quest["completed_items"])
+                    );
 
-                string APIResponse = await PostJSONToApi(matchDetails, $"{Settings.APIUrl}get_team/",  username);
-                Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(System.Drawing.Color.Yellow) }");
+                JObject matchDetails;
+                if (Settings.UsePrivateAPI && !ignorePrivateAPI)
+                {
+                    matchDetails = new JObject(
+                        new JProperty("mana", mana),
+                        new JProperty("rules", rules),
+                        new JProperty("splinters", splinters),
+                        new JProperty("quest", Settings.PrioritizeQuest && quest != null
+                        && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
+                        questLessDetails : "")
+                    );
+                }
+                else
+                {
+                    matchDetails = new JObject(
+                        new JProperty("mana", mana),
+                        new JProperty("rules", rules),
+                        new JProperty("splinters", splinters),
+                        new JProperty("myCardsV2", JsonConvert.SerializeObject(cards)),
+                        new JProperty("quest", Settings.PrioritizeQuest && quest != null
+                        && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
+                        questLessDetails : "")
+                    );
+                }
+
+                string url = (Settings.UsePrivateAPI && !ignorePrivateAPI) ? $"{Settings.PrivateAPIUrl}get_team_private/{username}/" : $"{Settings.APIUrl}get_team/";
+                string APIResponse = await PostJSONToApi(matchDetails, url, username);
+                Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }");
 
                 if (APIResponse.Contains("api limit reached"))
                 {
@@ -48,6 +71,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         await CheckRateLimitLoopAsync(username);
                     }
                 }
+                else if (Settings.UsePrivateAPI && APIResponse.Contains("API Error") && !secondTry)
+                {
+                    Log.WriteToLog($"{username}: Private API doesn't seem to have card data yet - using free API", Log.LogType.Warning);
+                    System.Threading.Thread.Sleep(25000);
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true, true);
+
+                }
                 if (APIResponse == null || APIResponse.Length < 5)
                 {
                     Log.WriteToLog($"{username}: API Error: Response was empty", Log.LogType.CriticalError);
@@ -59,11 +89,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             catch (Exception ex)
             {
                 Log.WriteToLog($"{username}: API Error: {ex}", Log.LogType.CriticalError);
-                Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                 if (!secondTry)
                 {
-                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, false);
-                } else if (secondTry)
+                    Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
+                    await Task.Delay(2000);
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true, true);
+                }
+                else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: API overloaded or down?: Waiting 2.5 minutes...", Log.LogType.Warning);
                     System.Threading.Thread.Sleep(150000);
@@ -77,6 +109,46 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             _ = DownloadPageAsync($"{ Settings.APIUrl }report_loss/{enemy}/{username}");
         }
 
+        public static async Task<(int power, int rating, int league)> GetPlayerDetailsAsync(string username)
+        {
+            try
+            {
+                string data = await DownloadPageAsync($"{SplinterlandsAPI}/players/details?name={ username }");
+                if (data == null || data.Trim().Length < 10)
+                {
+                    // Fallback API
+                    Log.WriteToLog($"{username}: Error with splinterlands API for collection power, trying fallback api...", Log.LogType.Warning);
+                    data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/details?username={ username }");
+                }
+                return ((int)JToken.Parse(data)["collection_power"], (int)JToken.Parse(data)["rating"], (int)JToken.Parse(data)["league"]);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{username}: Could not get collection power from splinterlands api: {ex}", Log.LogType.Error);
+            }
+            return (-1, -1, -1);
+        }
+        public static async Task<JToken> GetPlayerBalancesAsync(string username)
+        {
+            try
+            {
+                string data = await DownloadPageAsync($"{SplinterlandsAPI}/players/balances?username={ username }");
+                if (data == null || data.Trim().Length < 10)
+                {
+                    // Fallback API
+                    Log.WriteToLog($"{username}: Error with splinterlands API for balances, trying fallback api...", Log.LogType.Warning);
+                    data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/quests?username={ username }");
+                }
+                JToken balances = JToken.Parse(data);
+                return balances;
+
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{username}: Could not get balances from splinterlands api: {ex}", Log.LogType.Error);
+            }
+            return null;
+        }
         public static async Task<JToken> GetPlayerQuestAsync(string username)
         {
             try
@@ -89,13 +161,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/quests?username={ username }");
                 }
                 JToken quest = JToken.Parse(data);
-                var questLessDetails = new JObject(
-                    new JProperty("name", quest[0]["name"]),
-                    new JProperty("splinter", Settings.QuestTypes[(string)quest[0]["name"]]),
-                    new JProperty("total", quest[0]["total_items"]),
-                    new JProperty("completed", quest[0]["completed_items"])
-                    );
-                return questLessDetails;
+
+                return quest[0];
 
             }
             catch (Exception ex)
@@ -119,23 +186,23 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 DateTime oneDayAgo = DateTime.Now.AddDays(-1);
                 List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(x =>
-                ((x["delegated_to"].Type == JTokenType.Null && x["market_listing_type"].Type == JTokenType.Null) 
+                ((x["delegated_to"].Type == JTokenType.Null && x["market_listing_type"].Type == JTokenType.Null)
                 || (string)x["delegated_to"] == username)
-                && 
-                    !((string)x["last_used_player"] != username && 
+                &&
+                    !((string)x["last_used_player"] != username &&
                         (
-                            x["last_used_date"].Type != JTokenType.Null && 
+                            x["last_used_date"].Type != JTokenType.Null &&
                             DateTime.Parse(JsonConvert.SerializeObject(x["last_used_date"]).Replace("\"", "").Trim()) > oneDayAgo
                         )
                     )
                 )
-                .Select(x => new Card((string)x["card_detail_id"], (string)x["level"], (bool)x["gold"]))
+                .Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"]))
                 .Distinct().OrderByDescending(x => x.SortValue()).ToArray());
 
                 // add basic cards
                 foreach (string cardId in Settings.PhantomCards)
                 {
-                    cards.Add(new Card(cardId, "1", false));
+                    cards.Add(new Card(cardId, "starter-" + cardId + "-" + Helper.GenerateRandomString(5), "1", false));
                 }
 
                 // only use highest level/gold cards
@@ -147,12 +214,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 Log.WriteToLog($"{username}: Could not get cards from splinterlands api: {ex}{Environment.NewLine}Bot will play with phantom cards only.", Log.LogType.Error);
             }
-            return Settings.PhantomCards.Select(x => new Card(x, "1", false)).ToArray();
+            return Settings.PhantomCards.Select(x => new Card(x, "starter-" + x + "-" + Helper.GenerateRandomString(5), "1", false)).ToArray();
         }
         private async static Task<string> DownloadPageAsync(string url)
         {
             // Use static HttpClient to avoid exhausting system resources for network connections.
             var result = await Settings._httpClient.GetAsync(url);
+            if (result.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                Log.WriteToLog("Splinterlands API block - wait 180 seconds");
+                await Task.Delay(180000);
+            }
             var response = await result.Content.ReadAsStringAsync();
             // Write status code.
             return response;
@@ -173,6 +245,34 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return null;
         }
 
+        public static void UpdateCardsForPrivateAPI(string username, Card[] cards)
+        {
+            string postData = "account=" + username + "&cards=" + JsonConvert.SerializeObject(cards);
+
+            string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.PrivateAPIShop + "index.php?site=updatecards", "", "", Encoding.Default);
+
+            if (!response.Contains("success"))
+            {
+                string postDataLogin = "txtUsername=" + Uri.EscapeDataString(Settings.PrivateAPIUsername);
+                postDataLogin += "&txtPassword=" + Uri.EscapeDataString(Settings.PrivateAPIPassword);
+                postDataLogin += "&btnLoginSubmit=" + "Login";
+
+                response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postDataLogin, Settings.PrivateAPIShop + "index.php", "", "", Encoding.Default);
+
+                if (!response.Contains("Login Successfully"))
+                {
+                    Log.WriteToLog($"{username}: Failed to login into private API shop", Log.LogType.Error);
+                    return;
+                }
+            }
+
+            response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.PrivateAPIShop + "index.php?site=updatecards", "", "", Encoding.Default);
+
+            if (!response.Contains("success"))
+            {
+                Log.WriteToLog($"{username}: Failed to update cards for private API", Log.LogType.Error);
+            }
+        }
         public async static Task CheckRateLimitLoopAsync(string username)
         {
             bool alreadyChecking = false;
