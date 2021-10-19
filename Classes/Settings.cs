@@ -25,6 +25,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool UseAPI = true;
         public static string APIUrl = "";
+        public static bool UsePrivateAPI = true;
+        public static string PrivateAPIUrl = "";
+        public static string PrivateAPIShop = "";
+        public static string PrivateAPIUsername = "";
+        public static string PrivateAPIPassword = "";
 
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
