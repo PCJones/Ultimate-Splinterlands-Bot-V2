@@ -229,6 +229,21 @@ namespace Ultimate_Splinterlands_Bot_V2
                             SetupRentalBot();
                         }
                         break;
+                    case "USE_PRIVATE_API":
+                        Settings.UsePrivateAPI = Boolean.Parse(temp[1]);
+                        if (Settings.UsePrivateAPI)
+                        {
+                            string[] loginData = File.ReadAllText(Settings.StartupPath + @"/config/login.txt").Split(':');
+                            Settings.PrivateAPIUsername = loginData[0];
+                            Settings.PrivateAPIPassword = loginData[1];
+                        }
+                        break;
+                    case "PRIVATE_API_SHOP":
+                        Settings.PrivateAPIShop = temp[1];
+                        break;
+                    case "PRIVATE_API_URL":
+                        Settings.PrivateAPIUrl = temp[1];
+                        break;
                     case "RENT_DAYS":
                         Settings.DaysToRent = Convert.ToInt32(temp[1]);
                         break;
@@ -243,6 +258,11 @@ namespace Ultimate_Splinterlands_Bot_V2
                 }
             }
 
+            if (Settings.SleepBetweenBattles < 4)
+            {
+                Settings.SleepBetweenBattles = 4;
+            }
+
             Log.WriteToLog("Config loaded!", Log.LogType.Success);
             Log.WriteToLog($"Config parameters:{Environment.NewLine}" +
                 $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
@@ -250,7 +270,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                 $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
-                $"REQUEST_NEW_QUEST: {String.Join(",", Settings.BadQuests )}{Environment.NewLine}" +
+                $"REQUEST_NEW_QUEST: {String.Join(",", Settings.BadQuests)}{Environment.NewLine}" +
                 $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
                 $"ECR_THRESHOLD: {Settings.ECRThreshold}{Environment.NewLine}" +
                 $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
