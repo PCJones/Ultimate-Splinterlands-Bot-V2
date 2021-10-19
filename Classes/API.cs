@@ -93,7 +93,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                     await Task.Delay(2000);
-                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true, true);
                 } else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: API overloaded or down?: Waiting 2.5 minutes...", Log.LogType.Warning);
