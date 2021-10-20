@@ -248,7 +248,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static void UpdateCardsForPrivateAPI(string username, Card[] cards)
         {
             string postData = "account=" + username + "&cards=" + JsonConvert.SerializeObject(cards);
-
             string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.PrivateAPIShop + "index.php?site=updatecards", "", "", Encoding.Default);
 
             if (!response.Contains("success"))
@@ -261,16 +260,20 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 if (!response.Contains("Login Successfully"))
                 {
-                    Log.WriteToLog($"{username}: Failed to login into private API shop", Log.LogType.Error);
+                    Log.WriteToLog($"{username}: Failed to login into private API shop: " + response, Log.LogType.Error);
                     return;
                 }
+            }
+            else
+            {
+                return;
             }
 
             response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.PrivateAPIShop + "index.php?site=updatecards", "", "", Encoding.Default);
 
             if (!response.Contains("success"))
             {
-                Log.WriteToLog($"{username}: Failed to update cards for private API", Log.LogType.Error);
+                Log.WriteToLog($"{username}: Failed to update cards for private API: +  " + response, Log.LogType.Error);
             }
         }
         public async static Task CheckRateLimitLoopAsync(string username)

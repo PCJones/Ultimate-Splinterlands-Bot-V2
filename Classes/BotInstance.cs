@@ -142,6 +142,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 JToken quest = await API.GetPlayerQuestAsync(Username);
                 Card[] cards = await API.GetPlayerCardsAsync(Username);
+                if (Settings.UsePrivateAPI && Settings._Random.Next(0, 10) > 5)
+                {
+                    API.UpdateCardsForPrivateAPI(Username, cards);
+                }
                 Log.WriteToLog($"{Username}: Deck size: {(cards.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
 
                 string currentRating = GetCurrentRating(driver);
