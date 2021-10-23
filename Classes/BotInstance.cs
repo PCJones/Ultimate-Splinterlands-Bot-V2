@@ -158,7 +158,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     ClaimSeasonRewards(driver);
                 }
                 Log.WriteToLog($"{Username}: Current Rating is: {currentRating.Pastel(Color.Yellow)}");
-                Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest).Pastel(Color.Yellow)}");
+                Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest.questLessDetails).Pastel(Color.Yellow)}");
                 if (Settings.BadQuests.Contains((string)quest.questLessDetails["splinter"]))
                 {
                     RequestNewQuest(driver, quest.questLessDetails);
