@@ -266,6 +266,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             else
             {
+                Log.WriteToLog($"{username}: Unknown error at updating cards for private API:" + response);
                 return;
             }
 

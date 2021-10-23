@@ -258,11 +258,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                 }
             }
 
-            if (Settings.SleepBetweenBattles < 4)
-            {
-                Settings.SleepBetweenBattles = 4;
-            }
-
             Log.WriteToLog("Config loaded!", Log.LogType.Success);
             Log.WriteToLog($"Config parameters:{Environment.NewLine}" +
                 $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
