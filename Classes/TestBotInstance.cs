@@ -78,7 +78,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return null;
         }
 
-        private async Task RevealTeam(string trxId, JToken matchDetails, Card[] cards, JToken quest)
+        private async Task SubmitTeam(string trxId, JToken matchDetails, Card[] cards, JToken quest)
         {
             try
             {
@@ -137,14 +137,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string secret = Helper.GenerateRandomString(10);
                 string n = Helper.GenerateRandomString(10);
 
-                string json = "{\"trx_id\":\"" + trxId + "\",\"summoner\":\"" + summoner + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                string teamHash = Helper.GenerateMD5Hash(summoner + "," + monsters + "," + secret);
+
+                string json = "{\"trx_id\":\"" + trxId + "\",\"team_hash\":\"" + teamHash + "\",\"summoner\":\"" + summoner + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                 COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_team_reveal", json);
 
                 Log.WriteToLog($"{Username}: Submitting team...");
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
-                var result = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://api2.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
+                var result = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
                 await Task.Delay(5000);
             }
             catch (Exception ex)
