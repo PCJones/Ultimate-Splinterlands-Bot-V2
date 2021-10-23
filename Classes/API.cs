@@ -16,18 +16,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private const string SplinterlandsAPI = "https://game-api.splinterlands.io";
         private const string SplinterlandsAPIFallback = "https://api2.splinterlands.com";
 
-        public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, Card[] cards, JToken quest, string username, bool secondTry = false, bool ignorePrivateAPI = false)
+        public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, bool secondTry = false, bool ignorePrivateAPI = false)
         {
             Log.WriteToLog($"{username}: Requesting team from API...");
             try
             {
-                var questLessDetails = new JObject(
-                    new JProperty("name", quest["name"]),
-                    new JProperty("splinter", Settings.QuestTypes[(string)quest["name"]]),
-                    new JProperty("total", quest["total_items"]),
-                    new JProperty("completed", quest["completed_items"])
-                    );
-
                 JObject matchDetails;
                 if (Settings.UsePrivateAPI && !ignorePrivateAPI)
                 {
@@ -63,7 +56,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
                         System.Threading.Thread.Sleep(25000);
-                        return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true);
+                        return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, true);
                     }
                     else
                     {
@@ -75,7 +68,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     Log.WriteToLog($"{username}: Private API doesn't seem to have card data yet - using free API", Log.LogType.Warning);
                     System.Threading.Thread.Sleep(25000);
-                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true, true);
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, true, true);
 
                 }
                 if (APIResponse == null || APIResponse.Length < 5)
@@ -93,7 +86,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                     await Task.Delay(2000);
-                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, username, true, true);
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, true, true);
                 }
                 else if (secondTry)
                 {
@@ -149,7 +142,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             return null;
         }
-        public static async Task<JToken> GetPlayerQuestAsync(string username)
+        public static async Task<(JToken quest, JToken questLessDetails)> GetPlayerQuestAsync(string username)
         {
             try
             {
@@ -160,16 +153,23 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Log.WriteToLog($"{username}: Error with splinterlands API for quest, trying fallback api...", Log.LogType.Warning);
                     data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/quests?username={ username }");
                 }
-                JToken quest = JToken.Parse(data);
+                JToken quest = JToken.Parse(data)[0];
 
-                return quest[0];
+                var questLessDetails = new JObject(
+                    new JProperty("name", quest["name"]),
+                    new JProperty("splinter", Settings.QuestTypes[(string)quest["name"]]),
+                    new JProperty("total", quest["total_items"]),
+                    new JProperty("completed", quest["completed_items"])
+                    );
+
+                return (quest, questLessDetails);
 
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{username}: Could not get quest from splinterlands api: {ex}", Log.LogType.Error);
             }
-            return null;
+            return (null, null);
         }
 
         public static async Task<Card[]> GetPlayerCardsAsync(string username)

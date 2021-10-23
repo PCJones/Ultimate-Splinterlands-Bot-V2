@@ -140,7 +140,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 }
 
-                JToken quest = await API.GetPlayerQuestAsync(Username);
+                var quest = await API.GetPlayerQuestAsync(Username);
                 Card[] cards = await API.GetPlayerCardsAsync(Username);
                 if (Settings.UsePrivateAPI && Settings._Random.Next(0, 10) > 5)
                 {
@@ -159,13 +159,19 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 Log.WriteToLog($"{Username}: Current Rating is: {currentRating.Pastel(Color.Yellow)}");
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest).Pastel(Color.Yellow)}");
-                if (Settings.BadQuests.Contains((string)quest["splinter"]))
+                if (Settings.BadQuests.Contains((string)quest.questLessDetails["splinter"]))
                 {
-                    RequestNewQuest(driver, quest);
+                    RequestNewQuest(driver, quest.questLessDetails);
                 }
-                ClaimQuestReward(driver, quest, currentRating);
+                ClaimQuestReward(driver, quest.questLessDetails, currentRating);
 
-                double ecr = GetECR(driver);
+                double ecr = 0;
+                double lastECR = 0;
+                do
+                {
+                    lastECR = 0;
+                    ecr = GetECR(driver);
+                } while (lastECR != ecr);
                 LogSummary.ECR = $"{ecr} %";
                 // todo: add log with different colors in same line
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
@@ -199,7 +205,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 driver.ClickElementOnPage(By.CssSelector("button[class='btn btn--create-team']"));
                 SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
                 WaitForLoadingBanner(driver);
-                var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters, cards, quest, Username);
+
+                var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters, cards, quest.quest, quest.questLessDetails, Username);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
