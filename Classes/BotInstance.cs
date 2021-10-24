@@ -169,7 +169,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 double lastECR = 0;
                 do
                 {
-                    lastECR = 0;
+                    lastECR = ecr;
                     ecr = GetECR(driver);
                 } while (lastECR != ecr);
                 LogSummary.ECR = $"{ecr} %";
