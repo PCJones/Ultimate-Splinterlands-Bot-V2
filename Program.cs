@@ -280,7 +280,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             Settings.RentalBot = moduleInstance;
             MethodInfo mi = moduleInstance.Unwrap().GetType().GetMethod("Setup");
             
-            mi.Invoke(moduleInstance.Unwrap(), new object[] { Settings._httpClient });
+            mi.Invoke(moduleInstance.Unwrap(), new object[] { Settings._httpClient, false });
             Settings.RentalBotMethodCheckRentals = moduleInstance.Unwrap().GetType().GetMethod("CheckRentals");
             Settings.RentalBotMethodIsAvailable = moduleInstance.Unwrap().GetType().GetMethod("IsAvailable");
             Settings.RentalBotMethodSetActive = moduleInstance.Unwrap().GetType().GetMethod("SetActive");
