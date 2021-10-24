@@ -27,7 +27,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private int LeagueCached { get; set; }
         private int RatingCached { get; set; }
         private double ECRCached { get; set; }
-        private JToken QuestCached { get; set; }
+        private (JToken Quest, JToken QuestLessDetails) QuestCached { get; set; }
         private Card[] CardsCached { get; set; }
         public bool CurrentlyActive { get; private set; }
 
@@ -78,7 +78,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return null;
         }
 
-        private async Task SubmitTeam(string trxId, JToken matchDetails, Card[] cards, JToken quest)
+        private async Task SubmitTeam(string trxId, JToken matchDetails)
         {
             try
             {
@@ -118,13 +118,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 }
 
-                var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), cards, quest, Username);
+                var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username);
 
-                string summoner = cards.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
+                string summoner = CardsCached.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
                 string monsters = "";
                 for (int i = 0; i < 6; i++)
                 {
-                    var monster = cards.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
+                    var monster = CardsCached.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
                     if (monster.card_detail_id.Length == 0)
                     {
                         break;
@@ -242,7 +242,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                     ECRCached = await GetECRFromAPI();
                 } else if (APICounter % 3 == 0) {
-                    if ((int)QuestCached["completed"] != 5)
+                    if ((int)QuestCached.Quest["completed"] != 5)
                     {
                         QuestCached = await API.GetPlayerQuestAsync(Username);
                     }
@@ -250,13 +250,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 Log.WriteToLog($"{Username}: Deck size: {(CardsCached.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
-                Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(QuestCached).Pastel(Color.Yellow)}");
+                Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(QuestCached.QuestLessDetails).Pastel(Color.Yellow)}");
 
                 AdvanceLeague();
 
-                if (Settings.BadQuests.Contains((string)QuestCached["splinter"]))
+                if (Settings.BadQuests.Contains((string)QuestCached.QuestLessDetails["splinter"]))
                 {
-                    RequestNewQuestViaAPI(QuestCached);
+                    RequestNewQuestViaAPI();
                 }
                 else
                 {
@@ -290,7 +290,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                     return SleepUntil;
                 }
-                await SubmitTeam(trxId, matchDetails, CardsCached, QuestCached);
+                await SubmitTeam(trxId, matchDetails);
                 Log.WriteToLog($"{Username}: Finished battle!");
 
                 // todo: determine winner, show summary etc
@@ -317,8 +317,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             try
             {
                 string logText;
-                if ((int)QuestCached["total_items"] == (int)QuestCached["completed_items"]
-                    && QuestCached["rewards"].Type == JTokenType.Null)
+                if ((int)QuestCached.Quest["total_items"] == (int)QuestCached.Quest["completed_items"]
+                    && QuestCached.Quest["rewards"].Type == JTokenType.Null)
                 {
                     logText = "Quest reward can be claimed";
                     Log.WriteToLog($"{Username}: {logText.Pastel(Color.Green)}");
@@ -349,7 +349,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         }
 
                         string n = Helper.GenerateRandomString(10);
-                        string json = "{\"type\":\"quest\",\"quest_id\":\"" + (string)QuestCached["id"] +"\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                        string json = "{\"type\":\"quest\",\"quest_id\":\"" + (string)QuestCached.Quest["id"] +"\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                         COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_claim_reward", json);
 
@@ -371,7 +371,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     logText = "No quest reward...";
                 }
 
-                LogSummary.QuestStatus = $" { (string)QuestCached["completed_items"] }/{ (string)QuestCached["total_items"] } {logText}";
+                LogSummary.QuestStatus = $" { (string)QuestCached.Quest["completed_items"] }/{ (string)QuestCached.Quest["total_items"] } {logText}";
             }
             catch (Exception ex)
             {
@@ -601,11 +601,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return splinters;
         }
   
-        private void RequestNewQuestViaAPI(JToken quest)
+        private void RequestNewQuestViaAPI()
         {
             try
             {
-                if ((int)quest["completed"] > 0)
+                if ((int)QuestCached.QuestLessDetails["completed"] > 0)
                 {
                     return;
                 }

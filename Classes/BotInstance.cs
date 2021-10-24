@@ -68,7 +68,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
             Password = password;
             Key = key;
-            SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * - 1);
+            SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * -1);
             LogSummary = new LogSummary(index, username);
             _activeLock = new object();
         }
@@ -76,7 +76,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public async Task<DateTime> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance)
         {
             Log.WriteToLog($"Browser #{ browserInstance}", debugOnly: true);
-            IWebDriver driver =  Settings.SeleniumInstances[browserInstance].driver;
+            IWebDriver driver = Settings.SeleniumInstances[browserInstance].driver;
             lock (_activeLock)
             {
                 if (CurrentlyActive)
@@ -118,7 +118,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 ClosePopups(driver);
                 NavigateToBattlePage(driver);
 
-                
+
                 if (Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), new object[] { })))
                 {
                     Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { true });
@@ -140,8 +140,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 }
 
-                JToken quest = await API.GetPlayerQuestAsync(Username);
+                var quest = await API.GetPlayerQuestAsync(Username);
                 Card[] cards = await API.GetPlayerCardsAsync(Username);
+                if (Settings.UsePrivateAPI && Settings._Random.Next(0, 10) > 5)
+                {
+                    API.UpdateCardsForPrivateAPI(Username, cards);
+                }
                 Log.WriteToLog($"{Username}: Deck size: {(cards.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
 
                 string currentRating = GetCurrentRating(driver);
@@ -154,16 +158,20 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     ClaimSeasonRewards(driver);
                 }
                 Log.WriteToLog($"{Username}: Current Rating is: {currentRating.Pastel(Color.Yellow)}");
-                Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest).Pastel(Color.Yellow)}");
-                if (Settings.BadQuests.Contains((string)quest["splinter"]))
+                Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(quest.questLessDetails).Pastel(Color.Yellow)}");
+                if (Settings.BadQuests.Contains((string)quest.questLessDetails["splinter"]))
                 {
-                    RequestNewQuest(driver, quest);
+                    RequestNewQuest(driver, quest.questLessDetails);
                 }
-                ClaimQuestReward(driver, quest, currentRating);
+                ClaimQuestReward(driver, quest.questLessDetails, currentRating);
 
-                ClosePopups(driver);
-
-                double ecr = GetECR(driver);
+                double ecr = 0;
+                double lastECR = 0;
+                do
+                {
+                    lastECR = 0;
+                    ecr = GetECR(driver);
+                } while (lastECR != ecr);
                 LogSummary.ECR = $"{ecr} %";
                 // todo: add log with different colors in same line
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
@@ -173,6 +181,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                     return SleepUntil;
                 }
+
+                ClosePopups(driver);
 
                 // todo: implement selectCorrectBattleType
                 StartBattle(driver); // todo: try catch, return true/false
@@ -195,7 +205,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 driver.ClickElementOnPage(By.CssSelector("button[class='btn btn--create-team']"));
                 SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
                 WaitForLoadingBanner(driver);
-                var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters, cards, quest, Username);
+
+                var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters, cards, quest.quest, quest.questLessDetails, Username);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
@@ -219,7 +230,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         return SleepUntil;
                     }
                 }
-                
+
                 Thread.Sleep(1000);
                 driver.ClickElementOnPage(By.Id("btnRumble"));
                 Log.WriteToLog($"{Username}: Rumble button clicked");
@@ -548,7 +559,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (driver.WaitForElementShown(By.Id("claim-btn"), 1))
                 {
                     Log.WriteToLog($"{Username}: Claiming season rewards");
-                    Thread.Sleep(1000);
                     driver.ClickElementOnPage(By.Id("claim-btn"));
                     Thread.Sleep(5000);
                     WaitForLoadingBanner(driver);
@@ -593,7 +603,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         int power = (int)Convert.ToDecimal(driver.FindElement(By.CssSelector("div#power_progress div.progress__info span.number_text")).Text, CultureInfo.InvariantCulture);
                         bool waitForHigherLeague = (rating is >= 300 and < 400) && (power is >= 1000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 1000)) || // bronze 2
                             (rating is >= 550 and < 700) && (power is >= 5000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 5000)) || // bronze 1 
-                            (rating is >= 840 and < 1000) && (power is >= 15000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 15000)) || // silver 3
+                            (rating is >= 900 and < 1000) && (power is >= 15000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 15000)) || // silver 3
                             (rating is >= 1200 and < 1300) && (power is >= 40000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 40000)) || // silver 2
                             (rating is >= 1500 and < 1600) && (power is >= 70000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 70000)) || // silver 1
                             (rating is >= 1800 and < 1900) && (power is >= 100000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 100000)); // gold 
@@ -824,7 +834,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             driver.ClickElementOnPage(By.Name("loginBtn"), 1);
 
-            if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_text"), 60))
+            if (!driver.WaitForWebsiteLoadedAndElementShown(By.Id("log_in_text"), 110))
             {
                 Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Could not log in - skipping account.", Log.LogType.Error);
                 return false;
