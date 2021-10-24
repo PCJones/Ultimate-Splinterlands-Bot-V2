@@ -177,7 +177,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 catch (Exception ex)
                 {
-                    Log.WriteToLog($"{Username}: Error at waiting for match details: " + ex.ToString(), Log.LogType.Error);
+                    if (i > 9)
+                    {
+                        Log.WriteToLog($"{Username}: Error at waiting for match details: " + ex.ToString(), Log.LogType.Error);
+                    }
                 }
             }
             return null;
