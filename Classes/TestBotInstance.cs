@@ -69,7 +69,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Finding match...");
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
-                return HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://api2.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
+                return HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
             }
             catch (Exception ex)
             {
@@ -137,7 +137,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string secret = Helper.GenerateRandomString(10);
                 string n = Helper.GenerateRandomString(10);
 
-                string teamHash = Helper.GenerateMD5Hash(summoner + "," + monsters + "," + secret);
+                string monsterClean = monsters.Replace("\"", "");
+
+                string teamHash = Helper.GenerateMD5Hash(summoner + "," + monsterClean + "," + secret);
 
                 string json = "{\"trx_id\":\"" + trxId + "\",\"team_hash\":\"" + teamHash + "\",\"summoner\":\"" + summoner + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
@@ -146,8 +148,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Submitting team...");
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
-                var result = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
-                await Task.Delay(5000);
+                var result = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://api2.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
             }
             catch (Exception ex)
             {
@@ -225,7 +226,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 APICounter++;
-                if (APICounter >= 12 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 40)
+                if (APICounter >= 6 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 40)
                 {
                     APICounter = 0;
                     LastCacheUpdate = DateTime.Now;
@@ -266,7 +267,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (ECRCached < Settings.ECRThreshold)
                 {
                     Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
-                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                    SleepUntil = DateTime.Now.AddMinutes(5);
+                    await Task.Delay(1500); // Short delay to not spam splinterlands api
                     return SleepUntil;
                 }
 
@@ -288,10 +290,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                     return SleepUntil;
                 }
-                await RevealTeam(trxId, matchDetails, CardsCached, QuestCached);
+                await SubmitTeam(trxId, matchDetails, CardsCached, QuestCached);
+                Log.WriteToLog($"{Username}: Finished battle!");
 
                 // todo: determine winner, show summary etc
-                Log.WriteToLog($"{Username}: Finished battle!");
+
+                await Task.Delay(5000);
             }
             catch (Exception ex)
             {
@@ -353,6 +357,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                         var postData = GetStringForSplinterlandsAPI(oTransaction);
                         HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://bcast.splinterlands.com/send", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
+
+                        // RequestNewQuest()?!!!!!
+
+
                         APICounter = 100; // set api counter to 100 to reload quest
                     }
                 }
