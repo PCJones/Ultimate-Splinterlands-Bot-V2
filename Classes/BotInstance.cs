@@ -502,7 +502,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private int GetMana(IWebDriver driver)
         {
             driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("div.col-md-12 > div.mana-cap__icon"));
-            Thread.Sleep(100);
+            Thread.Sleep(300);
             int mana = Convert.ToInt32(driver.FindElement(By.CssSelector("div.col-md-12 > div.mana-cap__icon"))
                     .GetAttribute("data-original-title").Split(':')[1].Trim());
             return mana;

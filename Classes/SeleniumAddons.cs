@@ -296,7 +296,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         else
                         {
                             System.Threading.Thread.Sleep(1000);
-                        }
+                        } 
                     }
                     catch (WebDriverException)
                     {
