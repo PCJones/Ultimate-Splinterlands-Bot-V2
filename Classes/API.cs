@@ -13,8 +13,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
     public static class API
     {
-        private const string SplinterlandsAPI = "https://game-api.splinterlands.io";
-        private const string SplinterlandsAPIFallback = "https://api2.splinterlands.com";
+        private const string SplinterlandsAPI = "https://api2.splinterlands.com";
+        private const string SplinterlandsAPIFallback = "https://game-api.splinterlands.io";
 
         public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, bool secondTry = false, bool ignorePrivateAPI = false)
         {
