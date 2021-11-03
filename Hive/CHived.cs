@@ -63,14 +63,23 @@ namespace HiveAPI.CS
 		}
 		public CtransactionData CreateTransaction(Object[] aOperations, string[] astrPrivateKeys)
 		{
-			JObject oDGP = get_dynamic_global_properties();
-			CTransaction oTransaction = new CTransaction {
-				ref_block_num = Convert.ToUInt16((UInt32)oDGP["head_block_number"] & 0xFFFF),
-				ref_block_prefix = BitConverter.ToUInt32(Hex.HexToBytes(oDGP["head_block_id"].ToString()), 4),
-				expiration = Convert.ToDateTime(oDGP["time"]).AddSeconds(30),
-				operations = aOperations
-			};
-			return SignTransaction(oTransaction, astrPrivateKeys);
+            try
+            {
+				JObject oDGP = get_dynamic_global_properties();
+				CTransaction oTransaction = new CTransaction
+				{
+					ref_block_num = Convert.ToUInt16((UInt32)oDGP["head_block_number"] & 0xFFFF),
+					ref_block_prefix = BitConverter.ToUInt32(Hex.HexToBytes(oDGP["head_block_id"].ToString()), 4),
+					expiration = Convert.ToDateTime(oDGP["time"]).AddSeconds(30),
+					operations = aOperations
+				};
+				return SignTransaction(oTransaction, astrPrivateKeys);
+			}
+            catch (Exception ex)
+            {
+				// todo
+            }
+			return null;
 		}
 		#endregion
 

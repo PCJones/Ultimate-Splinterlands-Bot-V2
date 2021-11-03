@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -84,12 +85,29 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        public static void LogTeamToTable(JToken team)
+        public static void LogTeamToTable(JToken team, int mana, string rulesets)
         {
-            var t = new TablePrinter("#", "Card ID", "Name");
-            int index = 0;
-            Settings.LogSummaryList.ForEach(x => t.AddRow(index++, x.account, x.battleResult, x.rating, x.ECR, x.questStatus));
-            Settings.LogSummaryList.Clear();
+            var t = new TablePrinter("Mana", "Rulesets", "Quest Prio", "Win %", "Team Rank");
+            t.AddRow(mana, rulesets, team["play_for_quest"], Convert.ToDouble(((string)team["summoner_wins"]).Replace(",", "."), CultureInfo.InvariantCulture).ToString("N3"), team["teamRank"]);
+            lock (_ConsoleLock)
+            {
+                t.Print();
+            }
+            t = new TablePrinter("Card", "ID", "Name", "Element");
+            t.AddRow("Summoner", (string)team["summoner_id"], (string)Settings.CardsDetails[((int)team["summoner_id"]) - 1]["name"],
+            ((string)Settings.CardsDetails[((int)team["summoner_id"]) - 1]["color"])
+            .Replace("Red", "Fire").Replace("Blue", "Water").Replace("White", "Life").Replace("Black", "Death").Replace("Green", "Earth"));
+            for (int i = 1; i < 7; i++)
+            {
+                if ((string)team[$"monster_{i}_id"] == "")
+                {
+                    break;
+                }
+                t.AddRow($"Monster #{i}", (string)team[$"monster_{i}_id"], (string)Settings.CardsDetails[((int)team[$"monster_{i}_id"]) - 1]["name"],
+                ((string)Settings.CardsDetails[((int)team[$"monster_{i}_id"]) - 1]["color"])
+                .Replace("Red", "Fire").Replace("Blue", "Water").Replace("White", "Life").Replace("Black", "Death").Replace("Green", "Earth").Replace("Gray", "Neutral"));
+            }
+
             lock (_ConsoleLock)
             {
                 t.Print();

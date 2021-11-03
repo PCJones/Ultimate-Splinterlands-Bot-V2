@@ -124,7 +124,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                 }
-                Log.LogTeamToTable(team);
+                Log.LogTeamToTable(team, mana, rulesets);
 
                 string summoner = CardsCached.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
                 string monsters = "";

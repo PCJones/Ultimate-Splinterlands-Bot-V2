@@ -214,7 +214,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return SleepUntil;
                 }
 
-                Log.LogTeamToTable(team);
+                Log.LogTeamToTable(team, mana, rulesets);
                 SelectTeam(driver, team);
 
                 counter = 0;

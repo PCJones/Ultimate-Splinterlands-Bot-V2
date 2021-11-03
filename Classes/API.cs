@@ -49,7 +49,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 int counter = 0;
                 do
                 {
-                    Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }");
+                    Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }", debugOnly: true);
                     if (APIResponse.Contains("hash"))
                     {
                         Log.WriteToLog($"{username}: Waiting 10 seconds for API to calculate team...");
@@ -121,7 +121,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 string urlGetTeam = $"{Settings.PrivateAPIUrl}get_team_private/{username}/";
                 string APIResponse = await PostJSONToApi(matchDetails, urlGetTeam, username);
-                Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }");
+                Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }", debugOnly: true);
 
                 if (APIResponse.Contains("api limit reached"))
                 {
