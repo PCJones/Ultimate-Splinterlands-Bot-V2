@@ -119,6 +119,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username);
+                if (team == null || (string)team["summoner_id"] == "")
+                {
+                    Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
+                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                }
+                Log.LogTeamToTable(team);
 
                 string summoner = CardsCached.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
                 string monsters = "";
@@ -269,7 +275,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 string trxId = StartNewMatch();
-                if (!trxId.Contains("success"))
+                if (trxId == null || !trxId.Contains("success"))
                 {
                     Log.WriteToLog($"{Username}: Creating match was not successful: " + trxId, Log.LogType.Warning);
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
@@ -349,13 +355,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                         COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_claim_reward", json);
 
-                        Log.WriteToLog($"{Username}: { "Claimed quest reward".Pastel(Color.Green) }");
-                        CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
-                        var postData = GetStringForSplinterlandsAPI(oTransaction);
-                        HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://bcast.splinterlands.com/send", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
-
-                        // RequestNewQuest()?!!!!!
-
+                        string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                        Log.WriteToLog($"{Username}: { "Claimed quest reward:".Pastel(Color.Green) } {tx}");
+                        //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
+                        //var postData = GetStringForSplinterlandsAPI(oTransaction);
+                        //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://broadcast.splinterlands.com/send", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
 
                         APICounter = 100; // set api counter to 100 to reload quest
                     }
@@ -599,24 +603,31 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
   
         private void RequestNewQuestViaAPI()
         {
+            var test1 = ((DateTime)QuestCached.Quest["created_date"]).ToLocalTime();
+            var test = (DateTime.Now - ((DateTime)QuestCached.Quest["created_date"]).ToLocalTime()).TotalHours;
             try
             {
-                var claimTRXID = QuestCached.Quest["claim_trx_id"];
-                if (Settings.BadQuests.Contains((string)QuestCached.QuestLessDetails["splinter"]) ||
-                    false)
+                if (Settings.BadQuests.Contains((string)QuestCached.QuestLessDetails["splinter"])
+                    && (int)QuestCached.QuestLessDetails["completed"] == 0)
                 {
-                    if ((int)QuestCached.QuestLessDetails["completed"] > 0)
-                    {
-                        return;
-                    }
                     string n = Helper.GenerateRandomString(10);
-                    //string json = "{\\\"match_type\\\":\\\"Challenge\\\",\\\"opponent\\\":\\\"pcjones\\\",\\\"settings\\\":{\\\"rating_level\\\":4,\\\"allowed_cards\\\":\\\"all\\\"},\\\"app\\\":\\\"" + Settings.SPLINTERLANDS_APP + "\\\",\\\"n\\\":\\\"" + n + "\\\"}";
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                     COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_refresh_quest", json);
 
-                    Log.WriteToLog($"{Username}: Requesting new quest!");
-                    Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    Log.WriteToLog($"{Username}: Requesting new quest because of bad quest: {tx}");
+                    APICounter = 100; // set api counter to 100 to reload quest
+                } else if (QuestCached.Quest["claim_trx_id"].Type != JTokenType.Null
+                    && (DateTime.Now - ((DateTime)QuestCached.Quest["created_date"]).ToLocalTime()).TotalHours > 23)
+                {
+                    string n = Helper.GenerateRandomString(10);
+                    string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+
+                    COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_start_quest", json);
+
+                    string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    Log.WriteToLog($"{Username}: Requesting new quest because 23 hours passed: {tx}");
                     APICounter = 100; // set api counter to 100 to reload quest
                 }
             }

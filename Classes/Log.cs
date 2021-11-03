@@ -1,4 +1,5 @@
-﻿using Pastel;
+﻿using Newtonsoft.Json.Linq;
+using Pastel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -76,6 +77,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             var t = new TablePrinter("#", "Account", "Result", "Rating", "ECR", "QuestStatus");
             Settings.LogSummaryList.ForEach(x => t.AddRow(x.index, x.account, x.battleResult, x.rating, x.ECR, x.questStatus));
+            Settings.LogSummaryList.Clear();
+            lock (_ConsoleLock)
+            {
+                t.Print();
+            }
+        }
+
+        public static void LogTeamToTable(JToken team)
+        {
+            var t = new TablePrinter("#", "Card ID", "Name");
+            int index = 0;
+            Settings.LogSummaryList.ForEach(x => t.AddRow(index++, x.account, x.battleResult, x.rating, x.ECR, x.questStatus));
             Settings.LogSummaryList.Clear();
             lock (_ConsoleLock)
             {

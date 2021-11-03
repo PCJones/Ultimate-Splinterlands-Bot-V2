@@ -213,7 +213,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get collection power from splinterlands api: {ex}", Log.LogType.Error);
+                Log.WriteToLog($"{username}: Could not get player details from splinterlands api: {ex}", Log.LogType.Error);
             }
             return (-1, -1, -1);
         }

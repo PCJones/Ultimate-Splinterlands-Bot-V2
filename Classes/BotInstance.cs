@@ -213,6 +213,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                     return SleepUntil;
                 }
+
+                Log.LogTeamToTable(team);
                 SelectTeam(driver, team);
 
                 counter = 0;
