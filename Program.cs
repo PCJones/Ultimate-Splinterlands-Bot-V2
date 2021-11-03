@@ -75,6 +75,11 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 Log.LogBattleSummaryToTable();
                                 Log.WriteSupportInformationToLog();
                                 nextBotInstance = 0;
+                                while (API.CheckForMaintenance().Result)
+                                {
+                                    Log.WriteToLog("Splinterlands maintenance - waiting 3 minutes");
+                                    Thread.Sleep(3 * 60000);
+                                }
                             }
 
                             //if (Settings.SleepBetweenBattles > 0

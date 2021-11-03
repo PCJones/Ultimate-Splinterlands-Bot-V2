@@ -256,15 +256,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(QuestCached.QuestLessDetails).Pastel(Color.Yellow)}");
 
                 AdvanceLeague();
-
-                if (Settings.BadQuests.Contains((string)QuestCached.QuestLessDetails["splinter"]))
-                {
-                    RequestNewQuestViaAPI();
-                }
-                else
-                {
-                    ClaimQuestReward();
-                }
+                RequestNewQuestViaAPI();
+                ClaimQuestReward();
 
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
                 if (ECRCached < Settings.ECRThreshold)
@@ -608,19 +601,24 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
-                if ((int)QuestCached.QuestLessDetails["completed"] > 0)
+                var claimTRXID = QuestCached.Quest["claim_trx_id"];
+                if (Settings.BadQuests.Contains((string)QuestCached.QuestLessDetails["splinter"]) ||
+                    false)
                 {
-                    return;
+                    if ((int)QuestCached.QuestLessDetails["completed"] > 0)
+                    {
+                        return;
+                    }
+                    string n = Helper.GenerateRandomString(10);
+                    //string json = "{\\\"match_type\\\":\\\"Challenge\\\",\\\"opponent\\\":\\\"pcjones\\\",\\\"settings\\\":{\\\"rating_level\\\":4,\\\"allowed_cards\\\":\\\"all\\\"},\\\"app\\\":\\\"" + Settings.SPLINTERLANDS_APP + "\\\",\\\"n\\\":\\\"" + n + "\\\"}";
+                    string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+
+                    COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_refresh_quest", json);
+
+                    Log.WriteToLog($"{Username}: Requesting new quest!");
+                    Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    APICounter = 100; // set api counter to 100 to reload quest
                 }
-                string n = Helper.GenerateRandomString(10);
-                //string json = "{\\\"match_type\\\":\\\"Challenge\\\",\\\"opponent\\\":\\\"pcjones\\\",\\\"settings\\\":{\\\"rating_level\\\":4,\\\"allowed_cards\\\":\\\"all\\\"},\\\"app\\\":\\\"" + Settings.SPLINTERLANDS_APP + "\\\",\\\"n\\\":\\\"" + n + "\\\"}";
-                string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
-
-                COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_refresh_quest", json);
-
-                Log.WriteToLog($"{Username}: Requesting new quest!");
-                Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
-                APICounter = 100; // set api counter to 100 to reload quest
             }
             catch (Exception ex)
             {

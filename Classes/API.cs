@@ -179,7 +179,25 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             _ = DownloadPageAsync($"{ Settings.PublicAPIUrl }report_loss/{enemy}/{username}");
         }
-
+        public static async Task<bool> CheckForMaintenance()
+        {
+            try
+            {
+                string data = await DownloadPageAsync($"{SplinterlandsAPI}/settings");
+                if (data == null || data.Trim().Length < 10)
+                {
+                    // Fallback API
+                    Log.WriteToLog($"Error with splinterlands API for settings, trying fallback api...", Log.LogType.Warning);
+                    data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/settings");
+                }
+                return (bool)JToken.Parse(data)["maintenance_mode"];
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"Could not get settings from splinterlands api: {ex}", Log.LogType.Error);
+            }
+            return true;
+        }
         public static async Task<(int power, int rating, int league)> GetPlayerDetailsAsync(string username)
         {
             try
