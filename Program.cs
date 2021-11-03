@@ -203,7 +203,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                         Settings.UseAPI = Boolean.Parse(temp[1]);
                         break;
                     case "API_URL":
-                        Settings.APIUrl = temp[1];
+                        Settings.PublicAPIUrl = temp[1];
                         break;
                     case "DEBUG":
                         Settings.DebugMode = Boolean.Parse(temp[1]);

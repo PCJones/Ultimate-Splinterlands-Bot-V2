@@ -316,7 +316,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     logTextBattleResult = $"You lost :(";
                     Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
                     Log.WriteToLog($"{Username}: New rating is {rating} ({ ratingChange.Pastel(Color.Red) })");
-                    API.ReportLoss(winner, Username);
+                    //loss reporting disabled for now
+                    //API.ReportLoss(winner, Username);
                 }
             }
             else

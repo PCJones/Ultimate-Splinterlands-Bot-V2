@@ -31,7 +31,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static int MaxBrowserInstances = 2;
 
         public static bool UseAPI = true;
-        public static string APIUrl = "";
+        public static string PublicAPIUrl = "";
         public static bool UsePrivateAPI = false;
         public static string PrivateAPIUrl = "";
         public static string PrivateAPIShop = "";
