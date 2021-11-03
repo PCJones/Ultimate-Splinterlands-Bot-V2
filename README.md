@@ -12,6 +12,7 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 [Telegram](https://t.me/ultimatesplinterlandsbot) 
 
 ## How to install (Windows)
+- [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
 - Download the bot from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
 - Install https://dotnet.microsoft.com/download/dotnet/5.0/runtime (for console applications)
 - Install Google Chrome
