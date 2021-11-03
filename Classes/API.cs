@@ -138,12 +138,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         await CheckRateLimitLoopAsync(username);
                     }
                 }
-                else if (Settings.UsePrivateAPI && APIResponse.Contains("API Error") && !secondTry)
+                else if (APIResponse.Contains("API Error") && !secondTry)
                 {
                     Log.WriteToLog($"{username}: Private API doesn't seem to have card data yet - using free API", Log.LogType.Warning);
                     System.Threading.Thread.Sleep(25000);
                     return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, false, true);
 
+                } else if (APIResponse.Contains("Account not allowed"))
+                {
+                    return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, false, true);
                 }
                 if (APIResponse == null || APIResponse.Length < 5)
                 {
