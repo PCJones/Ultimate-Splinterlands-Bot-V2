@@ -184,7 +184,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             try
             {
                 string data = await DownloadPageAsync($"{SplinterlandsAPI}/settings");
-                if (data == null || data.Trim().Length < 10)
+                if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
                     Log.WriteToLog($"Error with splinterlands API for settings, trying fallback api...", Log.LogType.Warning);
@@ -203,7 +203,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             try
             {
                 string data = await DownloadPageAsync($"{SplinterlandsAPI}/players/details?name={ username }");
-                if (data == null || data.Trim().Length < 10)
+                if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
                     Log.WriteToLog($"{username}: Error with splinterlands API for collection power, trying fallback api...", Log.LogType.Warning);
@@ -217,12 +217,56 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             return (-1, -1, -1);
         }
+
+        public static async Task<(int newRating, int ratingChange, decimal decReward, int result)> GetBattleresultAsync(string username, string tx)
+        {
+            try
+            {
+                string data = await DownloadPageAsync($"{SplinterlandsAPI}/battle/history2?player={ username }");
+                if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
+                {
+                    // Fallback API
+                    Log.WriteToLog($"{username}: Error with splinterlands API for collection power, trying fallback api...", Log.LogType.Warning);
+                    data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/battle/history2?player={ username }");
+                }
+
+                var matchHistory = JToken.Parse(data);
+
+                if ((string)matchHistory["battles"][0]["battle_queue_id_1"] != tx && (string)matchHistory["battles"][0]["battle_queue_id_2"] != tx)
+                {
+                    return (-1, -1, -1, -1);
+                }
+
+                int gameResult = 0;
+                if ((string)matchHistory["battles"][0]["winner"] == username)
+                {
+                    gameResult = 1;
+                } else if((string)matchHistory["battles"][0]["winner"] == "DRAW")
+                {
+                    gameResult = 2;
+                }
+
+                int newRating = (string)matchHistory["battles"][0]["player_1"] == username ? ((int)matchHistory["battles"][0]["player_1_rating_final"]) :
+                    ((int)matchHistory["battles"][0]["player_2_rating_final"]);
+                int ratingChange = (string)matchHistory["battles"][0]["player_1"] == username ? newRating - ((int)matchHistory["battles"][0]["player_1_rating_initial"]) :
+                    newRating - ((int)matchHistory["battles"][0]["player_2_rating_initial"]);
+                decimal decReward = (decimal)matchHistory["battles"][0]["reward_dec"];
+
+                return (newRating, ratingChange, decReward, gameResult);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{username}: Could not get battle results from splinterlands api: {ex}", Log.LogType.Error);
+            }
+            return (-1, -1, -1, -1);
+        }
+
         public static async Task<JToken> GetPlayerBalancesAsync(string username)
         {
             try
             {
                 string data = await DownloadPageAsync($"{SplinterlandsAPI}/players/balances?username={ username }");
-                if (data == null || data.Trim().Length < 10)
+                if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
                     Log.WriteToLog($"{username}: Error with splinterlands API for balances, trying fallback api...", Log.LogType.Warning);
@@ -243,7 +287,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             try
             {
                 string data = await DownloadPageAsync($"{SplinterlandsAPI}/players/quests?username={ username }");
-                if (data == null || data.Trim().Length < 10)
+                if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
                     Log.WriteToLog($"{username}: Error with splinterlands API for quest, trying fallback api...", Log.LogType.Warning);
@@ -273,7 +317,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             try
             {
                 string data = await DownloadPageAsync($"{SplinterlandsAPI}/cards/collection/{ username }");
-                if (data == null || data.Trim().Length < 10)
+                if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
                     Log.WriteToLog($"{username}: Error with splinterlands API for cards, trying fallback api...", Log.LogType.Warning);

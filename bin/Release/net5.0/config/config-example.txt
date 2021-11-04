@@ -1,3 +1,4 @@
+##################General Settings##################
 PRIORITIZE_QUEST=true
 SLEEP_BETWEEN_BATTLES=5
 ECR_THRESHOLD=75
@@ -11,22 +12,55 @@ DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE=true
 ADVANCE_LEAGUE=true
 
 ##seperate by comma like this: earth,snipe - it will request new quest on earth and snipe quest
+##Remove the # at the beginning of the next line to activate
 #REQUEST_NEW_QUEST=earth
+##################General Settings##################
+
+##################Lightning Mode Settings##################
+#####If you want to use the fast, low resource blockchain mode of the bot enable this#####
+#####It has 90% less requests to splinterlands API then playing via browser, so you  #####
+#####will not get soft banned from splinterlands anymore.                            #####
+USE_LIGHTNING_MODE=true
+
+##Threads = number of parallel accoounts.
+##Threads are MUCH faster than in the browser mode, so 1 or 2 will probably be enough
+##Especially if you turn of SHOW_BATTLE_RESULTS the bot will only need 15 seconds per account
+THREADS=1
+
+##If you enable SHOW_BATTLE_RESULTS the bot will wait for battle end(takes longer)
+##The bot will also create more requests to splinterlands api, 
+##so if you have a lot of accounts you might soft banned if you enable this
+SHOW_BATTLE_RESULTS=true
+##################Lightning Mode Settings##################
+
+###################Browser Mode Settings###################
+#####If you want to use the old browser based version of the bot enable this#####
+USE_BROWSER_MODE=false
 
 ## HEADLESS true = invisible browser
 HEADLESS=false
 
 ##MAX_BROWSER_INSTANCES = MultiThreading!
+##2 = 2 Browsers will open, so 2 accounts can fight at the same time
 MAX_BROWSER_INSTANCES=2
+###################Browser Mode Settings###################
+
+#######################API Settings########################
 
 USE_API=true
 API_URL=http://splinterlandsapi.pcjones.de:8080/
-USE_PRIVATE_API=false
-PRIVATE_API_URL=http://privatesps1.pcjones.de/8080/
 
+##PRIVATE API Settings - ignore if you don't have it
+USE_PRIVATE_API=false
+PRIVATE_API_URL=
+PRIVATE_API_SHOP=
+#######################API Settings########################
+
+#####################Advanced Settings#####################
 DEBUG=false
 WRITE_LOG_TO_FILE=false
 
 #Linux / VPS Variables - ignore if bot works
 #CHROME_BINARY_PATH=path/to/chrome/binary
 #CHROME_NO_SANDBOX=false
+#####################Advanced Settings#####################

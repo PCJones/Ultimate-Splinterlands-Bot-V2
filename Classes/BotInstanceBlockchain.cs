@@ -122,7 +122,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                 }
-                Log.LogTeamToTable(team, mana, rulesets);
 
                 string summoner = CardsCached.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
                 string monsters = "";
@@ -149,7 +148,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_team_reveal", json);
 
-                Log.WriteToLog($"{Username}: Submitting team...");
+                Log.WriteToLog($"{Username}: Submitting team:");
+                Log.LogTeamToTable(team, mana, rulesets);
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
                 var result = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://api2.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
@@ -291,9 +291,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 await SubmitTeam(trxId, matchDetails);
                 Log.WriteToLog($"{Username}: Finished battle!");
 
-                // todo: determine winner, show summary etc
-
-                await Task.Delay(5000);
+                if (Settings.ShowBattleResults)
+                {
+                    await ShowBattleResult(trxId);
+                }
+                else
+                {
+                    await Task.Delay(1000);
+                }
             }
             catch (Exception ex)
             {
@@ -308,6 +313,54 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
             }
             return SleepUntil;
+        }
+
+        private async Task ShowBattleResult(string tx)
+        {
+            (int newRating, int ratingChange, decimal decReward, int result) battleResult = new();
+            for (int i = 0; i < 14; i++)
+            {
+                Log.WriteToLog($"{Username}: Waiting 15 seconds for battle result #{i + 1}/14");
+                await Task.Delay(15000);
+                battleResult = await API.GetBattleresultAsync(Username, tx);
+                if (battleResult.result >= 0)
+                {
+                    break;
+                }
+            }
+
+            if (battleResult.result == -1)
+            {
+                Log.WriteToLog($"{Username}: Could not get battle result");
+                return;
+            }
+
+            string logTextBattleResult = "";
+
+            switch (battleResult.result)
+            {
+                case 2:
+                    logTextBattleResult = "DRAW";
+                    Log.WriteToLog($"{Username}: { logTextBattleResult}");
+                    Log.WriteToLog($"{Username}: Rating has not changed ({ battleResult.newRating })");
+                    break;
+                case 1:
+                    logTextBattleResult = $"You won! Reward: { battleResult.decReward } DEC";
+                    Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
+                    Log.WriteToLog($"{Username}: New rating is { battleResult.newRating } ({ ("+" + battleResult.ratingChange.ToString()).Pastel(Color.Green) })");
+                    break;
+                case 0:
+                    logTextBattleResult = $"You lost :(";
+                    Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
+                    Log.WriteToLog($"{Username}: New rating is { battleResult.newRating } ({ battleResult.ratingChange.ToString().Pastel(Color.Red) })");
+                    //API.ReportLoss(winner, Username); disabled for now
+                    break;
+                default:
+                    break;
+            }
+
+            LogSummary.Rating = $"{ battleResult.newRating } ({ battleResult.ratingChange })";
+            LogSummary.BattleResult = logTextBattleResult;
         }
 
         private void ClaimQuestReward()

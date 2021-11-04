@@ -118,7 +118,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 ClosePopups(driver);
                 NavigateToBattlePage(driver);
 
-
                 if (Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), new object[] { })))
                 {
                     Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { true });
@@ -169,7 +168,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 double lastECR = 0;
                 do
                 {
-                    lastECR = 0;
+                    lastECR = ecr;
                     ecr = GetECR(driver);
                 } while (lastECR != ecr);
                 LogSummary.ECR = $"{ecr} %";

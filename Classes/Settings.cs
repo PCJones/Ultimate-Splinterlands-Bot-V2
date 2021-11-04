@@ -25,6 +25,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool DebugMode = false;
         public static bool WriteLogToFile = false;
 
+        public static bool LightningMode = false;
+        public static bool ShowBattleResults = true;
+        public static int Threads = 1;
+
+        public static bool BrowserMode = false;
         public static bool ChromeNoSandbox = false;
         public static bool Headless = false;
         public static string ChromeBinaryPath = "";
@@ -60,7 +65,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool RateLimited = false;
         public static object RateLimitedLock = new object();
-        public static List<BotInstanceBlockchain> BotInstances { get; set; }
+        public static List<BotInstanceBrowser> BotInstancesBrowser { get; set; }
+        public static List<BotInstanceBlockchain> BotInstancesBlockchain { get; set; }
         public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }
         public static List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)> LogSummaryList { get; set; }
 
