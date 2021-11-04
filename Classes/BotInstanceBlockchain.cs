@@ -400,7 +400,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Log.WriteToLog($"{Username}: { "Advancing to higher league!".Pastel(Color.Green)}");
                     APICounter = 100; // set api counter to 100 to reload details
 
-                    // api call
+                    string n = Helper.GenerateRandomString(10);
+                    string json = "{\"notify\":\"true\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+
+                    COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_advance_league", json);
+
+                    string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    Log.WriteToLog($"{Username}: { "Advanced league: ".Pastel(Color.Green) } {tx}");
                 }
 
             }
