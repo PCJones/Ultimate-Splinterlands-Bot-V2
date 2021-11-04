@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ultimate Splinterlands Bot V2", "Ultimate Splinterlands Bot V2.csproj", "{E63A8F5D-053B-4B81-A5FB-1AC303C00800}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Splinterlands Rental Bot", "..\Splinterlands Rental Bot\Splinterlands Rental Bot.csproj", "{302CAF6D-CE4D-4FC1-BD00-D3C4F0CA00B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Splinterlands Rental Bot", "..\Splinterlands Rental Bot\Splinterlands Rental Bot.csproj", "{302CAF6D-CE4D-4FC1-BD00-D3C4F0CA00B9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Splinterlands Market Bot", "..\Splinterlands Market Bot\Splinterlands Market Bot.csproj", "{F5867D1F-B28B-489D-ADF6-D0FEF94973E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{302CAF6D-CE4D-4FC1-BD00-D3C4F0CA00B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{302CAF6D-CE4D-4FC1-BD00-D3C4F0CA00B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{302CAF6D-CE4D-4FC1-BD00-D3C4F0CA00B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5867D1F-B28B-489D-ADF6-D0FEF94973E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5867D1F-B28B-489D-ADF6-D0FEF94973E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5867D1F-B28B-489D-ADF6-D0FEF94973E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5867D1F-B28B-489D-ADF6-D0FEF94973E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
