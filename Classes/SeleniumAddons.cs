@@ -19,7 +19,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
     {
         public static object WebDriver { get; private set; }
 
-        public static IWebDriver CreateSeleniumInstance(bool fireFox = false, int timeOut = 120, bool disableImages = false, string userAgent = "", bool forceHeadless = false)
+        public static IWebDriver CreateSeleniumInstance(bool fireFox = false, int timeOut = 120, bool disableImages = false, string userAgent = "")
         {
             IWebDriver driver = null;
             while (driver == null)
@@ -59,7 +59,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         {
                             chromeOptions.AddArgument("--no-sandbox");
                         }
-                        if (Settings.Headless || headless)
+                        if (Settings.Headless)
                         {
                             chromeOptions.AddArgument("--headless");
                         }
