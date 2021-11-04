@@ -216,7 +216,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 if (Username.Contains("@"))
                 {
-                    Log.WriteToLog($"{Username}: Skipping account, fast mode only works if you login via username:posting_key", Log.LogType.Error);
+                    Log.WriteToLog($"{Username}: Skipping account, fast lightning blockchain mode works if you login via username:posting_key", Log.LogType.Error);
                     SleepUntil = DateTime.Now.AddMinutes(180);
                     return SleepUntil;
                 }

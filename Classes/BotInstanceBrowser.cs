@@ -38,7 +38,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             QuestStatus = "N/A";
         }
     }
-    public class BotInstance
+    public class BotInstanceBrowser
     {
         // todo: check which parameters need to be public / can be private
         public string Username { get; set; }
@@ -52,7 +52,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private bool UnknownUsername;
         private LogSummary LogSummary;
 
-        public BotInstance(string username, string password, int index, string key = "")
+        public BotInstanceBrowser(string username, string password, int index, string key = "")
         {
             if (username.Contains("@"))
             {
