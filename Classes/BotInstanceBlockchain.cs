@@ -16,10 +16,9 @@ using static HiveAPI.CS.CHived;
 
 namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
-    public class TestBotInstance
+    public class BotInstanceBlockchain
     {
         private string Username { get; set; }
-        private string Email { get; init; }
         private string PostingKey { get; init; }
         private string ActiveKey { get; init; } // only needed for plugins, not used by normal bot
         private int APICounter { get; set; }
@@ -34,7 +33,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private object _activeLock;
         private DateTime SleepUntil;
         private DateTime LastCacheUpdate;
-        private bool UnknownUsername;
         private LogSummary LogSummary;
 
         private COperations.custom_json CreateCustomJson(bool activeKey, bool postingKey, string methodName, string json)
@@ -191,20 +189,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             return null;
         }
-        public TestBotInstance(string username, string password, int index, string key = "")
+        public BotInstanceBlockchain(string username, string password, int index, string key = "")
         {
-            if (username.Contains("@"))
-            {
-                UnknownUsername = true;
-                Email = username;
-            }
-            else
-            {
-                UnknownUsername = false;
-                Username = username;
-                Email = "";
-            }
-
+            Username = username;
             PostingKey = password;
             ActiveKey = key;
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * -1);
@@ -227,6 +214,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             try
             {
+                if (Username.Contains("@"))
+                {
+                    Log.WriteToLog($"{Username}: Skipping account, fast mode only works if you login via username:posting_key", Log.LogType.Error);
+                    SleepUntil = DateTime.Now.AddMinutes(180);
+                    return SleepUntil;
+                }
                 LogSummary.Reset();
                 if (SleepUntil > DateTime.Now)
                 {
@@ -257,6 +250,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                     ECRCached = await GetECRFromAPI();
                 }
+
+                LogSummary.Rating = RatingCached.ToString();
+                LogSummary.ECR=  ECRCached.ToString();
 
                 Log.WriteToLog($"{Username}: Deck size: {(CardsCached.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(QuestCached.QuestLessDetails).Pastel(Color.Yellow)}");
@@ -414,197 +410,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private void SelectTeam(IWebDriver driver, JToken team)
-        {
-            try
-            {
-                Log.WriteToLog($"{Username}: Selecting team...");
-                string color = (string)team["color"];
-                string summonerID = (string)team["summoner_id"];
-                string monster1 = (string)team["monster_1_id"];
-                string monster2 = (string)team["monster_2_id"];
-                string monster3 = (string)team["monster_3_id"];
-                string monster4 = (string)team["monster_4_id"];
-                string monster5 = (string)team["monster_5_id"];
-                string monster6 = (string)team["monster_6_id"];
-                driver.WaitForWebsiteLoadedAndElementShown(By.XPath($"//div[@card_detail_id={summonerID}]"));
-                Thread.Sleep(300);
-                IWebElement element = driver.FindElement(By.XPath($"//div[@card_detail_id={summonerID}]"));
-                //driver.ExecuteJavaScript("arguments[0].click();", element);
-                driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={summonerID}]"));
-                //driver.ActionClick(By.XPath($"//div[@card_detail_id={summonerID}]"));
-                Thread.Sleep(1000);
-                if (GetSummonerColor(summonerID) == "Gold")
-                {
-                    string colorToPlay = "fire";
-                    if (monster1 != "")
-                    {
-                        string mobColor = GetSummonerColor(monster1);
-                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
-                        {
-                            colorToPlay = mobColor;
-                        }
-                    }
-                    if (colorToPlay == "" && monster2 != "")
-                    {
-                        string mobColor = GetSummonerColor(monster2);
-                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
-                        {
-                            colorToPlay = mobColor;
-                        }
-                    }
-                    if (colorToPlay == "" && monster3 != "")
-                    {
-                        string mobColor = GetSummonerColor(monster3);
-                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
-                        {
-                            colorToPlay = mobColor;
-                        }
-                    }
-                    if (colorToPlay == "" && monster4 != "")
-                    {
-                        string mobColor = GetSummonerColor(monster4);
-                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
-                        {
-                            colorToPlay = mobColor;
-                        }
-                    }
-                    if (colorToPlay == "" && monster5 != "")
-                    {
-                        string mobColor = GetSummonerColor(monster5);
-                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
-                        {
-                            colorToPlay = mobColor;
-                        }
-                    }
-                    if (colorToPlay == "" && monster6 != "")
-                    {
-                        string mobColor = GetSummonerColor(monster6);
-                        if (mobColor != "Gray" && mobColor != "Gold") // not neutral or dragon
-                        {
-                            colorToPlay = mobColor;
-                        }
-                    }
-                    colorToPlay = colorToPlay.Replace("Red", "fire").Replace("Blue", "water")
-                        .Replace("White", "life").Replace("Black", "death").Replace("Green", "earth");
-                    // check
-                    Log.WriteToLog($"{Username}: DRAGON - Teamcolor: {colorToPlay}");
-                    driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector($"label[for='filter-element-{colorToPlay}-button']"));
-                    driver.ActionClick(By.CssSelector($"label[for='filter-element-{colorToPlay}-button']"));
-                    Thread.Sleep(500);
-                }
-                driver.WaitForWebsiteLoadedAndElementShown(By.XPath($"//div[@card_detail_id={monster1}]"));
-                Thread.Sleep(1000);
-                element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster1}]"));
-                driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
-                //element.Click();
-                Thread.Sleep(1000);
-                driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster1}]"));
-                //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster1}]"));
-
-                if (monster2 != "")
-                {
-                    //Thread.Sleep(1000);
-                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster2}]"));
-                    //element.Click();
-                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
-                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
-                    Thread.Sleep(750);
-                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster2}]"));
-                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
-                }
-
-                if (monster3 != "")
-                {
-                    //Thread.Sleep(1000);
-                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster3}]"));
-                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
-                    //element.Click();
-                    Thread.Sleep(750);
-                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster3}]"));
-                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster3}]"));
-                }
-
-                if (monster4 != "")
-                {
-                    //Thread.Sleep(1000);
-                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster4}]"));
-                    //element.Click();
-                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
-                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
-                    Thread.Sleep(750);
-                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster4}]"));
-                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster4}]"));
-                }
-
-                if (monster5 != "")
-                {
-                    //Thread.Sleep(1000);
-                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster5}]"));
-                    //element.Click();
-                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
-                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
-                    Thread.Sleep(750);
-                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster5}]"));
-                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster5}]"));
-                }
-
-                if (monster6 != "")
-                {
-                    //Thread.Sleep(1000);
-                    element = driver.FindElement(By.XPath($"//div[@card_detail_id={monster6}]"));
-                    //element.Click();
-                    driver.ExecuteJavaScript("arguments[0].scrollIntoView(false);", element);
-                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster2}]"));
-                    Thread.Sleep(750);
-                    driver.ClickElementOnPage(By.XPath($"//div[@card_detail_id={monster6}]"));
-                    //driver.ActionClick(By.XPath($"//div[@card_detail_id={monster6}]"));
-                }
-
-                Thread.Sleep(1000);
-                driver.ClickElementOnPage(By.CssSelector("button[class='btn-green']"));
-                Thread.Sleep(1000);
-                driver.ClickElementOnPage(By.CssSelector("button[class='btn-green']"), suppressErrors: true);
-                //driver.ActionClick(By.CssSelector("button[class='btn-green']"));
-            }
-            catch (Exception ex)
-            {
-                Log.WriteToLog($"{Username}: Error at team selection: {ex}");
-            }
-        }
-
         private static string GetSummonerColor(string id)
         {
             return (string)Settings.CardsDetails[Convert.ToInt32(id) - 1]["color"];
         }
 
-        private int GetMana(IWebDriver driver)
-        {
-            driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("div.col-md-12 > div.mana-cap__icon"));
-            Thread.Sleep(100);
-            int mana = Convert.ToInt32(driver.FindElement(By.CssSelector("div.col-md-12 > div.mana-cap__icon"))
-                    .GetAttribute("data-original-title").Split(':')[1].Trim());
-            return mana;
-        }
-
-        private string GetRulesets(IWebDriver driver)
-        {
-            string rulesets = String.Join("|", driver.FindElements(By.CssSelector("div.combat__rules > div.row > div>  img"))
-                    .Select(x => x.GetAttribute("data-original-title").Split(':')[0].Trim()));
-            return rulesets;
-        }
-        private string[] GetAllowedSplinters(IWebDriver driver)
-        {
-            string[] splinters = driver.FindElements(By.CssSelector("div.col-sm-4 > img"))
-                .Where(x => x.GetAttribute("data-original-title").Split(':')[1].Trim() == "Active")
-                .Select(x => x.GetAttribute("data-original-title").Split(':')[0].Trim().ToLower()).ToArray();
-            return splinters;
-        }
-  
         private void RequestNewQuestViaAPI()
         {
-            var test1 = ((DateTime)QuestCached.Quest["created_date"]).ToLocalTime();
-            var test = (DateTime.Now - ((DateTime)QuestCached.Quest["created_date"]).ToLocalTime()).TotalHours;
             try
             {
                 if (Settings.BadQuests.Contains((string)QuestCached.QuestLessDetails["splinter"])
@@ -681,6 +493,5 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
             return 0;
         }
-
     }
 }

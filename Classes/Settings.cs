@@ -60,7 +60,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool RateLimited = false;
         public static object RateLimitedLock = new object();
-        public static List<TestBotInstance> BotInstances { get; set; }
+        public static List<BotInstanceBlockchain> BotInstances { get; set; }
         public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }
         public static List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)> LogSummaryList { get; set; }
 
