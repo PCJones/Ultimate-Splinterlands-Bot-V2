@@ -147,6 +147,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 else if (APIResponse.Contains("Account not allowed"))
                 {
+                    Log.WriteToLog($"{username}: Private API Error: Account not allowed", Log.LogType.CriticalError);
                     return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, false, true);
                 }
                 if (APIResponse == null || APIResponse.Length < 5)

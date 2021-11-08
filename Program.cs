@@ -28,6 +28,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             {
                 Log.WriteToLog("Press any key to close");
                 Console.ReadKey();
+                Environment.Exit(0);
             }
 
             Initialize();
@@ -64,7 +65,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             while (!token.IsCancellationRequested)
             {
-                while (instances.Count < Settings.MaxBrowserInstances && !token.IsCancellationRequested)
+                while (instances.Count < (Settings.BrowserMode ? Settings.MaxBrowserInstances : Settings.Threads) && !token.IsCancellationRequested)
                 {
                     try
                     {
@@ -306,7 +307,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             if (Settings.SleepBetweenBattles < 4 && Settings.LightningMode && !Settings.ShowBattleResults)
             {
-                Log.WriteToLog("Lightning Mode without SHOW_BATTLE_RESULTS enabled - setting minimum sleep time to 4.", Log.LogType.Warning);
+                Log.WriteToLog("Lightning Mode without SHOW_BATTLE_RESULTS enabled - setting minimum sleep time to 4 minutes.", Log.LogType.Warning);
                 Settings.SleepBetweenBattles = 4;
             }
 
