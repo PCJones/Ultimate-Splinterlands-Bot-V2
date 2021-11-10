@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Pastel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http;
@@ -73,8 +74,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                     else
                     {
+                        var sw = new Stopwatch();
+                        sw.Start();
                         Log.WriteToLog($"{username}: API Rate Limit reached! Waiting until no longer blocked...", Log.LogType.Warning);
                         await CheckRateLimitLoopAsync(username);
+                        sw.Stop();
+                        // return null so team doesn't get submitted
+                        if (sw.Elapsed.TotalSeconds > 200)
+                        {
+                            return null;
+                        }
                     }
                 }
 
@@ -147,6 +156,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 else if (APIResponse.Contains("Account not allowed"))
                 {
+                    Log.WriteToLog($"{username}: Private API Error: Account not allowed", Log.LogType.CriticalError);
                     return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, false, true);
                 }
                 if (APIResponse == null || APIResponse.Length < 5)

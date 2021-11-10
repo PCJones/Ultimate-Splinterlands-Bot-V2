@@ -88,7 +88,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static void LogTeamToTable(JToken team, int mana, string rulesets)
         {
             var t = new TablePrinter("Mana", "Rulesets", "Quest Prio", "Win %", "Team Rank");
-            t.AddRow(mana, rulesets, team["play_for_quest"], Convert.ToDouble(((string)team["summoner_wins"]).Replace(",", "."), CultureInfo.InvariantCulture).ToString("N3"), team["teamRank"]);
+            t.AddRow(mana, rulesets, team["play_for_quest"], (Convert.ToDouble(((string)team["summoner_wins"]).Replace(",", "."), CultureInfo.InvariantCulture) * 100).ToString("N2"), team["teamRank"]);
             lock (_ConsoleLock)
             {
                 t.Print();
