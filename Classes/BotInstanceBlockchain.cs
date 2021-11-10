@@ -216,7 +216,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 if (Username.Contains("@"))
                 {
-                    Log.WriteToLog($"{Username}: Skipping account, fast lightning blockchain mode works if you login via username:posting_key", Log.LogType.Error);
+                    Log.WriteToLog($"{Username}: Skipping account, fast lightning blockchain mode works only if you login via username:posting_key", Log.LogType.Error);
                     SleepUntil = DateTime.Now.AddMinutes(180);
                     return SleepUntil;
                 }
@@ -273,19 +273,22 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string trxId = StartNewMatch();
                 if (trxId == null || !trxId.Contains("success"))
                 {
+                    int sleepTime = 5;
                     Log.WriteToLog($"{Username}: Creating match was not successful: " + trxId, Log.LogType.Warning);
-                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                    Log.WriteToLog($"{Username}: Sleeping for { sleepTime } minutes", Log.LogType.Warning);
+                    SleepUntil = DateTime.Now.AddMinutes(sleepTime);
                     return SleepUntil;
                 }
                 Log.WriteToLog($"{Username}: Splinterlands Response: {trxId}");
                 trxId = Helper.DoQuickRegex("id\":\"(.*?)\"", trxId);
 
-                SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles >= 3 ? Settings.SleepBetweenBattles : 3);
+                SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
 
                 JToken matchDetails = await WaitForMatchDetails(trxId);
                 if (matchDetails == null)
                 {
-                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                    Log.WriteToLog($"{Username}: Banned from ranked? Sleeping for 1 hour!", Log.LogType.Warning);
+                    SleepUntil = DateTime.Now.AddMinutes(60);
                     return SleepUntil;
                 }
                 await SubmitTeam(trxId, matchDetails);

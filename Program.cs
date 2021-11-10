@@ -499,7 +499,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Settings.LogSummaryList = new List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)>();
 
-            Settings._httpClient.Timeout = new TimeSpan(0, 3, 0);
+            Settings._httpClient.Timeout = new TimeSpan(0, 2, 15);
 
             if (Settings.LightningMode)
             {
