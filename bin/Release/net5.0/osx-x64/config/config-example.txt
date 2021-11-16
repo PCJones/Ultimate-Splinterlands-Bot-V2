@@ -22,6 +22,8 @@ ADVANCE_LEAGUE=true
 #####will not get soft banned from splinterlands anymore.                            #####
 USE_LIGHTNING_MODE=true
 
+AUTO_UNBAN=true
+
 ##Threads = number of parallel accoounts.
 ##Threads are MUCH faster than in the browser mode, so 1 or 2 will probably be enough
 ##Especially if you turn of SHOW_BATTLE_RESULTS the bot will only need 15 seconds per account

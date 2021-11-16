@@ -148,7 +148,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                     var result = await Settings.BotInstancesBrowser[botInstance].DoBattleAsync(browserInstance, logoutNeeded, botInstance);
                                     lock (_TaskLock)
                                     {
-                                        sleepInfo[nextBotInstance] = result;
+                                        sleepInfo[nextBotInstance] = result.sleepTime;
                                         Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
                                     }
                                 }, CancellationToken.None));
@@ -236,6 +236,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                         break;
                     case "USE_BROWSER_MODE":
                         Settings.BrowserMode = Boolean.Parse(temp[1]);
+                        break;
+                    case "AUTO_UNBAN":
+                        Settings.AutoUnban = Boolean.Parse(temp[1]);
                         break;
                     case "HEADLESS":
                         Settings.Headless = Boolean.Parse(temp[1]);
@@ -330,6 +333,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             if (Settings.LightningMode)
             {
                 Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
+                Console.Write($"AUTO_UNBAN: {Settings.AutoUnban}{Environment.NewLine}");
                 Console.Write($"THREADS: {Settings.Threads}{Environment.NewLine}");
             }
             else
@@ -346,7 +350,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             Settings.RentalBot = moduleInstance;
             MethodInfo mi = moduleInstance.Unwrap().GetType().GetMethod("Setup");
             
-            mi.Invoke(moduleInstance.Unwrap(), new object[] { Settings._httpClient });
+            mi.Invoke(moduleInstance.Unwrap(), new object[] { Settings._httpClient, false });
             Settings.RentalBotMethodCheckRentals = moduleInstance.Unwrap().GetType().GetMethod("CheckRentals");
             Settings.RentalBotMethodIsAvailable = moduleInstance.Unwrap().GetType().GetMethod("IsAvailable");
             Settings.RentalBotMethodSetActive = moduleInstance.Unwrap().GetType().GetMethod("SetActive");

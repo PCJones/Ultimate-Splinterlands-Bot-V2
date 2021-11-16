@@ -73,16 +73,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             _activeLock = new object();
         }
 
-        public async Task<DateTime> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance)
+        public async Task<(DateTime sleepTime, bool battleFailed)> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance, bool unbanMode = false)
         {
             Log.WriteToLog($"Browser #{ browserInstance}", debugOnly: true);
-            IWebDriver driver = Settings.SeleniumInstances[browserInstance].driver;
+            IWebDriver driver = !unbanMode ? Settings.SeleniumInstances[browserInstance].driver : SeleniumAddons.CreateSeleniumInstance();
             lock (_activeLock)
             {
                 if (CurrentlyActive)
                 {
                     Log.WriteToLog($"{Username} Skipped account because it is currently active", debugOnly: true);
-                    return DateTime.Now.AddSeconds(30);
+                    return (DateTime.Now.AddSeconds(30), false);
                 }
                 CurrentlyActive = true;
             }
@@ -92,12 +92,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (SleepUntil > DateTime.Now)
                 {
                     Log.WriteToLog($"{Username}: is sleeping until {SleepUntil.ToString().Pastel(Color.Red)}");
-                    return SleepUntil;
+                    return (SleepUntil, false);
                 }
                 if (!Login(driver, logoutNeeded))
                 {
                     SleepUntil = DateTime.Now.AddMinutes(5);
-                    return SleepUntil;
+                    return (SleepUntil, false);
                 }
                 ClosePopups(driver);
                 if (UnknownUsername)
@@ -108,7 +108,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         Username = "";
                         Log.WriteToLog($"{Email}: { "Error reading username, will try again in 3 minutes".Pastel(Color.Red) }");
                         SleepUntil = DateTime.Now.AddMinutes(3);
-                        return SleepUntil;
+                        return (SleepUntil, false);
                     }
                     LogSummary.Account = Username;
                     Log.WriteToLog($"{Email}: Username is {Username.Pastel(Color.Yellow)}");
@@ -118,7 +118,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 ClosePopups(driver);
                 NavigateToBattlePage(driver);
 
-                if (Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), new object[] { })))
+                if (!unbanMode && Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), new object[] { })))
                 {
                     Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { true });
                     try
@@ -178,7 +178,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     Log.WriteToLog($"{Username}: ERC is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
-                    return SleepUntil;
+                    return (SleepUntil, false);
                 }
 
                 ClosePopups(driver);
@@ -191,9 +191,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     if (counter++ > 7)
                     {
-                        Log.WriteToLog($"{Username}: Can't seem to find an enemy{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
+                        if (unbanMode)
+                        {
+                            Log.WriteToLog($"{Username}: Account is still banned", Log.LogType.Warning);
+                        }
+                        else
+                        {
+                            Log.WriteToLog($"{Username}: Can't seem to find an enemy{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
+                        }
                         SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
-                        return SleepUntil;
+                        return (SleepUntil, true);
                     }
                     // check if this is correct modal;
                 }
@@ -210,7 +217,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
-                    return SleepUntil;
+                    return (SleepUntil, true);
                 }
 
                 Log.LogTeamToTable(team, mana, rulesets);
@@ -228,7 +235,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         }
                         Log.WriteToLog($"{Username}: Can't seem to find btnRumble{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
                         SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
-                        return SleepUntil;
+                        return (SleepUntil, true);
                     }
                 }
 
@@ -260,8 +267,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     CurrentlyActive = false;
                 }
+                if (unbanMode)
+                {
+                    driver.Quit();
+                }
             }
-            return SleepUntil;
+            return (SleepUntil, false);
         }
 
         private void AdvanceLeague(IWebDriver driver, string currentRating)

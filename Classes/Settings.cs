@@ -27,6 +27,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool LightningMode = false;
         public static bool ShowBattleResults = true;
+        public static bool AutoUnban = true;
         public static int Threads = 1;
 
         public static bool BrowserMode = false;

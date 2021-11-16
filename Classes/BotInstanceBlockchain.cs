@@ -29,6 +29,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private (JToken Quest, JToken QuestLessDetails) QuestCached { get; set; }
         private Card[] CardsCached { get; set; }
         public bool CurrentlyActive { get; private set; }
+        public bool RankedBanned { get; private set; }
+        public int RankedBanCounter { get; private set; }
 
         private object _activeLock;
         private DateTime SleepUntil;
@@ -199,6 +201,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             LogSummary = new LogSummary(index, username);
             _activeLock = new object();
             APICounter = 100;
+            RankedBanned = false;
+            RankedBanCounter = 0;
         }
 
         public async Task<DateTime> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance)
@@ -225,6 +229,44 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     Log.WriteToLog($"{Username}: is sleeping until {SleepUntil.ToString().Pastel(Color.Red)}");
                     return SleepUntil;
+                }
+
+                if (RankedBanned && Settings.AutoUnban)
+                {
+                    Log.WriteToLog($"{Username}: UNBAN Mode!", Log.LogType.Warning);
+                    BotInstanceBrowser instance = new BotInstanceBrowser(Username, PostingKey, 0);
+                    bool battleFailed = (await instance.DoBattleAsync(-1, false, -1, true)).battleFailed;
+                    if (!battleFailed)
+                    {
+                        if (++RankedBanCounter > 3)
+                        {
+                            Log.WriteToLog($"{Username}: Account unbanned!", Log.LogType.Success);
+                            SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
+                            RankedBanCounter = 0;
+                            RankedBanned = false;
+                            return SleepUntil;
+                        }
+                    }
+                    SleepUntil = DateTime.Now.AddMinutes(61);
+                    return SleepUntil;
+                }
+
+                if (Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), new object[] { })))
+                {
+                    Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { true });
+                    try
+                    {
+                        Log.WriteToLog($"{Username}: Starting rental bot!");
+                        Settings.RentalBotMethodCheckRentals.Invoke(Settings.RentalBot.Unwrap(), new object[] { null, Settings.MaxRentalPricePer500, Settings.DesiredRentalPower, Settings.DaysToRent, Username, ActiveKey });
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteToLog($"{Username}: Error at rental bot: {ex}", Log.LogType.CriticalError);
+                    }
+                    finally
+                    {
+                        Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { false });
+                    }
                 }
 
                 APICounter++;
@@ -287,8 +329,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 JToken matchDetails = await WaitForMatchDetails(trxId);
                 if (matchDetails == null)
                 {
-                    Log.WriteToLog($"{Username}: Banned from ranked? Sleeping for 1 hour!", Log.LogType.Warning);
-                    SleepUntil = DateTime.Now.AddMinutes(60);
+                    Log.WriteToLog($"{Username}: Banned from ranked? Sleeping for 30 minutes!", Log.LogType.Warning);
+                    SleepUntil = DateTime.Now.AddMinutes(30);
+                    RankedBanned = true;
                     return SleepUntil;
                 }
                 await SubmitTeam(trxId, matchDetails);
