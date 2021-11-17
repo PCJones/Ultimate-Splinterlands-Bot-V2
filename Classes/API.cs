@@ -280,7 +280,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     // Fallback API
                     Log.WriteToLog($"{username}: Error with splinterlands API for balances, trying fallback api...", Log.LogType.Warning);
-                    data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/quests?username={ username }");
+                    data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/balances?username={ username }");
                 }
                 JToken balances = JToken.Parse(data);
                 return balances;
