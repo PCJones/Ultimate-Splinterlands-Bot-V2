@@ -284,13 +284,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         API.UpdateCardsForPrivateAPI(Username, CardsCached);
                     }
-                    ECRCached = await GetECRFromAPI();
+                    ECRCached = await GetECRFromAPIAsync();
                 } else if (APICounter % 3 == 0) {
                     if ((int)QuestCached.Quest["completed"] != 5)
                     {
                         QuestCached = await API.GetPlayerQuestAsync(Username);
                     }
-                    ECRCached = await GetECRFromAPI();
+                    ECRCached = await GetECRFromAPIAsync();
                 }
 
                 LogSummary.Rating = RatingCached.ToString();
@@ -474,7 +474,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private async Task<double> GetECRFromAPI()
+        private async Task<double> GetECRFromAPIAsync()
         {
             var balanceInfo = ((JArray)await API.GetPlayerBalancesAsync(Username)).Where(x => (string)x["token"] == "ECR").First();
             var captureRate = (int)balanceInfo["balance"];
