@@ -89,7 +89,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     return enemyHasPicked.surrender;
                 }
-                if (!Settings.DontShowWaitingLog)
+                if (Settings.ShowWaitingLog)
                 {
                     Log.WriteToLog($"{Username}: Waiting 15 seconds for enemy to pick #{++counter}");
                 }
@@ -428,7 +428,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     break;
                 }
-                if (!Settings.DontShowWaitingLog)
+                if (Settings.ShowWaitingLog)
                 {
                     Log.WriteToLog($"{Username}: Waiting 15 seconds for battle result #{i + 1}/14");
                 }
