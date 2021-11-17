@@ -264,7 +264,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 else if (APICounter % 3 == 0)
                 {
-                    if ((int)QuestCached.Quest["completed"] != 5)
+                    if ((int)QuestCached.QuestLessDetails["completed"] != (int)QuestCached.QuestLessDetails["total"])
                     {
                         QuestCached = await API.GetPlayerQuestAsync(Username);
                     }

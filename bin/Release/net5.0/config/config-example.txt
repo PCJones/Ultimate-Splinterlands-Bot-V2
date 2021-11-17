@@ -57,7 +57,8 @@ PRIVATE_API_SHOP=
 #######################API Settings########################
 
 #####################Advanced Settings#####################
-DONT_SHOW_WAITING_LOG=false
+SHOW_WAITING_LOG=true
+SHOW_API_RESPONSE=true
 DEBUG=false
 WRITE_LOG_TO_FILE=false
 

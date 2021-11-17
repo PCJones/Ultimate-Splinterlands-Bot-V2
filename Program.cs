@@ -45,6 +45,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 switch (command)
                 {
                     case "stop":
+                        Log.WriteToLog("Stopping bot...", Log.LogType.Warning);
                         cancellationTokenSource.Cancel();
                         break;
                     default:
@@ -108,7 +109,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                             if (firstRuntrough)
                             {
                                 // Delay accounts to avoid them fighting each other
-                                Thread.Sleep(Settings._Random.Next(1000, 5000));
+                                Thread.Sleep(Settings._Random.Next(1000, 3000));
                             }
 
                             if (Settings.LightningMode)
@@ -173,7 +174,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                 instances.RemoveWhere(x => x.IsCompleted);
             }
 
-            Log.WriteToLog("Stopping bot...");
             await Task.WhenAll(instances);
             if (Settings.BrowserMode)
             {
