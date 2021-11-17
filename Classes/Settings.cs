@@ -20,10 +20,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static char[] Subset = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
         public static Random _Random = new Random();
         public static CookieContainer CookieContainer = new();
-
         public static string StartupPath = "";
+
         public static bool DebugMode = false;
         public static bool WriteLogToFile = false;
+        public static bool DontShowWaitingLog = false;
 
         public static bool LightningMode = false;
         public static bool ShowBattleResults = true;

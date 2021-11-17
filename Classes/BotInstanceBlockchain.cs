@@ -89,7 +89,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     return enemyHasPicked.surrender;
                 }
-                Log.WriteToLog($"{Username}: Waiting 15 seconds for enemy to pick #{++counter}");
+                if (!Settings.DontShowWaitingLog)
+                {
+                    Log.WriteToLog($"{Username}: Waiting 15 seconds for enemy to pick #{++counter}");
+                }
                 await Task.Delay(stopwatch.Elapsed.TotalSeconds > 170 ? 2500 : 15000);
             } while (stopwatch.Elapsed.TotalSeconds < 183);
             return false;
@@ -425,7 +428,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     break;
                 }
-                Log.WriteToLog($"{Username}: Waiting 15 seconds for battle result #{i + 1}/14");
+                if (!Settings.DontShowWaitingLog)
+                {
+                    Log.WriteToLog($"{Username}: Waiting 15 seconds for battle result #{i + 1}/14");
+                }
                 await Task.Delay(9000);
             }
 

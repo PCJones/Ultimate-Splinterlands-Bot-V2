@@ -263,6 +263,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "WRITE_LOG_TO_FILE":
                         Settings.WriteLogToFile = Boolean.Parse(temp[1]);
                         break;
+                    case "DONT_SHOW_WAITING_LOG":
+                        Settings.DontShowWaitingLog = Boolean.Parse(temp[1]);
+                        break;
                     case "CHROME_BINARY_PATH":
                         Settings.ChromeBinaryPath = temp[1];
                         break;
