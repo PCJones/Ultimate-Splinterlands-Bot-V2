@@ -520,7 +520,7 @@ namespace Ultimate_Splinterlands_Bot_V2
         }
         static bool CheckForChromeDriver()
         {
-            if (Settings.BrowserMode && !File.Exists(Settings.StartupPath + @"/chromedriver.exe"))
+            if ((Settings.BrowserMode || Settings.AutoUnban) && !File.Exists(Settings.StartupPath + @"/chromedriver.exe"))
             {
                 Log.WriteToLog("No ChromeDriver installed - please download from https://chromedriver.chromium.org/ and insert .exe into bot folder", Log.LogType.CriticalError);
                 return false;

@@ -228,7 +228,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return (-1, -1, -1);
         }
 
-        public static async Task<(int newRating, int ratingChange, decimal decReward, int result)> GetBattleresultAsync(string username, string tx)
+        public static async Task<(int newRating, int ratingChange, decimal decReward, int result)> GetBattleResultAsync(string username, string tx)
         {
             try
             {
@@ -242,6 +242,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 var matchHistory = JToken.Parse(data);
 
+                // Battle not yet finished (= not yet shown in history)?
                 if ((string)matchHistory["battles"][0]["battle_queue_id_1"] != tx && (string)matchHistory["battles"][0]["battle_queue_id_2"] != tx)
                 {
                     return (-1, -1, -1, -1);

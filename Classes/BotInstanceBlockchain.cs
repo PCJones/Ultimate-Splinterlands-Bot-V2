@@ -78,6 +78,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return null;
         }
 
+        private async Task WaitForEnemyPick(string trxId)
+        {
+
+        }
+
         private async Task SubmitTeam(string trxId, JToken matchDetails)
         {
             try
@@ -334,7 +339,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     RankedBanned = true;
                     return SleepUntil;
                 }
+
+                await WaitForEnemyPick(trxId);
                 await SubmitTeam(trxId, matchDetails);
+
                 Log.WriteToLog($"{Username}: Finished battle!");
 
                 if (Settings.ShowBattleResults)
@@ -368,7 +376,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 Log.WriteToLog($"{Username}: Waiting 15 seconds for battle result #{i + 1}/14");
                 await Task.Delay(15000);
-                battleResult = await API.GetBattleresultAsync(Username, tx);
+                battleResult = await API.GetBattleResultAsync(Username, tx);
                 if (battleResult.result >= 0)
                 {
                     break;
