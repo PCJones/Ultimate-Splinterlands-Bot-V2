@@ -406,8 +406,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return null;
                 }
 
-                Log.WriteToLog($"{Username}: API Response:");
-                Log.LogTeamToTable(team, mana, rulesets);
+                if (Settings.ShowAPIResponse)
+                {
+                    Log.WriteToLog($"{Username}: API Response:");
+                    Log.LogTeamToTable(team, mana, rulesets);
+                }
                 return team;
             }
             catch (Exception ex)

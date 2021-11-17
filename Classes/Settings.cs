@@ -24,7 +24,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool DebugMode = false;
         public static bool WriteLogToFile = false;
-        public static bool ShowWaitingLog = false;
+        public static bool ShowWaitingLog = true;
+        public static bool ShowAPIResponse = true;
 
         public static bool LightningMode = false;
         public static bool ShowBattleResults = true;

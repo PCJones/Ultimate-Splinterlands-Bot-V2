@@ -31,6 +31,8 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Environment.Exit(0);
             }
 
+            Thread.Sleep(3000); // Sleep 3 seconds to read config and welcome message
+
             Initialize();
 
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -266,6 +268,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "SHOW_WAITING_LOG":
                         Settings.ShowWaitingLog = Boolean.Parse(temp[1]);
                         break;
+                    case "SHOW_API_RESPONSE":
+                        Settings.ShowAPIResponse = Boolean.Parse(temp[1]);
+                        break;
                     case "CHROME_BINARY_PATH":
                         Settings.ChromeBinaryPath = temp[1];
                         break;
@@ -331,6 +336,8 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"MODE: {(Settings.LightningMode ? "LIGHTNING (blockchain)" : "BROWSER")}{Environment.NewLine}" +
                 $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
                 $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
+                $"SHOW_WAITING_LOG: {Settings.ShowWaitingLog}{Environment.NewLine}" +
+                $"SHOW_API_RESPONSE: {Settings.ShowAPIResponse}{Environment.NewLine}" +
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                 $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +

@@ -220,7 +220,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return (SleepUntil, true);
                 }
 
-                Log.LogTeamToTable(team, mana, rulesets);
+                if (Settings.ShowAPIResponse)
+                {
+                    Log.WriteToLog($"{Username}: API Response:");
+                    Log.LogTeamToTable(team, mana, rulesets);
+                }
+                
                 SelectTeam(driver, team);
 
                 counter = 0;
