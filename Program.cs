@@ -105,6 +105,12 @@ namespace Ultimate_Splinterlands_Bot_V2
 
                         lock (_TaskLock)
                         {
+                            if (firstRuntrough)
+                            {
+                                // Delay accounts to avoid them fighting each other
+                                Thread.Sleep(Settings._Random.Next(1000, 5000));
+                            }
+
                             if (Settings.LightningMode)
                             {
                                 while (Settings.BotInstancesBlockchain.ElementAt(nextBotInstance).CurrentlyActive)
