@@ -26,12 +26,10 @@ AUTO_UNBAN=true
 
 ##Threads = number of parallel accoounts.
 ##Threads are MUCH faster than in the browser mode, so 1 or 2 will probably be enough
-##Especially if you turn of SHOW_BATTLE_RESULTS the bot will only need 15 seconds per account
 THREADS=1
 
-##If you enable SHOW_BATTLE_RESULTS the bot will wait for battle end(takes longer)
-##The bot will also create more requests to splinterlands api, 
-##so if you have a lot of accounts you might soft banned if you enable this
+##Disable this if you want a cleaner log or you have problems with too many
+##requests to the splinterlands API (unlikely unless you run a lot of threads)
 SHOW_BATTLE_RESULTS=true
 ##################Lightning Mode Settings##################
 

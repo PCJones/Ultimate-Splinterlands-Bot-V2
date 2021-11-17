@@ -35,7 +35,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             CancellationToken token = cancellationTokenSource.Token;
-            _ = Task.Run(async () => await BotLoop(token)).ConfigureAwait(false);
+            _ = Task.Run(async () => await BotLoopAsync(token)).ConfigureAwait(false);
 
             string command = "";
             while (true)
@@ -53,11 +53,12 @@ namespace Ultimate_Splinterlands_Bot_V2
             }   
         }
 
-        static async Task BotLoop(CancellationToken token)
+        static async Task BotLoopAsync(CancellationToken token)
         {
             var instances = new HashSet<Task>();
             int nextBrowserInstance = -1;
             int nextBotInstance = -1;
+            bool firstRuntrough = true;
 
             bool logoutNeeded = Settings.BrowserMode ? Settings.BotInstancesBrowser.Count != Settings.MaxBrowserInstances : false;
 
@@ -73,6 +74,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                         {
                             if (++nextBotInstance >= (Settings.LightningMode ? Settings.BotInstancesBlockchain.Count : Settings.BotInstancesBrowser.Count))
                             {
+                                firstRuntrough = false;
                                 Log.LogBattleSummaryToTable();
                                 Log.WriteSupportInformationToLog();
                                 nextBotInstance = 0;
@@ -308,11 +310,12 @@ namespace Ultimate_Splinterlands_Bot_V2
                 return false;
             }
 
-            if (Settings.SleepBetweenBattles < 4 && Settings.LightningMode && !Settings.ShowBattleResults)
-            {
-                Log.WriteToLog("Lightning Mode without SHOW_BATTLE_RESULTS enabled - setting minimum sleep time to 4 minutes.", Log.LogType.Warning);
-                Settings.SleepBetweenBattles = 4;
-            }
+            // no longer needed
+            //if (Settings.SleepBetweenBattles < 4 && Settings.LightningMode && !Settings.ShowBattleResults)
+            //{
+            //    Log.WriteToLog("Lightning Mode without SHOW_BATTLE_RESULTS enabled - setting minimum sleep time to 4 minutes.", Log.LogType.Warning);
+            //    Settings.SleepBetweenBattles = 4;
+            //}
 
             Log.WriteToLog("Config loaded!", Log.LogType.Success);
             Log.WriteToLog($"Config parameters:{Environment.NewLine}" +

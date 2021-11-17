@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using Pastel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
@@ -78,58 +79,26 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return null;
         }
 
-        private async Task WaitForEnemyPick(string trxId)
+        private async Task<bool> WaitForEnemyPick(string tx, Stopwatch stopwatch)
         {
-
+            int counter = 0;
+            do
+            {
+                var enemyHasPicked = await API.CheckEnemyHasPickedAsync(Username, tx);
+                if (enemyHasPicked.enemyHasPicked)
+                {
+                    return enemyHasPicked.surrender;
+                }
+                Log.WriteToLog($"{Username}: Waiting 15 seconds for enemy to pick #{++counter}");
+                await Task.Delay(stopwatch.Elapsed.TotalSeconds > 170 ? 2500 : 15000);
+            } while (stopwatch.Elapsed.TotalSeconds < 183);
+            return false;
         }
 
-        private async Task SubmitTeam(string trxId, JToken matchDetails)
+        private void SubmitTeam(string trxId, JToken matchDetails, JToken team)
         {
             try
             {
-                int mana = (int)matchDetails["mana_cap"];
-                string rulesets = (string)matchDetails["ruleset"];
-                string[] inactive = ((string)matchDetails["inactive"]).Split(',');
-                // blue, black
-                List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };
-                foreach (string inactiveSplinter in inactive)
-                {
-                    if (inactiveSplinter.Length == 0)
-                    {
-                        continue;
-                    }
-                    switch (inactiveSplinter.ToLower())
-                    {
-                        case "blue":
-                            allowedSplinters.Remove("water");
-                            break;
-                        case "green":
-                            allowedSplinters.Remove("earth");
-                            break;
-                        case "black":
-                            allowedSplinters.Remove("death");
-                            break;
-                        case "white":
-                            allowedSplinters.Remove("life");
-                            break;
-                        case "gold":
-                            allowedSplinters.Remove("dragon");
-                            break;
-                        case "red":
-                            allowedSplinters.Remove("fire");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                var team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username);
-                if (team == null || (string)team["summoner_id"] == "")
-                {
-                    Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
-                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
-                }
-
                 string summoner = CardsCached.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
                 string monsters = "";
                 for (int i = 0; i < 6; i++)
@@ -155,8 +124,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_team_reveal", json);
 
-                Log.WriteToLog($"{Username}: Submitting team:");
-                Log.LogTeamToTable(team, mana, rulesets);
+                Log.WriteToLog($"{Username}: Submitting team...");
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
                 var result = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://api2.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
@@ -290,7 +258,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         API.UpdateCardsForPrivateAPI(Username, CardsCached);
                     }
                     ECRCached = await GetECRFromAPIAsync();
-                } else if (APICounter % 3 == 0) {
+                }
+                else if (APICounter % 3 == 0)
+                {
                     if ((int)QuestCached.Quest["completed"] != 5)
                     {
                         QuestCached = await API.GetPlayerQuestAsync(Username);
@@ -299,7 +269,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 LogSummary.Rating = RatingCached.ToString();
-                LogSummary.ECR=  ECRCached.ToString();
+                LogSummary.ECR = ECRCached.ToString();
 
                 Log.WriteToLog($"{Username}: Deck size: {(CardsCached.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(QuestCached.QuestLessDetails).Pastel(Color.Yellow)}");
@@ -317,6 +287,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return SleepUntil;
                 }
 
+
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
                 string trxId = StartNewMatch();
                 if (trxId == null || !trxId.Contains("success"))
                 {
@@ -340,8 +313,23 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return SleepUntil;
                 }
 
-                await WaitForEnemyPick(trxId);
-                await SubmitTeam(trxId, matchDetails);
+                JToken team = await GetTeamAsync(matchDetails);
+                if (team == null)
+                {
+                    Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
+                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                }
+
+                var surrender = await WaitForEnemyPick(trxId, stopwatch);
+                stopwatch.Stop();
+                if (!surrender)
+                {
+                    SubmitTeam(trxId, matchDetails, team);
+                }
+                else
+                {
+                    Log.WriteToLog($"{Username}: Looks like enemy surrendered - don't submit a team", Log.LogType.Warning);
+                }
 
                 Log.WriteToLog($"{Username}: Finished battle!");
 
@@ -369,18 +357,76 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return SleepUntil;
         }
 
+        private async Task<JToken> GetTeamAsync(JToken matchDetails)
+        {
+            try
+            {
+                int mana = (int)matchDetails["mana_cap"];
+                string rulesets = (string)matchDetails["ruleset"];
+                string[] inactive = ((string)matchDetails["inactive"]).Split(',');
+                // blue, black
+                List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };
+                foreach (string inactiveSplinter in inactive)
+                {
+                    if (inactiveSplinter.Length == 0)
+                    {
+                        continue;
+                    }
+                    switch (inactiveSplinter.ToLower())
+                    {
+                        case "blue":
+                            allowedSplinters.Remove("water");
+                            break;
+                        case "green":
+                            allowedSplinters.Remove("earth");
+                            break;
+                        case "black":
+                            allowedSplinters.Remove("death");
+                            break;
+                        case "white":
+                            allowedSplinters.Remove("life");
+                            break;
+                        case "gold":
+                            allowedSplinters.Remove("dragon");
+                            break;
+                        case "red":
+                            allowedSplinters.Remove("fire");
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                JToken team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username);
+                if (team == null || (string)team["summoner_id"] == "")
+                {
+                    return null;
+                }
+
+                Log.WriteToLog($"{Username}: API Response:");
+                Log.LogTeamToTable(team, mana, rulesets);
+                return team;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at requesting team: {ex}", Log.LogType.Error);
+                return null;
+            }
+        }
+
         private async Task ShowBattleResult(string tx)
         {
             (int newRating, int ratingChange, decimal decReward, int result) battleResult = new();
             for (int i = 0; i < 14; i++)
             {
-                Log.WriteToLog($"{Username}: Waiting 15 seconds for battle result #{i + 1}/14");
-                await Task.Delay(15000);
+                await Task.Delay(6000);
                 battleResult = await API.GetBattleResultAsync(Username, tx);
                 if (battleResult.result >= 0)
                 {
                     break;
                 }
+                Log.WriteToLog($"{Username}: Waiting 15 seconds for battle result #{i + 1}/14");
+                await Task.Delay(9000);
             }
 
             if (battleResult.result == -1)

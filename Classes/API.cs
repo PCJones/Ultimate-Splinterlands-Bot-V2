@@ -228,6 +228,36 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return (-1, -1, -1);
         }
 
+        public static async Task<(bool enemyHasPicked, bool surrender)> CheckEnemyHasPickedAsync(string username, string tx)
+        {
+            try
+            {
+                string data = await DownloadPageAsync($"{SplinterlandsAPI}/players/outstanding_match?username={ username }");
+                if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
+                {
+                    // Fallback API
+                    // wait 10 seconds just in case for this method
+                    
+                    Log.WriteToLog($"{username}: Error with splinterlands API for ongoing game, trying fallback api...", Log.LogType.Warning);
+                    data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/outstanding_match?username={ username }");
+                }
+
+                // Check for surrender
+                if (data == "null")
+                {
+                    return (true, true);
+                }
+                var matchInfo = JToken.Parse(data);
+
+                return matchInfo["opponent_team_hash"].Type != JTokenType.Null ? (true, false) : (false, false);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{username}: Could not get ongoing game from splinterlands api: {ex}", Log.LogType.Error);
+            }
+            return (true, true);
+        }
+
         public static async Task<(int newRating, int ratingChange, decimal decReward, int result)> GetBattleResultAsync(string username, string tx)
         {
             try
