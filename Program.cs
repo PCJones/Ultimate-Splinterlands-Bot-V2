@@ -24,17 +24,20 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Log.WriteStartupInfoToLog();
             SetStartupPath();
-            if (!CheckForChromeDriver() || !ReadConfig() || !ReadAccounts())
+            if (!ReadConfig() || !CheckForChromeDriver() || !ReadAccounts())
             {
                 Log.WriteToLog("Press any key to close");
                 Console.ReadKey();
+                Environment.Exit(0);
             }
+
+            Thread.Sleep(3000); // Sleep 3 seconds to read config and welcome message
 
             Initialize();
 
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             CancellationToken token = cancellationTokenSource.Token;
-            _ = Task.Run(async () => await BotLoop(token)).ConfigureAwait(false);
+            _ = Task.Run(async () => await BotLoopAsync(token)).ConfigureAwait(false);
 
             string command = "";
             while (true)
@@ -44,6 +47,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 switch (command)
                 {
                     case "stop":
+                        Log.WriteToLog("Stopping bot...", Log.LogType.Warning);
                         cancellationTokenSource.Cancel();
                         break;
                     default:
@@ -52,81 +56,114 @@ namespace Ultimate_Splinterlands_Bot_V2
             }   
         }
 
-        static async Task BotLoop(CancellationToken token)
+        static async Task BotLoopAsync(CancellationToken token)
         {
             var instances = new HashSet<Task>();
             int nextBrowserInstance = -1;
             int nextBotInstance = -1;
+            bool firstRuntrough = true;
 
-            bool logoutNeeded = Settings.BotInstances.Count != Settings.MaxBrowserInstances;
+            bool logoutNeeded = Settings.BrowserMode ? Settings.BotInstancesBrowser.Count != Settings.MaxBrowserInstances : false;
 
-            DateTime[] sleepInfo = new DateTime[Settings.BotInstances.Count];
+            DateTime[] sleepInfo = new DateTime[Settings.LightningMode ? Settings.BotInstancesBlockchain.Count : Settings.BotInstancesBrowser.Count];
 
             while (!token.IsCancellationRequested)
             {
-                while (instances.Count < Settings.MaxBrowserInstances && !token.IsCancellationRequested)
+                while (instances.Count < (Settings.BrowserMode ? Settings.MaxBrowserInstances : Settings.Threads) && !token.IsCancellationRequested)
                 {
                     try
                     {
                         lock (_TaskLock)
                         {
-                            if (++nextBotInstance >= Settings.BotInstances.Count)
+                            if (++nextBotInstance >= (Settings.LightningMode ? Settings.BotInstancesBlockchain.Count : Settings.BotInstancesBrowser.Count))
                             {
+                                firstRuntrough = false;
                                 Log.LogBattleSummaryToTable();
                                 Log.WriteSupportInformationToLog();
                                 nextBotInstance = 0;
+                                while (API.CheckForMaintenance().Result)
+                                {
+                                    Log.WriteToLog("Splinterlands maintenance - waiting 3 minutes");
+                                    Thread.Sleep(3 * 60000);
+                                }
                             }
 
-                            //if (Settings.SleepBetweenBattles > 0
-                                //&& Settings.BotInstances.All(x => x.CurrentlyActive
-                                while (Settings.RateLimited || Settings.BotInstances.All(x => x.CurrentlyActive
-                                || (DateTime)sleepInfo[Settings.BotInstances.IndexOf(x)] > DateTime.Now))
+                            if (Settings.LightningMode)
                             {
-                                Thread.Sleep(20000);
-                                //DateTime sleepUntil = sleepInfo.Where(x =>
-                                //!Settings.BotInstances[Array.IndexOf(sleepInfo, x)].CurrentlyActive)
-                                //    .OrderBy(x => x).First();
-
-                                //if (sleepUntil > DateTime.Now)
-                                //{
-                                //    Log.WriteToLog($"All accounts sleeping or currently active - wait until {sleepUntil.ToString().Pastel(Color.Red)}");
-                                //    int sleepTime = (int)(sleepUntil - DateTime.Now).TotalMilliseconds;
-                                //    instances.Add(Task.Delay(sleepTime));
-                                //    break;
-                                //}
+                                while (Settings.BotInstancesBlockchain.All(x => x.CurrentlyActive
+                                    || (DateTime)sleepInfo[Settings.BotInstancesBlockchain.IndexOf(x)] > DateTime.Now))
+                                {
+                                    Thread.Sleep(20000);
+                                }
+                            }
+                            else
+                            {
+                                while (Settings.BotInstancesBrowser.All(x => x.CurrentlyActive
+                                    || (DateTime)sleepInfo[Settings.BotInstancesBrowser.IndexOf(x)] > DateTime.Now))
+                                {
+                                    Thread.Sleep(20000);
+                                }
                             }
                         }
 
                         lock (_TaskLock)
                         {
-                            nextBrowserInstance = ++nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
-                            while (!Settings.SeleniumInstances.ElementAt(nextBrowserInstance).isAvailable)
+                            if (firstRuntrough)
                             {
-                                nextBrowserInstance++;
-                                nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
+                                // Delay accounts to avoid them fighting each other
+                                Thread.Sleep(Settings._Random.Next(1000, 3000));
                             }
 
-                            while (Settings.BotInstances.ElementAt(nextBotInstance).CurrentlyActive)
+                            if (Settings.LightningMode)
                             {
-                                nextBotInstance++;
-                                nextBotInstance = nextBotInstance >= Settings.BotInstances.Count ? 0 : nextBotInstance;
-                            }
-
-                            Settings.SeleniumInstances[nextBrowserInstance] = (Settings.SeleniumInstances[nextBrowserInstance].driver, false);
-
-                            // create local copies for thread safety
-                            int botInstance = nextBotInstance;
-                            int browserInstance = nextBrowserInstance;
-
-                            instances.Add(Task.Run(async () =>
-                            {
-                                var result = await Settings.BotInstances[botInstance].DoBattleAsync(browserInstance, logoutNeeded, botInstance);
-                                lock (_TaskLock)
+                                while (Settings.BotInstancesBlockchain.ElementAt(nextBotInstance).CurrentlyActive)
                                 {
-                                    sleepInfo[nextBotInstance] = result;
-                                    Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
+                                    nextBotInstance++;
+                                    nextBotInstance = nextBotInstance >= Settings.BotInstancesBlockchain.Count ? 0 : nextBotInstance;
                                 }
-                            }, CancellationToken.None));
+                                // create local copies for thread safety
+                                int botInstance = nextBotInstance;
+                                int browserInstance = nextBrowserInstance;
+
+                                instances.Add(Task.Run(async () =>
+                                {
+                                    var result = await Settings.BotInstancesBlockchain[botInstance].DoBattleAsync(browserInstance, logoutNeeded, botInstance);
+                                    lock (_TaskLock)
+                                    {
+                                        sleepInfo[nextBotInstance] = result;
+                                    }
+                                }, CancellationToken.None));
+                            }
+                            else
+                            {
+                                while (Settings.BotInstancesBrowser.ElementAt(nextBotInstance).CurrentlyActive)
+                                {
+                                    nextBotInstance++;
+                                    nextBotInstance = nextBotInstance >= Settings.BotInstancesBrowser.Count ? 0 : nextBotInstance;
+                                }
+                                nextBrowserInstance = ++nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
+                                while (!Settings.SeleniumInstances.ElementAt(nextBrowserInstance).isAvailable)
+                                {
+                                    nextBrowserInstance++;
+                                    nextBrowserInstance = nextBrowserInstance >= Settings.MaxBrowserInstances ? 0 : nextBrowserInstance;
+                                }
+
+                                Settings.SeleniumInstances[nextBrowserInstance] = (Settings.SeleniumInstances[nextBrowserInstance].driver, false);
+
+                                // create local copies for thread safety
+                                int botInstance = nextBotInstance;
+                                int browserInstance = nextBrowserInstance;
+
+                                instances.Add(Task.Run(async () =>
+                                {
+                                    var result = await Settings.BotInstancesBrowser[botInstance].DoBattleAsync(browserInstance, logoutNeeded, botInstance);
+                                    lock (_TaskLock)
+                                    {
+                                        sleepInfo[nextBotInstance] = result.sleepTime;
+                                        Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
+                                    }
+                                }, CancellationToken.None));
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -139,9 +176,11 @@ namespace Ultimate_Splinterlands_Bot_V2
                 instances.RemoveWhere(x => x.IsCompleted);
             }
 
-            Log.WriteToLog("Stopping bot...");
             await Task.WhenAll(instances);
-            _ = Task.Run(async () => Parallel.ForEach(Settings.SeleniumInstances, x => x.driver.Quit())).Result;
+            if (Settings.BrowserMode)
+            {
+                _ = Task.Run(() => Parallel.ForEach(Settings.SeleniumInstances, x => x.driver.Quit())).Result;
+            }
             Log.WriteToLog("Bot stopped!");
         }
 
@@ -196,6 +235,21 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "REQUEST_NEW_QUEST":
                         Settings.BadQuests = temp[1].Split(',');
                         break;
+                    case "USE_LIGHTNING_MODE":
+                        Settings.LightningMode = Boolean.Parse(temp[1]);
+                        break;
+                    case "SHOW_BATTLE_RESULTS":
+                        Settings.ShowBattleResults = Boolean.Parse(temp[1]);
+                        break;
+                    case "THREADS":
+                        Settings.Threads = Convert.ToInt32(temp[1]);
+                        break;
+                    case "USE_BROWSER_MODE":
+                        Settings.BrowserMode = Boolean.Parse(temp[1]);
+                        break;
+                    case "AUTO_UNBAN":
+                        Settings.AutoUnban = Boolean.Parse(temp[1]);
+                        break;
                     case "HEADLESS":
                         Settings.Headless = Boolean.Parse(temp[1]);
                         break;
@@ -203,13 +257,19 @@ namespace Ultimate_Splinterlands_Bot_V2
                         Settings.UseAPI = Boolean.Parse(temp[1]);
                         break;
                     case "API_URL":
-                        Settings.APIUrl = temp[1];
+                        Settings.PublicAPIUrl = temp[1];
                         break;
                     case "DEBUG":
                         Settings.DebugMode = Boolean.Parse(temp[1]);
                         break;
                     case "WRITE_LOG_TO_FILE":
                         Settings.WriteLogToFile = Boolean.Parse(temp[1]);
+                        break;
+                    case "SHOW_WAITING_LOG":
+                        Settings.ShowWaitingLog = Boolean.Parse(temp[1]);
+                        break;
+                    case "SHOW_API_RESPONSE":
+                        Settings.ShowAPIResponse = Boolean.Parse(temp[1]);
                         break;
                     case "CHROME_BINARY_PATH":
                         Settings.ChromeBinaryPath = temp[1];
@@ -258,19 +318,48 @@ namespace Ultimate_Splinterlands_Bot_V2
                 }
             }
 
+            if (Settings.BrowserMode == Settings.LightningMode)
+            {
+                Log.WriteToLog("Please set either USE_LIGHTNING_MODE OR USE_BROWSER_MODE to true (not both) - see updated config-example.txt!", Log.LogType.CriticalError);
+                return false;
+            }
+
+            // no longer needed
+            //if (Settings.SleepBetweenBattles < 4 && Settings.LightningMode && !Settings.ShowBattleResults)
+            //{
+            //    Log.WriteToLog("Lightning Mode without SHOW_BATTLE_RESULTS enabled - setting minimum sleep time to 4 minutes.", Log.LogType.Warning);
+            //    Settings.SleepBetweenBattles = 4;
+            //}
+
             Log.WriteToLog("Config loaded!", Log.LogType.Success);
             Log.WriteToLog($"Config parameters:{Environment.NewLine}" +
+                $"MODE: {(Settings.LightningMode ? "LIGHTNING (blockchain)" : "BROWSER")}{Environment.NewLine}" +
                 $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
                 $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
+                $"SHOW_WAITING_LOG: {Settings.ShowWaitingLog}{Environment.NewLine}" +
+                $"SHOW_API_RESPONSE: {Settings.ShowAPIResponse}{Environment.NewLine}" +
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                 $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
                 $"REQUEST_NEW_QUEST: {String.Join(",", Settings.BadQuests)}{Environment.NewLine}" +
+                $"DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE: {String.Join(",", Settings.DontClaimQuestNearHigherLeague)}{Environment.NewLine}" +
+                $"ADVANCE_LEAGUE: {String.Join(",", Settings.AdvanceLeague)}{Environment.NewLine}" +
                 $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
                 $"ECR_THRESHOLD: {Settings.ECRThreshold}{Environment.NewLine}" +
                 $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
-                $"HEADLESS: {Settings.Headless}{Environment.NewLine}" +
-                $"MAX_BROWSER_INSTANCES: {Settings.MaxBrowserInstances}{Environment.NewLine}");
+                $"USE_PRIVATE_API: {Settings.UsePrivateAPI}");
+                
+            if (Settings.LightningMode)
+            {
+                Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
+                Console.Write($"AUTO_UNBAN: {Settings.AutoUnban}{Environment.NewLine}");
+                Console.Write($"THREADS: {Settings.Threads}{Environment.NewLine}");
+            }
+            else
+            {
+                Console.Write($"HEADLESS: {Settings.Headless}{Environment.NewLine}");
+                Console.Write($"MAX_BROWSER_INSTANCES: {Settings.MaxBrowserInstances}{Environment.NewLine}");
+            }
             return true;
         }
 
@@ -296,7 +385,14 @@ namespace Ultimate_Splinterlands_Bot_V2
                 return false;
             }
 
-            Settings.BotInstances = new List<BotInstance>();
+            if (Settings.LightningMode)
+            {
+                Settings.BotInstancesBlockchain = new();
+            }
+            else
+            {
+                Settings.BotInstancesBrowser = new();
+            }
 
             int indexCounter = 0;
             foreach (string loginData in File.ReadAllLines(filePath))
@@ -308,17 +404,31 @@ namespace Ultimate_Splinterlands_Bot_V2
                 string[] temp = loginData.Split(':');
                 if (temp.Length == 2)
                 {
-                    Settings.BotInstances.Add(new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++));
+                    if (Settings.LightningMode)
+                    {
+                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++));
+                    }
+                    else
+                    {
+                        Settings.BotInstancesBrowser.Add(new BotInstanceBrowser(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++));
+                    }
                 }
                 else if (temp.Length == 3)
                 {
-                    Settings.BotInstances.Add(new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++, key: temp[2].Trim()));
+                    if (Settings.LightningMode)
+                    {
+                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++, key: temp[2].Trim()));
+                    }
+                    else
+                    {
+                        Settings.BotInstancesBrowser.Add(new BotInstanceBrowser(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++, key: temp[2].Trim()));
+                    }
                 }
             }
 
-            if (Settings.BotInstances.Count > 0)
+            if ((Settings.BotInstancesBrowser != null && Settings.BotInstancesBrowser.Count > 0) || Settings.BotInstancesBlockchain.Count > 0)
             {
-                Log.WriteToLog($"Loaded {Settings.BotInstances.Count.ToString().Pastel(Color.Red)} accounts!", Log.LogType.Success);
+                Log.WriteToLog($"Loaded {(Settings.BrowserMode ? Settings.BotInstancesBrowser.Count.ToString().Pastel(Color.Red) : Settings.BotInstancesBlockchain.Count.ToString().Pastel(Color.Red))} accounts!", Log.LogType.Success);
                 return true;
             }
             else
@@ -330,20 +440,27 @@ namespace Ultimate_Splinterlands_Bot_V2
 
         static void Initialize()
         {
-            if (Settings.MaxBrowserInstances > Settings.BotInstances.Count)
+            if (Settings.BrowserMode && Settings.MaxBrowserInstances > Settings.BotInstancesBrowser.Count)
             {
-                Log.WriteToLog($"MAX_BROWSER_INSTANCES is larger than total number of accounts, reducing it to {Settings.BotInstances.Count.ToString().Pastel(Color.Red)}", Log.LogType.Warning);
-                Settings.MaxBrowserInstances = Settings.BotInstances.Count;
+                Log.WriteToLog($"MAX_BROWSER_INSTANCES is larger than total number of accounts, reducing it to {Settings.BotInstancesBrowser.Count.ToString().Pastel(Color.Red)}", Log.LogType.Warning);
+                Settings.MaxBrowserInstances = Settings.BotInstancesBrowser.Count;
+            } else if (Settings.LightningMode && Settings.Threads > Settings.BotInstancesBlockchain.Count)
+            {
+                Log.WriteToLog($"THREADS is larger than total number of accounts, reducing it to {Settings.BotInstancesBlockchain.Count.ToString().Pastel(Color.Red)}", Log.LogType.Warning);
+                Settings.Threads = Settings.BotInstancesBlockchain.Count;
             }
 
-            Settings.SeleniumInstances = new List<(OpenQA.Selenium.IWebDriver driver, bool isAvailable)>();
-            Log.WriteToLog($"Creating {Settings.MaxBrowserInstances.ToString().Pastel(Color.Red)} browser instances...");
-            for (int i = 0; i < Settings.MaxBrowserInstances; i++)
+            if (Settings.BrowserMode)
             {
-                Settings.SeleniumInstances.Add((SeleniumAddons.CreateSeleniumInstance(disableImages: false), true));
-                Thread.Sleep(1000);
+                Settings.SeleniumInstances = new List<(OpenQA.Selenium.IWebDriver driver, bool isAvailable)>();
+                Log.WriteToLog($"Creating {Settings.MaxBrowserInstances.ToString().Pastel(Color.Red)} browser instances...");
+                for (int i = 0; i < Settings.MaxBrowserInstances; i++)
+                {
+                    Settings.SeleniumInstances.Add((SeleniumAddons.CreateSeleniumInstance(disableImages: false), true));
+                    Thread.Sleep(1000);
+                }
+                Log.WriteToLog("Browser instances created!", Log.LogType.Success);
             }
-            Log.WriteToLog("Browser instances created!", Log.LogType.Success);
 
             Settings.QuestTypes = new Dictionary<string, string>
             {
@@ -405,7 +522,12 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Settings.LogSummaryList = new List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)>();
 
-            Settings._httpClient.Timeout = new TimeSpan(0, 3, 0);
+            Settings._httpClient.Timeout = new TimeSpan(0, 2, 15);
+
+            if (Settings.LightningMode)
+            {
+                Settings.oHived = new HiveAPI.CS.CHived(Settings._httpClient, "https://api.deathwing.me");
+            }
         }
 
         static void SetStartupPath()
@@ -417,7 +539,7 @@ namespace Ultimate_Splinterlands_Bot_V2
         }
         static bool CheckForChromeDriver()
         {
-            if (!File.Exists(Settings.StartupPath + @"/chromedriver.exe"))
+            if ((Settings.BrowserMode || Settings.AutoUnban) && !File.Exists(Settings.StartupPath + @"/chromedriver.exe"))
             {
                 Log.WriteToLog("No ChromeDriver installed - please download from https://chromedriver.chromium.org/ and insert .exe into bot folder", Log.LogType.CriticalError);
                 return false;
@@ -428,7 +550,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
         static bool ConsoleEventCallback(int eventType)
         {
-            if (eventType == 2)
+            if (Settings.BrowserMode && eventType == 2)
             {
 #pragma warning disable CS1998
                 _ = Task.Run(async () => Parallel.ForEach(Settings.SeleniumInstances, x => x.driver.Quit())).ConfigureAwait(false);

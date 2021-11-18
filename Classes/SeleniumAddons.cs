@@ -87,10 +87,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 catch (WebDriverException ex)
                 {
                     Log.WriteToLog(ex.Message, Log.LogType.CriticalError);
+                    System.Threading.Thread.Sleep(5000);
                 }
                 catch (Exception ex)
                 {
                     Log.WriteToLog(ex.Message, Log.LogType.CriticalError);
+                    System.Threading.Thread.Sleep(5000);
                 }
             }
 
