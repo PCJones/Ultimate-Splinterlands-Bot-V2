@@ -77,6 +77,10 @@ namespace HiveAPI.CS
 			}
             catch (Exception ex)
             {
+                if (ex.Message.Contains("internal error"))
+                {
+
+                }
 				// todo
             }
 			return null;
