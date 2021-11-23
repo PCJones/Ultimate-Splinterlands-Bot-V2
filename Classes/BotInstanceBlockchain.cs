@@ -60,6 +60,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private string StartNewMatch()
         {
+            lock (Settings.StartBattleLock)
+            {
+                Thread.Sleep(3000);
+            }
             string n = Helper.GenerateRandomString(10);
             string json = "{\"match_type\":\"Ranked\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
             
@@ -94,7 +98,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Log.WriteToLog($"{Username}: Waiting 15 seconds for enemy to pick #{++counter}");
                 }
                 await Task.Delay(stopwatch.Elapsed.TotalSeconds > 170 ? 2500 : 15000);
-            } while (stopwatch.Elapsed.TotalSeconds < 183);
+            } while (stopwatch.Elapsed.TotalSeconds < 179);
             return false;
         }
 
@@ -264,7 +268,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 else if (APICounter % 3 == 0)
                 {
-                    if ((int)QuestCached.QuestLessDetails["completed"] != (int)QuestCached.QuestLessDetails["total"])
+                    if(QuestCached.Quest == null || (int)QuestCached.QuestLessDetails["completed"] != (int)QuestCached.QuestLessDetails["total"])
                     {
                         QuestCached = await API.GetPlayerQuestAsync(Username);
                     }
@@ -280,6 +284,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 AdvanceLeague();
                 RequestNewQuestViaAPI();
                 ClaimQuestReward();
+                // claim season reward
+                //signed_tx={"ref_block_num":1642,"ref_block_prefix":2848869945,"expiration":"2021-11-21T19:34:48","operations":[["custom_json",{"required_auths":[],"required_posting_auths":["username"],"id":"sm_claim_reward","json":"{\"type\":\"league_season\",\"season\":74,\"app\":\"splinterlands/0.7.139\",\"n\":\"oKt0H53ZsS\"}"}]],"extensions":[],"signatures":["1f6c4ef8937995b2f318fc7c9651bd52772e89073a4bb13afbccd45f326cd9f5a10113940fa9f55fd7bc73e72d0bd0fdcb23cd9cb44c1578cbfc821cc309188b06"]}
 
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
                 if (ECRCached < Settings.ECRThreshold)

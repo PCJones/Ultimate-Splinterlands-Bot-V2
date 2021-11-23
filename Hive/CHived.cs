@@ -79,7 +79,7 @@ namespace HiveAPI.CS
             {
                 if (ex.Message.Contains("internal error"))
                 {
-
+					
                 }
 				// todo
             }
