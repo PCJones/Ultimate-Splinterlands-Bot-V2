@@ -69,6 +69,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool RateLimited = false;
         public static object RateLimitedLock = new object();
         public static object StartBattleLock = new object();
+        public static object AccessTokenFileLock = new object();
         public static List<BotInstanceBrowser> BotInstancesBrowser { get; set; }
         public static List<BotInstanceBlockchain> BotInstancesBlockchain { get; set; }
         public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }

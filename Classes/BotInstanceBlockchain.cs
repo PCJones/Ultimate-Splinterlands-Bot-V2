@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -22,6 +23,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private string Username { get; set; }
         private string PostingKey { get; init; }
         private string ActiveKey { get; init; } // only needed for plugins, not used by normal bot
+        private string AccessToken { get; init; } // used for websocket authentication
         private int APICounter { get; set; }
         private int PowerCached { get; set; }
         private int LeagueCached { get; set; }
@@ -171,12 +173,51 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             return null;
         }
-        public BotInstanceBlockchain(string username, string password, int index, string key = "")
+
+        private string GetAccessToken()
+        {
+            string filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
+            IWebDriver driver = SeleniumAddons.CreateSeleniumInstance();
+            try
+            {
+                Log.WriteToLog($"{Username}: Requesting access token... (this only happens once per account)");
+                BotInstanceBrowser instance = new(Username, PostingKey, 0);
+
+                if (instance.Login(driver, false))
+                {
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    string token = (string)js.ExecuteScript("return SM.Player.token");
+                    File.AppendAllText(filePathAccessTokens, Username + ":" + token + Environment.NewLine);
+
+                    return token;
+                }
+                else
+                {
+                    return "";
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at requesting access token: {ex}", Log.LogType.Error);
+                return "";
+            }
+            finally
+            {
+                driver.Quit();
+            }
+        }
+        public BotInstanceBlockchain(string username, string password, string accessToken, int index, string activeKey = "")
         {
             Username = username;
             PostingKey = password;
-            ActiveKey = key;
+            ActiveKey = activeKey;
+            AccessToken = accessToken.Length > 0 ? accessToken : GetAccessToken();
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * -1);
+            if (AccessToken.Length == 0)
+            {
+                Log.WriteToLog($"{Username}: Skipping account", Log.LogType.Error);
+                SleepUntil = DateTime.Now.AddYears(1);
+            }
             LastCacheUpdate = DateTime.MinValue;
             LogSummary = new LogSummary(index, username);
             _activeLock = new object();

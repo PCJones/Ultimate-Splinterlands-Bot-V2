@@ -802,7 +802,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return "unknown";
         }
 
-        private bool Login(IWebDriver driver, bool logoutNeeded)
+        public bool Login(IWebDriver driver, bool logoutNeeded)
         {
             Log.WriteToLog($"{ (UnknownUsername ? Email : Username) }: Trying to login...");
             driver.Navigate().GoToUrl("https://splinterlands.com/");

@@ -35,6 +35,8 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Initialize();
 
+            Test.TestX();
+
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             CancellationToken token = cancellationTokenSource.Token;
             _ = Task.Run(async () => await BotLoopAsync(token)).ConfigureAwait(false);
@@ -378,11 +380,17 @@ namespace Ultimate_Splinterlands_Bot_V2
         static bool ReadAccounts()
         {
             Log.WriteToLog("Reading accounts.txt...");
-            string filePath = Settings.StartupPath + @"/config/accounts.txt";
-            if (!File.Exists(filePath))
+            string filePathAccounts = Settings.StartupPath + @"/config/accounts.txt";
+            string filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
+            if (!File.Exists(filePathAccounts))
             {
                 Log.WriteToLog("No accounts.txt in config folder - see accounts-example.txt!", Log.LogType.CriticalError);
                 return false;
+            }
+
+            if (!File.Exists(filePathAccessTokens))
+            {
+                File.WriteAllText(filePathAccessTokens, "#DO NOT SHARE THESE!" + Environment.NewLine);
             }
 
             if (Settings.LightningMode)
@@ -394,19 +402,24 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Settings.BotInstancesBrowser = new();
             }
 
+            string[] accessTokens = File.ReadAllLines(filePathAccessTokens);
             int indexCounter = 0;
-            foreach (string loginData in File.ReadAllLines(filePath))
+
+            foreach (string loginData in File.ReadAllLines(filePathAccounts))
             {
                 if (loginData.Trim().Length == 0 || loginData[0] == '#')
                 {
                     continue;
                 }
                 string[] temp = loginData.Split(':');
+                var query = accessTokens.Where(x => x.Split(':')[0] == temp[0]);
+                string accessToken = query.Any()? query.First().Split(':')[1] : "";
+                
                 if (temp.Length == 2)
                 {
                     if (Settings.LightningMode)
                     {
-                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++));
+                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), accessToken, indexCounter++));
                     }
                     else
                     {
@@ -417,7 +430,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 {
                     if (Settings.LightningMode)
                     {
-                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++, key: temp[2].Trim()));
+                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), accessToken, indexCounter++, activeKey: temp[2].Trim()));
                     }
                     else
                     {
