@@ -591,7 +591,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 int mana = (int)matchDetails["mana_cap"];
                 string rulesets = (string)matchDetails["ruleset"];
                 string[] inactive = ((string)matchDetails["inactive"]).Split(',');
-                // blue, black
+                
                 List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };
                 foreach (string inactiveSplinter in inactive)
                 {

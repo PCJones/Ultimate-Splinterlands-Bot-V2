@@ -13,6 +13,8 @@
           "Newtonsoft.Json": "13.0.1",
           "Pastel": "2.1.0",
           "Selenium.WebDriver": "3.141.0",
+          "Websocket.Client": "4.4.43",
+          "System.Reactive.Reference": "4.3.0.0",
           "runtimepack.Microsoft.NETCore.App.Runtime.osx-x64": "5.0.12"
         },
         "runtime": {
@@ -769,6 +771,28 @@
             "fileVersion": "3.141.0.0"
           }
         }
+      },
+      "System.Reactive/4.3.2": {},
+      "System.Threading.Channels/4.7.0": {},
+      "Websocket.Client/4.4.43": {
+        "dependencies": {
+          "System.Reactive": "4.3.2",
+          "System.Threading.Channels": "4.7.0"
+        },
+        "runtime": {
+          "lib/net5.0/Websocket.Client.dll": {
+            "assemblyVersion": "4.4.0.0",
+            "fileVersion": "4.4.0.0"
+          }
+        }
+      },
+      "System.Reactive.Reference/4.3.0.0": {
+        "runtime": {
+          "System.Reactive.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.2.55399"
+          }
+        }
       }
     }
   },
@@ -810,6 +834,32 @@
       "sha512": "sha512-wPqzXO3f79DzqauTZSzLMKiaBCN0Z2Mv7KvWP+hnV6EL88zh/pJJnFtdIR1X5wa3hsTOpF/bBJs45rz7kArsiA==",
       "path": "selenium.webdriver/3.141.0",
       "hashPath": "selenium.webdriver.3.141.0.nupkg.sha512"
+    },
+    "System.Reactive/4.3.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WhGkScPWxw2pp7UwRW8M1OvYZ3WUDPC2wJ0aiuaB4KRD3bt4wLkgHgYnOUu87WRhsurvv5LN0E63iWOEza2o8g==",
+      "path": "system.reactive/4.3.2",
+      "hashPath": "system.reactive.4.3.2.nupkg.sha512"
+    },
+    "System.Threading.Channels/4.7.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-gdOOXBhtt2UpTxYJm1DRmoqNfYg5ypvhzhVt0vxKhzxXFjS81r8yIOSFsJYLRa1Jc14GBAqCnjxJstO3zBN7gg==",
+      "path": "system.threading.channels/4.7.0",
+      "hashPath": "system.threading.channels.4.7.0.nupkg.sha512"
+    },
+    "Websocket.Client/4.4.43": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-h0sS4zsnXrVkYyMYDaRc0k/oV54uXXBlN/HOHAK5d/RWleLTmWS6bxtt0l3D5Q2rgtfLinkHLdf4sOqdrxZ0NA==",
+      "path": "websocket.client/4.4.43",
+      "hashPath": "websocket.client.4.4.43.nupkg.sha512"
+    },
+    "System.Reactive.Reference/4.3.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
     }
   },
   "runtimes": {
@@ -904,8 +954,20 @@
       "any",
       "base"
     ],
-    "osx.11-x64": [
-      "osx.11",
+    "osx.10.16-x64": [
+      "osx.10.16",
+      "osx.10.15-x64",
+      "osx.10.15",
+      "osx.10.14-x64",
+      "osx.10.14",
+      "osx.10.13-x64",
+      "osx.10.13",
+      "osx.10.12-x64",
+      "osx.10.12",
+      "osx.10.11-x64",
+      "osx.10.11",
+      "osx.10.10-x64",
+      "osx.10.10",
       "osx-x64",
       "osx",
       "unix-x64",
@@ -915,8 +977,20 @@
     ],
     "osx.11.0-x64": [
       "osx.11.0",
-      "osx.11-x64",
-      "osx.11",
+      "osx.10.16-x64",
+      "osx.10.16",
+      "osx.10.15-x64",
+      "osx.10.15",
+      "osx.10.14-x64",
+      "osx.10.14",
+      "osx.10.13-x64",
+      "osx.10.13",
+      "osx.10.12-x64",
+      "osx.10.12",
+      "osx.10.11-x64",
+      "osx.10.11",
+      "osx.10.10-x64",
+      "osx.10.10",
       "osx-x64",
       "osx",
       "unix-x64",
