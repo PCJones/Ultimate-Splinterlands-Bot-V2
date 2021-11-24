@@ -16,6 +16,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
     public static class Settings
     {
         public const string HIVE_NODE = "https://api.deathwing.me/";
+        public const string SPLINTERLANDS_WEBSOCKET_URL = "wss://ws2.splinterlands.com/";
         public const string SPLINTERLANDS_APP = "splinterlands/0.7.139";
         public static char[] Subset = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
         public static Random _Random = new Random();

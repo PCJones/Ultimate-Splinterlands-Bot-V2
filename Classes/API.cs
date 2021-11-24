@@ -216,7 +216,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
-                    Log.WriteToLog($"{username}: Error with splinterlands API for collection power, trying fallback api...", Log.LogType.Warning);
+                    Log.WriteToLog($"{username}: Error with splinterlands API for player details, trying fallback api...", Log.LogType.Warning);
                     data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/players/details?username={ username }");
                 }
                 return ((int)JToken.Parse(data)["collection_power"], (int)JToken.Parse(data)["rating"], (int)JToken.Parse(data)["league"]);
@@ -266,7 +266,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
-                    Log.WriteToLog($"{username}: Error with splinterlands API for collection power, trying fallback api...", Log.LogType.Warning);
+                    Log.WriteToLog($"{username}: Error with splinterlands API for battle result, trying fallback api...", Log.LogType.Warning);
                     data = await DownloadPageAsync($"{SplinterlandsAPIFallback}/battle/history2?player={ username }");
                 }
 
@@ -366,14 +366,21 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 DateTime oneDayAgo = DateTime.Now.AddDays(-1);
+
+                // lets hope nobody ever needs to touch this mess again
                 List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(x =>
                 ((x["delegated_to"].Type == JTokenType.Null && x["market_listing_type"].Type == JTokenType.Null)
                 || (string)x["delegated_to"] == username)
                 &&
-                    !((string)x["last_used_player"] != username &&
-                        (
-                            x["last_used_date"].Type != JTokenType.Null &&
-                            DateTime.Parse(JsonConvert.SerializeObject(x["last_used_date"]).Replace("\"", "").Trim()) > oneDayAgo
+                    (string)x["market_listing_type"] == "RENT" &&
+                    (int)x["market_listing_status"] == 3
+                    ||
+                    (
+                        !((string)x["last_used_player"] != username &&
+                            (
+                                x["last_used_date"].Type != JTokenType.Null &&
+                                DateTime.Parse(JsonConvert.SerializeObject(x["last_used_date"]).Replace("\"", "").Trim()) > oneDayAgo
+                            )
                         )
                     )
                 )
@@ -388,7 +395,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 // only use highest level/gold cards
                 Card[] cardsFiltered = cards.Select(x => cards.Where(y => x.card_detail_id == y.card_detail_id).First()).Distinct().ToArray();
-
                 return cardsFiltered;
             }
             catch (Exception ex)

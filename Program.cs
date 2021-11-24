@@ -35,8 +35,6 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Initialize();
 
-            Test.TestX();
-
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             CancellationToken token = cancellationTokenSource.Token;
             _ = Task.Run(async () => await BotLoopAsync(token)).ConfigureAwait(false);
