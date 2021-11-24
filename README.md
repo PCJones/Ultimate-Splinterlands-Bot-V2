@@ -40,5 +40,5 @@ In case you want to donate to me for creating this bot, I would be very happy!
 - Ethereum 0xcFE8c78F07e0190EBdD9077cF9d9E3A8DCED8d91 
 - WAX to account **lshru.wam** (please copy the name)
 - BUSD/USDT/BNB etc (Binance Smart Chain) 0x951844e1525bf37f36d7e6d037b4e3335bae0986
-- TRC20 USDT: TG83ASaHPCi9TDTjKCfMbmyfjBvme9XjqC
+- TRC20 USDT TG83ASaHPCi9TDTjKCfMbmyfjBvme9XjqC
 - Text me on Discord or Telegram for PayPal or any other crypto
