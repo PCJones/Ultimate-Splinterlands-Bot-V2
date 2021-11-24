@@ -79,8 +79,8 @@ namespace HiveAPI.CS
             {
                 if (ex.Message.Contains("internal error"))
                 {
-					
-                }
+					return CreateTransaction(aOperations, astrPrivateKeys);
+				}
 				// todo
             }
 			return null;

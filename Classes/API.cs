@@ -258,6 +258,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return (true, true);
         }
 
+        // this method is not being used currently
         public static async Task<(int newRating, int ratingChange, decimal decReward, int result)> GetBattleResultAsync(string username, string tx)
         {
             try

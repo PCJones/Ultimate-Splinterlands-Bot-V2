@@ -15,6 +15,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         rating_update,
         ecr_update,
         balance_update,
-        quest_progress
+        quest_progress,
+        battle_cancelled
     };
 }
