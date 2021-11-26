@@ -143,7 +143,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Card[] cards = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
                 if (Settings.UsePrivateAPI && Settings._Random.Next(0, 10) > 5)
                 {
-                    SplinterlandsAPI.UpdateCardsForPrivateAPI(Username, cards);
+                    BattleAPI.UpdateCardsForPrivateAPI(Username, cards);
                 }
                 Log.WriteToLog($"{Username}: Deck size: {(cards.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
 
@@ -212,7 +212,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
                 WaitForLoadingBanner(driver);
 
-                var team = await SplinterlandsAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters, cards, quest.quest, quest.questLessDetails, Username);
+                var team = await BattleAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters, cards, quest.quest, quest.questLessDetails, Username);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
@@ -332,7 +332,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     logTextBattleResult = $"You lost :(";
                     Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
                     Log.WriteToLog($"{Username}: New rating is {rating} ({ ratingChange.Pastel(Color.Red) })");
-                    SplinterlandsAPI.ReportLoss(winner, Username);
+                    BattleAPI.ReportLoss(winner, Username);
                 }
             }
             else
