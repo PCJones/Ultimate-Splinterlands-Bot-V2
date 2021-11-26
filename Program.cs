@@ -16,7 +16,8 @@ namespace Ultimate_Splinterlands_Bot_V2
     {
         private static object _TaskLock = new object();
         static void Main(string[] args)
-        {if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 handler = new ConsoleEventDelegate(ConsoleEventCallback);
                 SetConsoleCtrlHandler(handler, true);
@@ -247,9 +248,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "USE_BROWSER_MODE":
                         Settings.BrowserMode = Boolean.Parse(temp[1]);
                         break;
-                    case "AUTO_UNBAN":
-                        Settings.AutoUnban = Boolean.Parse(temp[1]);
-                        break;
                     case "HEADLESS":
                         Settings.Headless = Boolean.Parse(temp[1]);
                         break;
@@ -264,9 +262,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                         break;
                     case "WRITE_LOG_TO_FILE":
                         Settings.WriteLogToFile = Boolean.Parse(temp[1]);
-                        break;
-                    case "SHOW_WAITING_LOG":
-                        Settings.ShowWaitingLog = Boolean.Parse(temp[1]);
                         break;
                     case "SHOW_API_RESPONSE":
                         Settings.ShowAPIResponse = Boolean.Parse(temp[1]);
@@ -336,7 +331,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"MODE: {(Settings.LightningMode ? "LIGHTNING (blockchain)" : "BROWSER")}{Environment.NewLine}" +
                 $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
                 $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
-                $"SHOW_WAITING_LOG: {Settings.ShowWaitingLog}{Environment.NewLine}" +
                 $"SHOW_API_RESPONSE: {Settings.ShowAPIResponse}{Environment.NewLine}" +
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
@@ -352,7 +346,6 @@ namespace Ultimate_Splinterlands_Bot_V2
             if (Settings.LightningMode)
             {
                 Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
-                Console.Write($"AUTO_UNBAN: {Settings.AutoUnban}{Environment.NewLine}");
                 Console.Write($"THREADS: {Settings.Threads}{Environment.NewLine}");
             }
             else
@@ -550,7 +543,8 @@ namespace Ultimate_Splinterlands_Bot_V2
         }
         static bool CheckForChromeDriver()
         {
-            if ((Settings.BrowserMode || Settings.AutoUnban) && !File.Exists(Settings.StartupPath + @"/chromedriver.exe"))
+            var chromeDriverFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "chromedriver.exe" : "chromedriver";
+            if (!File.Exists(Settings.StartupPath + @"/" + chromeDriverFileName))
             {
                 Log.WriteToLog("No ChromeDriver installed - please download from https://chromedriver.chromium.org/ and insert .exe into bot folder", Log.LogType.CriticalError);
                 return false;
