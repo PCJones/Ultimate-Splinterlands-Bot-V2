@@ -16,6 +16,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
     public static class Settings
     {
         public const string HIVE_NODE = "https://api.deathwing.me/";
+        public const string SPLINTERLANDS_API_URL = "https://api2.splinterlands.com";
+        public const string SPLINTERLANDS_API_URL_FALLBACK = "https://game-api.splinterlands.io";
+        public const string SPLINTERLANDS_BROADCAST_URL = "https://broadcast.splinterlands.com/send";
+        public const string SPLINTERLANDS_WEBSOCKET_URL = "wss://ws2.splinterlands.com/";
         public const string SPLINTERLANDS_APP = "splinterlands/0.7.139";
         public static char[] Subset = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
         public static Random _Random = new Random();
@@ -24,12 +28,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool DebugMode = false;
         public static bool WriteLogToFile = false;
-        public static bool ShowWaitingLog = true;
         public static bool ShowAPIResponse = true;
 
         public static bool LightningMode = false;
         public static bool ShowBattleResults = true;
-        public static bool AutoUnban = true;
         public static int Threads = 1;
 
         public static bool BrowserMode = false;
@@ -68,7 +70,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool RateLimited = false;
         public static object RateLimitedLock = new object();
-        public static object StartBattleLock = new object();
+        public static object AccessTokenFileLock = new object();
         public static List<BotInstanceBrowser> BotInstancesBrowser { get; set; }
         public static List<BotInstanceBlockchain> BotInstancesBlockchain { get; set; }
         public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }

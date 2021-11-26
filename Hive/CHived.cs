@@ -77,11 +77,10 @@ namespace HiveAPI.CS
 			}
             catch (Exception ex)
             {
-                if (ex.Message.Contains("internal error"))
+                if (ex.Message.Contains("Internal error"))
                 {
-					
-                }
-				// todo
+					return CreateTransaction(aOperations, astrPrivateKeys);
+				}
             }
 			return null;
 		}

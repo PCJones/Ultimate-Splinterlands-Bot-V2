@@ -11,7 +11,7 @@ DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE=true
 ##If enabled it will click on the advance to next league button
 ADVANCE_LEAGUE=true
 
-##seperate by comma like this: earth,snipe - it will request new quest on earth and snipe quest
+##seperate by comma like this: earth,life - it will request new quest on earth and life quest
 ##Remove the # at the beginning of the next line to activate
 #REQUEST_NEW_QUEST=earth
 ##################General Settings##################
@@ -22,10 +22,8 @@ ADVANCE_LEAGUE=true
 #####will not get soft banned from splinterlands anymore.                            #####
 USE_LIGHTNING_MODE=true
 
-AUTO_UNBAN=true
-
 ##Threads = number of parallel accoounts.
-##Threads are MUCH faster than in the browser mode, so 1 or 2 will probably be enough
+##Threads are MUCH faster than in the browser mode
 THREADS=1
 
 ##Disable this if you want a cleaner log or you have problems with too many
@@ -38,7 +36,7 @@ SHOW_BATTLE_RESULTS=true
 USE_BROWSER_MODE=false
 
 ## HEADLESS true = invisible browser
-HEADLESS=false
+HEADLESS=true
 
 ##MAX_BROWSER_INSTANCES = MultiThreading!
 ##2 = 2 Browsers will open, so 2 accounts can fight at the same time
@@ -57,12 +55,14 @@ PRIVATE_API_SHOP=
 #######################API Settings########################
 
 #####################Advanced Settings#####################
-SHOW_WAITING_LOG=true
 SHOW_API_RESPONSE=true
 DEBUG=false
 WRITE_LOG_TO_FILE=false
 
+##Enable this if you get weird characters in your console that makes it hard to read
+DISABLE_CONSOLE_COLORS=false
+
 #Linux / VPS Variables - ignore if bot works
 #CHROME_BINARY_PATH=path/to/chrome/binary
-#CHROME_NO_SANDBOX=false
+CHROME_NO_SANDBOX=false
 #####################Advanced Settings#####################

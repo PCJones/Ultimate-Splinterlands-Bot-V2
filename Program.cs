@@ -16,7 +16,8 @@ namespace Ultimate_Splinterlands_Bot_V2
     {
         private static object _TaskLock = new object();
         static void Main(string[] args)
-        {if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 handler = new ConsoleEventDelegate(ConsoleEventCallback);
                 SetConsoleCtrlHandler(handler, true);
@@ -81,7 +82,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 Log.LogBattleSummaryToTable();
                                 Log.WriteSupportInformationToLog();
                                 nextBotInstance = 0;
-                                while (API.CheckForMaintenance().Result)
+                                while (SplinterlandsAPI.CheckForMaintenance().Result)
                                 {
                                     Log.WriteToLog("Splinterlands maintenance - waiting 3 minutes");
                                     Thread.Sleep(3 * 60000);
@@ -111,7 +112,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                             if (firstRuntrough)
                             {
                                 // Delay accounts to avoid them fighting each other
-                                Thread.Sleep(Settings._Random.Next(1000, 3000));
+                                Thread.Sleep(Settings._Random.Next(1000, 6000));
                             }
 
                             if (Settings.LightningMode)
@@ -247,9 +248,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "USE_BROWSER_MODE":
                         Settings.BrowserMode = Boolean.Parse(temp[1]);
                         break;
-                    case "AUTO_UNBAN":
-                        Settings.AutoUnban = Boolean.Parse(temp[1]);
-                        break;
                     case "HEADLESS":
                         Settings.Headless = Boolean.Parse(temp[1]);
                         break;
@@ -265,8 +263,12 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "WRITE_LOG_TO_FILE":
                         Settings.WriteLogToFile = Boolean.Parse(temp[1]);
                         break;
-                    case "SHOW_WAITING_LOG":
-                        Settings.ShowWaitingLog = Boolean.Parse(temp[1]);
+                    case "DISABLE_CONSOLE_COLORS":
+                        if (Boolean.Parse(temp[1]))
+                        {
+                            Log.WriteToLog("Console colors disabled!");
+                            ConsoleExtensions.Disable();
+                        }
                         break;
                     case "SHOW_API_RESPONSE":
                         Settings.ShowAPIResponse = Boolean.Parse(temp[1]);
@@ -336,7 +338,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"MODE: {(Settings.LightningMode ? "LIGHTNING (blockchain)" : "BROWSER")}{Environment.NewLine}" +
                 $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
                 $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
-                $"SHOW_WAITING_LOG: {Settings.ShowWaitingLog}{Environment.NewLine}" +
                 $"SHOW_API_RESPONSE: {Settings.ShowAPIResponse}{Environment.NewLine}" +
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
@@ -352,7 +353,6 @@ namespace Ultimate_Splinterlands_Bot_V2
             if (Settings.LightningMode)
             {
                 Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
-                Console.Write($"AUTO_UNBAN: {Settings.AutoUnban}{Environment.NewLine}");
                 Console.Write($"THREADS: {Settings.Threads}{Environment.NewLine}");
             }
             else
@@ -378,11 +378,17 @@ namespace Ultimate_Splinterlands_Bot_V2
         static bool ReadAccounts()
         {
             Log.WriteToLog("Reading accounts.txt...");
-            string filePath = Settings.StartupPath + @"/config/accounts.txt";
-            if (!File.Exists(filePath))
+            string filePathAccounts = Settings.StartupPath + @"/config/accounts.txt";
+            string filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
+            if (!File.Exists(filePathAccounts))
             {
                 Log.WriteToLog("No accounts.txt in config folder - see accounts-example.txt!", Log.LogType.CriticalError);
                 return false;
+            }
+
+            if (!File.Exists(filePathAccessTokens))
+            {
+                File.WriteAllText(filePathAccessTokens, "#DO NOT SHARE THESE!" + Environment.NewLine);
             }
 
             if (Settings.LightningMode)
@@ -394,19 +400,24 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Settings.BotInstancesBrowser = new();
             }
 
+            string[] accessTokens = File.ReadAllLines(filePathAccessTokens);
             int indexCounter = 0;
-            foreach (string loginData in File.ReadAllLines(filePath))
+
+            foreach (string loginData in File.ReadAllLines(filePathAccounts))
             {
                 if (loginData.Trim().Length == 0 || loginData[0] == '#')
                 {
                     continue;
                 }
                 string[] temp = loginData.Split(':');
+                var query = accessTokens.Where(x => x.Split(':')[0] == temp[0]);
+                string accessToken = query.Any()? query.First().Split(':')[1] : "";
+                
                 if (temp.Length == 2)
                 {
                     if (Settings.LightningMode)
                     {
-                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++));
+                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), accessToken, indexCounter++));
                     }
                     else
                     {
@@ -417,7 +428,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 {
                     if (Settings.LightningMode)
                     {
-                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++, key: temp[2].Trim()));
+                        Settings.BotInstancesBlockchain.Add(new BotInstanceBlockchain(temp[0].Trim().ToLower(), temp[1].Trim(), accessToken, indexCounter++, activeKey: temp[2].Trim()));
                     }
                     else
                     {
@@ -539,7 +550,8 @@ namespace Ultimate_Splinterlands_Bot_V2
         }
         static bool CheckForChromeDriver()
         {
-            if ((Settings.BrowserMode || Settings.AutoUnban) && !File.Exists(Settings.StartupPath + @"/chromedriver.exe"))
+            var chromeDriverFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "chromedriver.exe" : "chromedriver";
+            if (!File.Exists(Settings.StartupPath + @"/" + chromeDriverFileName))
             {
                 Log.WriteToLog("No ChromeDriver installed - please download from https://chromedriver.chromium.org/ and insert .exe into bot folder", Log.LogType.CriticalError);
                 return false;

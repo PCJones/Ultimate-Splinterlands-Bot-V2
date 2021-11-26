@@ -8,11 +8,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Websocket.Client;
 using static HiveAPI.CS.CHived;
 
 namespace Ultimate_Splinterlands_Bot_V2.Classes
@@ -22,6 +24,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private string Username { get; set; }
         private string PostingKey { get; init; }
         private string ActiveKey { get; init; } // only needed for plugins, not used by normal bot
+        private string AccessToken { get; init; } // used for websocket authentication
         private int APICounter { get; set; }
         private int PowerCached { get; set; }
         private int LeagueCached { get; set; }
@@ -29,15 +32,111 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private double ECRCached { get; set; }
         private (JToken Quest, JToken QuestLessDetails) QuestCached { get; set; }
         private Card[] CardsCached { get; set; }
+        private Dictionary<GameState, JToken> GameStates { get; set; }
         public bool CurrentlyActive { get; private set; }
-        public bool RankedBanned { get; private set; }
-        public int RankedBanCounter { get; private set; }
 
         private object _activeLock;
         private DateTime SleepUntil;
         private DateTime LastCacheUpdate;
         private LogSummary LogSummary;
 
+        private void HandleWebsocketMessage(ResponseMessage message)
+        {
+            if (message.MessageType != System.Net.WebSockets.WebSocketMessageType.Text
+                || !message.Text.Contains("\"id\""))
+            {
+                return;
+            }
+            JToken json = JToken.Parse(message.Text);
+            if (Enum.TryParse(json["id"].ToString(), out GameState state))
+            {
+                if (GameStates.ContainsKey(state))
+                {
+                    GameStates[state] = json["data"];
+                }
+                else
+                {
+                    GameStates.Add(state, json["data"]);
+                }
+            }
+            else if(json["data"]["trx_info"] != null 
+                && !(bool)json["data"]["trx_info"]["success"])
+            {
+                Log.WriteToLog($"{Username}: Transaction error: " + message.Text, Log.LogType.Warning);
+            }
+            else
+            {
+                Log.WriteToLog($"{Username}: UNKNOWN Message received: {message.Text}", Log.LogType.Warning);
+            }
+            
+            Log.WriteToLog($"{Username}: Message received: {message.Text}", debugOnly: true);
+        }
+
+        private async Task<bool> WaitForGameState(GameState state, int secondsToWait = 0)
+        {
+            int maxI = secondsToWait > 0 ? secondsToWait : 1;
+            for (int i = 0; i < maxI; i++)
+            {
+                if (secondsToWait > 0)
+                {
+                    await Task.Delay(1000);
+                }
+                if (GameStates.ContainsKey(state))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+            
+        private async Task<bool> WaitForTransactionSuccess(string tx, int secondsToWait)
+        {
+            if (tx.Length == 0)
+            {
+                return false;
+            }
+            for (int i = 0; i < secondsToWait * 2; i++)
+            {
+                await Task.Delay(500);
+                if (GameStates.ContainsKey(GameState.transaction_complete) 
+                    && (string)GameStates[GameState.transaction_complete]["trx_info"]["id"] == tx)
+                {
+                    if ((bool)GameStates[GameState.transaction_complete]["trx_info"]["success"])
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        Log.WriteToLog($"{Username}: Transaction error: " + tx + " - " + (string)GameStates[GameState.transaction_complete]["trx_info"]["error"], Log.LogType.Warning);
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private async Task WebsocketPingLoop(IWebsocketClient wsClient)
+        {
+            while (CurrentlyActive)
+            {
+                try
+                {
+                    await Task.Delay(60 * 1000);
+                    Log.WriteToLog($"{Username}: ping", debugOnly: true);
+                    wsClient.Send("{\"type\":\"ping\"}");
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
+
+        private void WebsocketAuthenticate(IWebsocketClient wsClient)
+        {
+            string sessionID = Helper.GenerateRandomString(10);
+            string message = "{\"type\":\"auth\",\"player\":\"" + Username + "\",\"access_token\":\"" + AccessToken + "\",\"session_id\":\"" + sessionID + "\"}";
+            wsClient.Send(message);
+        }
         private COperations.custom_json CreateCustomJson(bool activeKey, bool postingKey, string methodName, string json)
         {
             COperations.custom_json customJsonOperation = new COperations.custom_json
@@ -60,10 +159,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private string StartNewMatch()
         {
-            lock (Settings.StartBattleLock)
-            {
-                Thread.Sleep(3000);
-            }
             string n = Helper.GenerateRandomString(10);
             string json = "{\"match_type\":\"Ranked\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
             
@@ -80,7 +175,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 Log.WriteToLog($"{Username}: Error at finding match: " + ex.ToString(), Log.LogType.Error);
             }
-            return null;
+            return "";
         }
 
         private async Task<bool> WaitForEnemyPick(string tx, Stopwatch stopwatch)
@@ -88,21 +183,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             int counter = 0;
             do
             {
-                var enemyHasPicked = await API.CheckEnemyHasPickedAsync(Username, tx);
+                var enemyHasPicked = await SplinterlandsAPI.CheckEnemyHasPickedAsync(Username, tx);
                 if (enemyHasPicked.enemyHasPicked)
                 {
                     return enemyHasPicked.surrender;
                 }
-                if (Settings.ShowWaitingLog)
-                {
-                    Log.WriteToLog($"{Username}: Waiting 15 seconds for enemy to pick #{++counter}");
-                }
+                Log.WriteToLog($"{Username}: Waiting 15 seconds for enemy to pick #{++counter}");
                 await Task.Delay(stopwatch.Elapsed.TotalSeconds > 170 ? 2500 : 15000);
             } while (stopwatch.Elapsed.TotalSeconds < 179);
             return false;
         }
 
-        private void SubmitTeam(string trxId, JToken matchDetails, JToken team)
+        private (string secret, string tx) SubmitTeam(string tx, JToken matchDetails, JToken team)
         {
             try
             {
@@ -127,14 +219,57 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 string teamHash = Helper.GenerateMD5Hash(summoner + "," + monsterClean + "," + secret);
 
-                string json = "{\"trx_id\":\"" + trxId + "\",\"team_hash\":\"" + teamHash + "\",\"summoner\":\"" + summoner + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
-                COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_team_reveal", json);
+                COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_submit_team", json);
 
                 Log.WriteToLog($"{Username}: Submitting team...");
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
-                var result = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://api2.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
+                var response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
+                string responseTx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
+                return (secret, responseTx);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at submitting team: " + ex.ToString(), Log.LogType.Error);
+            }
+            return ("", "");
+        }
+
+        private void RevealTeam(string tx, JToken matchDetails, JToken team, string secret)
+        {
+            try
+            {
+                string summoner = CardsCached.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
+                string monsters = "";
+                for (int i = 0; i < 6; i++)
+                {
+                    var monster = CardsCached.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
+                    if (monster.card_detail_id.Length == 0)
+                    {
+                        break;
+                    }
+
+                    monsters += "\"" + monster.card_long_id + "\",";
+                }
+                monsters = monsters[..^1];
+
+                //string secret = Helper.GenerateRandomString(10);
+                string n = Helper.GenerateRandomString(10);
+
+                string monsterClean = monsters.Replace("\"", "");
+
+                //string teamHash = Helper.GenerateMD5Hash(summoner + "," + monsterClean + "," + secret);
+
+                string json = "{\"trx_id\":\"" + tx + "\",\"summoner\":\"" + summoner + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+
+                COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_team_reveal", json);
+
+                Log.WriteToLog($"{Username}: Revealing team...");
+                CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
+                var postData = GetStringForSplinterlandsAPI(oTransaction);
+                var response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
             }
             catch (Exception ex)
             {
@@ -171,18 +306,56 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             return null;
         }
-        public BotInstanceBlockchain(string username, string password, int index, string key = "")
+
+        private string GetAccessToken()
+        {
+            string filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
+            IWebDriver driver = SeleniumAddons.CreateSeleniumInstance();
+            try
+            {
+                Log.WriteToLog($"{Username}: Requesting access token... (this only happens once per account)");
+                BotInstanceBrowser instance = new(Username, PostingKey, 0);
+
+                if (instance.Login(driver, false))
+                {
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    string token = (string)js.ExecuteScript("return SM.Player.token");
+                    File.AppendAllText(filePathAccessTokens, Username + ":" + token + Environment.NewLine);
+
+                    return token;
+                }
+                else
+                {
+                    return "";
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at requesting access token: {ex}", Log.LogType.Error);
+                return "";
+            }
+            finally
+            {
+                driver.Quit();
+            }
+        }
+        public BotInstanceBlockchain(string username, string password, string accessToken, int index, string activeKey = "")
         {
             Username = username;
             PostingKey = password;
-            ActiveKey = key;
+            ActiveKey = activeKey;
+            AccessToken = accessToken.Length > 0 ? accessToken : GetAccessToken();
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * -1);
+            while (AccessToken.Length == 0)
+            {
+                Log.WriteToLog($"{Username}: Could not get Access Token for this account - trying again", Log.LogType.Error);
+                AccessToken = GetAccessToken();
+            }
             LastCacheUpdate = DateTime.MinValue;
             LogSummary = new LogSummary(index, username);
             _activeLock = new object();
             APICounter = 100;
-            RankedBanned = false;
-            RankedBanCounter = 0;
+            GameStates = new Dictionary<GameState, JToken>();
         }
 
         public async Task<DateTime> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance)
@@ -196,6 +369,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 CurrentlyActive = true;
             }
+
+            GameStates.Clear();
+            var wsClient = new WebsocketClient(new Uri(Settings.SPLINTERLANDS_WEBSOCKET_URL));
+            wsClient.ReconnectTimeout = new TimeSpan(0, 5, 0);
+
             try
             {
                 if (Username.Contains("@"))
@@ -211,25 +389,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return SleepUntil;
                 }
 
-                if (RankedBanned && Settings.AutoUnban)
-                {
-                    Log.WriteToLog($"{Username}: UNBAN Mode!", Log.LogType.Warning);
-                    BotInstanceBrowser instance = new BotInstanceBrowser(Username, PostingKey, 0);
-                    bool battleFailed = (await instance.DoBattleAsync(-1, false, -1, true)).battleFailed;
-                    if (!battleFailed)
-                    {
-                        if (++RankedBanCounter > 3)
-                        {
-                            Log.WriteToLog($"{Username}: Account unbanned!", Log.LogType.Success);
-                            SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
-                            RankedBanCounter = 0;
-                            RankedBanned = false;
-                            return SleepUntil;
-                        }
-                    }
-                    SleepUntil = DateTime.Now.AddMinutes(61);
-                    return SleepUntil;
-                }
+                wsClient.MessageReceived.Subscribe(msg => HandleWebsocketMessage(msg));
+                await wsClient.Start();
+                wsClient.ReconnectionHappened.Subscribe(info =>
+                    Log.WriteToLog($"Reconnection happened, type: {info.Type}"));
+                _ = WebsocketPingLoop(wsClient).ConfigureAwait(false);
+                WebsocketAuthenticate(wsClient);
 
                 if (Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), new object[] { })))
                 {
@@ -250,27 +415,19 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 APICounter++;
-                if (APICounter >= 6 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 40)
+                if (APICounter >= 10 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 50)
                 {
                     APICounter = 0;
                     LastCacheUpdate = DateTime.Now;
-                    var playerDetails = await API.GetPlayerDetailsAsync(Username);
+                    var playerDetails = await SplinterlandsAPI.GetPlayerDetailsAsync(Username);
                     PowerCached = playerDetails.power;
                     RatingCached = playerDetails.rating;
                     LeagueCached = playerDetails.league;
-                    QuestCached = await API.GetPlayerQuestAsync(Username);
-                    CardsCached = await API.GetPlayerCardsAsync(Username);
+                    QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
+                    CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
                     if (Settings.UsePrivateAPI)
                     {
-                        API.UpdateCardsForPrivateAPI(Username, CardsCached);
-                    }
-                    ECRCached = await GetECRFromAPIAsync();
-                }
-                else if (APICounter % 3 == 0)
-                {
-                    if(QuestCached.Quest == null || (int)QuestCached.QuestLessDetails["completed"] != (int)QuestCached.QuestLessDetails["total"])
-                    {
-                        QuestCached = await API.GetPlayerQuestAsync(Username);
+                        BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
                     }
                     ECRCached = await GetECRFromAPIAsync();
                 }
@@ -281,7 +438,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Deck size: {(CardsCached.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
                 Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(QuestCached.QuestLessDetails).Pastel(Color.Yellow)}");
 
-                AdvanceLeague();
+                await AdvanceLeague();
                 RequestNewQuestViaAPI();
                 ClaimQuestReward();
                 // claim season reward
@@ -299,52 +456,84 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                string trxId = StartNewMatch();
-                if (trxId == null || !trxId.Contains("success"))
+                string jsonResponsePlain = StartNewMatch();
+                string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", jsonResponsePlain);
+                if (jsonResponsePlain == "" || !jsonResponsePlain.Contains("success") || !await WaitForTransactionSuccess(tx, 30))
                 {
-                    int sleepTime = 5;
-                    Log.WriteToLog($"{Username}: Creating match was not successful: " + trxId, Log.LogType.Warning);
+                    var sleepTime = 5;
+                    Log.WriteToLog($"{Username}: Creating match was not successful: " + tx, Log.LogType.Warning);
                     Log.WriteToLog($"{Username}: Sleeping for { sleepTime } minutes", Log.LogType.Warning);
                     SleepUntil = DateTime.Now.AddMinutes(sleepTime);
                     return SleepUntil;
                 }
-                Log.WriteToLog($"{Username}: Splinterlands Response: {trxId}");
-                trxId = Helper.DoQuickRegex("id\":\"(.*?)\"", trxId);
+                Log.WriteToLog($"{Username}: Splinterlands Response: {jsonResponsePlain}");
 
                 SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
 
-                JToken matchDetails = await WaitForMatchDetails(trxId);
-                if (matchDetails == null)
+                if (!await WaitForGameState(GameState.match_found, 185))
                 {
-                    Log.WriteToLog($"{Username}: Banned from ranked? Sleeping for 30 minutes!", Log.LogType.Warning);
-                    SleepUntil = DateTime.Now.AddMinutes(30);
-                    RankedBanned = true;
+                    Log.WriteToLog($"{Username}: Banned from ranked? Sleeping for 10 minutes!", Log.LogType.Warning);
+                    SleepUntil = DateTime.Now.AddMinutes(10);
                     return SleepUntil;
                 }
+
+                JToken matchDetails = GameStates[GameState.match_found];
+                //JToken matchDetails = await WaitForMatchDetails(trxId);
+                //if (matchDetails == null)
+                //{
+                //    Log.WriteToLog($"{Username}: Banned from ranked? Sleeping for 30 minutes!", Log.LogType.Warning);
+                //    SleepUntil = DateTime.Now.AddMinutes(30);
+                //    RankedBanned = true;
+                //    return SleepUntil;
+                //}
 
                 JToken team = await GetTeamAsync(matchDetails);
                 if (team == null)
                 {
                     Log.WriteToLog($"{Username}: API didn't find any team - Skipping Account", Log.LogType.CriticalError);
-                    SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
+                    SleepUntil = DateTime.Now.AddMinutes(5);
+                    return SleepUntil;
                 }
 
-                var surrender = await WaitForEnemyPick(trxId, stopwatch);
-                stopwatch.Stop();
-                if (!surrender)
+                await Task.Delay(Settings._Random.Next(4500, 8000));
+                var submittedTeam = SubmitTeam(tx, matchDetails, team);
+                if (!await WaitForTransactionSuccess(submittedTeam.tx, 10))
                 {
-                    SubmitTeam(trxId, matchDetails, team);
+                    SleepUntil = DateTime.Now.AddMinutes(5);
+                    return SleepUntil;
+                }
+
+                bool surrender = false;
+                while (stopwatch.Elapsed.Seconds < 160)
+                {
+                    if (await WaitForGameState(GameState.opponent_submit_team, 4))
+                    {
+                        break;
+                    }
+                    // if there already is a battle result now it's because the enemy surrendered or the game vanished
+                    if (await WaitForGameState(GameState.battle_result) || await WaitForGameState(GameState.battle_cancelled))
+                    {
+                        surrender = true;
+                        break;
+                    }
+                }
+                //var surrender = await WaitForEnemyPick(tx, stopwatch);
+
+                stopwatch.Stop();
+                if (surrender)
+                {
+                    Log.WriteToLog($"{Username}: Looks like enemy surrendered - don't reveal the team", Log.LogType.Warning);
                 }
                 else
                 {
-                    Log.WriteToLog($"{Username}: Looks like enemy surrendered - don't submit a team", Log.LogType.Warning);
+                    RevealTeam(tx, matchDetails, team, submittedTeam.secret);
                 }
 
-                Log.WriteToLog($"{Username}: Finished battle!");
+                Log.WriteToLog($"{Username}: Battle finished!");
 
                 if (Settings.ShowBattleResults)
                 {
-                    await ShowBattleResult(trxId);
+                    await ShowBattleResult(tx);
                 }
                 else
                 {
@@ -357,6 +546,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             finally
             {
+                wsClient.Dispose();
                 Settings.LogSummaryList.Add((LogSummary.Index, LogSummary.Account, LogSummary.BattleResult, LogSummary.Rating, LogSummary.ECR, LogSummary.QuestStatus));
                 lock (_activeLock)
                 {
@@ -373,7 +563,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 int mana = (int)matchDetails["mana_cap"];
                 string rulesets = (string)matchDetails["ruleset"];
                 string[] inactive = ((string)matchDetails["inactive"]).Split(',');
-                // blue, black
+                
                 List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };
                 foreach (string inactiveSplinter in inactive)
                 {
@@ -406,7 +596,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 }
 
-                JToken team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
@@ -428,54 +618,93 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private async Task ShowBattleResult(string tx)
         {
-            (int newRating, int ratingChange, decimal decReward, int result) battleResult = new();
-            for (int i = 0; i < 14; i++)
+            if(!await WaitForGameState(GameState.battle_result, 210))
             {
-                await Task.Delay(6000);
-                battleResult = await API.GetBattleResultAsync(Username, tx);
-                if (battleResult.result >= 0)
+                Log.WriteToLog($"{Username}: Could not get battle result", Log.LogType.Error);
+            }
+            else
+            {
+                decimal decReward = await WaitForGameState(GameState.balance_update, 10) ?
+                    (decimal)GameStates[GameState.balance_update]["amount"] : 0;
+
+                int newRating = await WaitForGameState(GameState.rating_update) ?
+                    (int)GameStates[GameState.rating_update]["new_rating"] : RatingCached;
+
+                LeagueCached = await WaitForGameState(GameState.rating_update) ?
+                    (int)GameStates[GameState.rating_update]["new_league"] : LeagueCached;
+
+                int ratingChange = newRating - RatingCached;
+
+                if (await WaitForGameState(GameState.ecr_update))
                 {
-                    break;
+                    ECRCached = ((double)GameStates[GameState.ecr_update]["capture_rate"]) / 100;
                 }
-                if (Settings.ShowWaitingLog)
+                if (await WaitForGameState(GameState.quest_progress))
                 {
-                    Log.WriteToLog($"{Username}: Waiting 15 seconds for battle result #{i + 1}/14");
+                    // this is a lazy way until quest is implemented as a class and we can update the quest object here
+                    QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
                 }
-                await Task.Delay(9000);
+                RatingCached = newRating;
+
+                int battleResult = 0;
+                if ((string)GameStates[GameState.battle_result]["winner"] == Username)
+                {
+                    battleResult = 1;
+                }
+                else if ((string)GameStates[GameState.battle_result]["winner"] == "DRAW")
+                {
+                    battleResult = 2;
+                }
+                
+
+                //(int newRating, int ratingChange, decimal decReward, int result) battleResult = await API.GetBattleResultAsync(Username, tx);
+                //for (int i = 0; i < 14; i++)
+                //{
+                //    await Task.Delay(6000);
+                //    battleResult = await API.GetBattleResultAsync(Username, tx);
+                //    if (battleResult.result >= 0)
+                //    {
+                //        break;
+                //    }
+                //    if (Settings.ShowWaitingLog)
+                //    {
+                //        Log.WriteToLog($"{Username}: Waiting 15 seconds for battle result #{i + 1}/14");
+                //    }
+                //    await Task.Delay(9000);
+                //}
+                //if (battleResult.result == -1)
+                //{
+                //    Log.WriteToLog($"{Username}: Could not get battle result", Log.LogType.Error);
+                //    return;
+                //}
+
+                string logTextBattleResult = "";
+
+                switch (battleResult)
+                {
+                    case 2:
+                        logTextBattleResult = "DRAW";
+                        Log.WriteToLog($"{Username}: { logTextBattleResult}");
+                        Log.WriteToLog($"{Username}: Rating has not changed ({ newRating })");
+                        break;
+                    case 1:
+                        logTextBattleResult = $"You won! Reward: { decReward } DEC";
+                        Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
+                        Log.WriteToLog($"{Username}: New rating is { newRating } ({ ("+" + ratingChange.ToString()).Pastel(Color.Green) })");
+                        break;
+                    case 0:
+                        logTextBattleResult = $"You lost :(";
+                        Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
+                        Log.WriteToLog($"{Username}: New rating is { newRating } ({ ratingChange.ToString().Pastel(Color.Red) })");
+                        //API.ReportLoss(winner, Username); disabled for now
+                        break;
+                    default:
+                        break;
+                }
+
+                LogSummary.Rating = $"{ newRating } ({ ratingChange })";
+                LogSummary.BattleResult = logTextBattleResult;
             }
-
-            if (battleResult.result == -1)
-            {
-                Log.WriteToLog($"{Username}: Could not get battle result");
-                return;
-            }
-
-            string logTextBattleResult = "";
-
-            switch (battleResult.result)
-            {
-                case 2:
-                    logTextBattleResult = "DRAW";
-                    Log.WriteToLog($"{Username}: { logTextBattleResult}");
-                    Log.WriteToLog($"{Username}: Rating has not changed ({ battleResult.newRating })");
-                    break;
-                case 1:
-                    logTextBattleResult = $"You won! Reward: { battleResult.decReward } DEC";
-                    Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
-                    Log.WriteToLog($"{Username}: New rating is { battleResult.newRating } ({ ("+" + battleResult.ratingChange.ToString()).Pastel(Color.Green) })");
-                    break;
-                case 0:
-                    logTextBattleResult = $"You lost :(";
-                    Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
-                    Log.WriteToLog($"{Username}: New rating is { battleResult.newRating } ({ battleResult.ratingChange.ToString().Pastel(Color.Red) })");
-                    //API.ReportLoss(winner, Username); disabled for now
-                    break;
-                default:
-                    break;
-            }
-
-            LogSummary.Rating = $"{ battleResult.newRating } ({ battleResult.ratingChange })";
-            LogSummary.BattleResult = logTextBattleResult;
         }
 
         private void ClaimQuestReward()
@@ -519,11 +748,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                         COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_claim_reward", json);
 
-                        string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
-                        Log.WriteToLog($"{Username}: { "Claimed quest reward:".Pastel(Color.Green) } {tx}");
-                        //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
-                        //var postData = GetStringForSplinterlandsAPI(oTransaction);
-                        //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://broadcast.splinterlands.com/send", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
+                        //string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                        //Log.WriteToLog($"{Username}: { "Claimed quest reward:".Pastel(Color.Green) } {tx}");
+                        CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
+                        var postData = GetStringForSplinterlandsAPI(oTransaction);
+                        string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
+
+                        if (response.Contains("There was an error broadcasting"))
+                        {
+                            var v = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
+                            response = HttpWebRequest.WebRequestGet(Settings.CookieContainer, $"https://api2.splinterlands.com/players/delegation?v={v}&token={AccessToken}&username={Username}", "", "https://splinterlands.com/");
+                        }
 
                         APICounter = 100; // set api counter to 100 to reload quest
                     }
@@ -545,7 +780,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private async Task<double> GetECRFromAPIAsync()
         {
-            var balanceInfo = ((JArray)await API.GetPlayerBalancesAsync(Username)).Where(x => (string)x["token"] == "ECR").First();
+            var balanceInfo = ((JArray)await SplinterlandsAPI.GetPlayerBalancesAsync(Username)).Where(x => (string)x["token"] == "ECR").First();
             var captureRate = (int)balanceInfo["balance"];
             DateTime lastRewardTime = (DateTime)balanceInfo["last_reward_time"];
             double ecrRegen = 0.0868;
@@ -553,7 +788,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return Math.Min(ecr, 10000) / 100;
         }
 
-        private void AdvanceLeague()
+        private async Task AdvanceLeague()
         {
             try
             {
@@ -566,15 +801,27 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (highestPossibleLeage > LeagueCached)
                 {
                     Log.WriteToLog($"{Username}: { "Advancing to higher league!".Pastel(Color.Green)}");
-                    APICounter = 100; // set api counter to 100 to reload details
 
                     string n = Helper.GenerateRandomString(10);
-                    string json = "{\"notify\":\"true\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                    string json = "{\"notify\":\"false\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                     COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_advance_league", json);
+                    CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    var postData = GetStringForSplinterlandsAPI(oTransaction);
+                    string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
-                    string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
-                    Log.WriteToLog($"{Username}: { "Advanced league: ".Pastel(Color.Green) } {tx}");
+                    string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
+                    if (await WaitForTransactionSuccess(tx, 45))
+                    {
+                        Log.WriteToLog($"{Username}: { "Advanced league: ".Pastel(Color.Green) } {tx}");
+                        APICounter = 100; // set api counter to 100 to reload details
+                    }
+                    else
+                    {
+
+                    }
+                    //string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    //Log.WriteToLog($"{Username}: { "Advanced league: ".Pastel(Color.Green) } {tx}");
                 }
 
             }
