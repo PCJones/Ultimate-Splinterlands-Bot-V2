@@ -23,7 +23,7 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - [Youtube Tutorial](https://www.youtube.com/watch?v=kTS0FdAei7c)
 - [Chrome download](https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb)
 - [Chromedriver download](https://chromedriver.chromium.org/downloads)
-- Instructions coming soon, please ask for instructions on discord or Telegram
+- Text instructions coming soon, please ask for instructions on discord or Telegram
 
 [Discord](https://discord.gg/hwSr7KNGs9)
 
