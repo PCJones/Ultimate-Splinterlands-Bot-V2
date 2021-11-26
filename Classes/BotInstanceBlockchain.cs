@@ -657,6 +657,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 int newRating = await WaitForGameState(GameState.rating_update) ?
                     (int)GameStates[GameState.rating_update]["new_rating"] : RatingCached;
+
+                LeagueCached = await WaitForGameState(GameState.rating_update) ?
+                    (int)GameStates[GameState.rating_update]["new_league"] : LeagueCached;
+
                 int ratingChange = newRating - RatingCached;
 
                 if (await WaitForGameState(GameState.ecr_update))
@@ -774,9 +778,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                         string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
                         Log.WriteToLog($"{Username}: { "Claimed quest reward:".Pastel(Color.Green) } {tx}");
-                        //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
-                        //var postData = GetStringForSplinterlandsAPI(oTransaction, true);
-                        //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://broadcast.splinterlands.com/send", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
+                        CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
+                        var postData = GetStringForSplinterlandsAPI(oTransaction, true);
+                        string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
                         APICounter = 100; // set api counter to 100 to reload quest
                     }
@@ -813,14 +817,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (!Settings.AdvanceLeague || RatingCached == -1|| RatingCached < 1000)
                 {
                     return;
-                }
-
-                if (APICounter != 0) // refresh league
-                {
-                    var playerDetails = await SplinterlandsAPI.GetPlayerDetailsAsync(Username);
-                    PowerCached = playerDetails.power;
-                    RatingCached = playerDetails.rating;
-                    LeagueCached = playerDetails.league;
                 }
 
                 int highestPossibleLeage = GetMaxLeagueByRankAndPower();
