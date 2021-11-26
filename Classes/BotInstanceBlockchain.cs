@@ -141,8 +141,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             COperations.custom_json customJsonOperation = new COperations.custom_json
             {
-                required_auths = activeKey ? new string[] { Username } : new string[0],
-                required_posting_auths = postingKey ? new string[] { Username } : new string[0],
+                required_auths = activeKey ? new string[] { Username } : Array.Empty<string>(),
+                required_posting_auths = postingKey ? new string[] { Username } : Array.Empty<string>(),
                 id = methodName,
                 json = json
             };
@@ -396,7 +396,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 _ = WebsocketPingLoop(wsClient).ConfigureAwait(false);
                 WebsocketAuthenticate(wsClient);
 
-                if (Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), new object[] { })))
+                if (Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), Array.Empty<object>())))
                 {
                     Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { true });
                     try
@@ -440,7 +440,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 await AdvanceLeague();
                 RequestNewQuestViaAPI();
-                ClaimQuestReward();
+                await ClaimQuestReward();
                 // claim season reward
                 //signed_tx={"ref_block_num":1642,"ref_block_prefix":2848869945,"expiration":"2021-11-21T19:34:48","operations":[["custom_json",{"required_auths":[],"required_posting_auths":["username"],"id":"sm_claim_reward","json":"{\"type\":\"league_season\",\"season\":74,\"app\":\"splinterlands/0.7.139\",\"n\":\"oKt0H53ZsS\"}"}]],"extensions":[],"signatures":["1f6c4ef8937995b2f318fc7c9651bd52772e89073a4bb13afbccd45f326cd9f5a10113940fa9f55fd7bc73e72d0bd0fdcb23cd9cb44c1578cbfc821cc309188b06"]}
 
@@ -707,7 +707,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private void ClaimQuestReward()
+        private async Task ClaimQuestReward()
         {
             try
             {
@@ -748,19 +748,24 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                         COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_claim_reward", json);
 
-                        //string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
-                        //Log.WriteToLog($"{Username}: { "Claimed quest reward:".Pastel(Color.Green) } {tx}");
                         CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                         var postData = GetStringForSplinterlandsAPI(oTransaction);
                         string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
-                        if (response.Contains("There was an error broadcasting"))
+                        string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
+                        if (await WaitForTransactionSuccess(tx, 45))
                         {
-                            var v = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
-                            response = HttpWebRequest.WebRequestGet(Settings.CookieContainer, $"https://api2.splinterlands.com/players/delegation?v={v}&token={AccessToken}&username={Username}", "", "https://splinterlands.com/");
+                            Log.WriteToLog($"{Username}: { "Claimed quest reward:".Pastel(Color.Green) } {tx}");
+                            APICounter = 100; // set api counter to 100 to reload quest
                         }
-
-                        APICounter = 100; // set api counter to 100 to reload quest
+                        else
+                        {
+                            //if (response.Contains("There was an error broadcasting"))
+                            //{
+                            //    var v = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
+                            //    response = HttpWebRequest.WebRequestGet(Settings.CookieContainer, $"https://api2.splinterlands.com/players/delegation?v={v}&token={AccessToken}&username={Username}", "", "https://splinterlands.com/");
+                            //}
+                        }
                     }
                 }
                 else

@@ -56,7 +56,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool AdvanceLeague = false;
         public static int SleepBetweenBattles = 30;
         public static int ECRThreshold = 75;
-        public static string[] BadQuests = new string[0];
+        public static string[] BadQuests = Array.Empty<string>();
 
         public static string RentalBotDllPath = "";
         public static bool RentalBotActivated = false;
@@ -70,7 +70,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool RateLimited = false;
         public static object RateLimitedLock = new object();
-        public static object AccessTokenFileLock = new object();
         public static List<BotInstanceBrowser> BotInstancesBrowser { get; set; }
         public static List<BotInstanceBlockchain> BotInstancesBlockchain { get; set; }
         public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }

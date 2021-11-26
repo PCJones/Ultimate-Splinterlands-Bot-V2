@@ -34,7 +34,7 @@ namespace HiveAPI.CS
         public static byte[] DecodePublicWif(string publicKey, string prefix)
         {
             if (!publicKey.StartsWith(prefix))
-                return new byte[0];
+                return Array.Empty<byte>();
 
             var buf = publicKey.Remove(0, prefix.Length);
             var s = Decode(buf);

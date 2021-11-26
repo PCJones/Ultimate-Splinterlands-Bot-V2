@@ -368,7 +368,7 @@ namespace HiveAPI.CS
 			public UInt16 percent_hbd;
 			public bool allow_votes;
 			public bool allow_curation_rewards;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 
 		public class set_withdraw_vesting_route : IOperationID
@@ -394,7 +394,7 @@ namespace HiveAPI.CS
 			public int opid => 22;
 			public string creator;
 			public Asset fee;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class create_claimed_account : IOperationID
 		{
@@ -406,7 +406,7 @@ namespace HiveAPI.CS
 			public Authority posting;
 			public PublicKey memo_key;
 			public string json_metadata;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class request_account_recovery : IOperationID
 		{
@@ -414,7 +414,7 @@ namespace HiveAPI.CS
 			public string recovery_account;
 			public string account_to_recover;
 			public Authority new_owner_authority;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class recover_account : IOperationID
 		{
@@ -422,14 +422,14 @@ namespace HiveAPI.CS
 			public string account_to_recover;
 			public Authority new_owner_authority;
 			public Authority recent_owner_authority;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class change_recovery_account : IOperationID
 		{
 			public int opid => 26;
 			public string account_to_recover;
 			public string new_recovery_account;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 
 		public class escrow_transfer : IOperationID
@@ -559,14 +559,14 @@ namespace HiveAPI.CS
 			public Authority posting;
 			public PublicKey memo_key;
 			public string json_metadata;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class witness_set_properties : IOperationID
 		{
 			public int opid => 42;
 			public string owner;
 			public WitnessProperties props;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class account_update2 : IOperationID
 		{
@@ -578,7 +578,7 @@ namespace HiveAPI.CS
 			[OptionalField] public PublicKey memo_key;
 			public string json_metadata;
 			public string posting_json_metadata;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class create_proposal : IOperationID
 		{
@@ -590,7 +590,7 @@ namespace HiveAPI.CS
 			public Asset daily_pay;
 			public string voidject;
 			public string permlink;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class update_proposal_votes : IOperationID
 		{
@@ -598,14 +598,14 @@ namespace HiveAPI.CS
 			public string voter;
 			public Int64[] proposal_ids;
 			public bool approve;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class remove_proposal : IOperationID
 		{
 			public int opid => 46;
 			public string proposal_owner;
 			public Int64[] proposal_ids;
-			public Object[] extensions = { };
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class update_proposal : IOperationID
 		{
@@ -615,7 +615,7 @@ namespace HiveAPI.CS
 			public Asset daily_pay;
 			public string voidject;
 			public string permlink;
-			public Object[] extensions = { };
+			public Object[] extensions = Array.Empty<object>();
 		}
 		public class collateralized_convert : IOperationID
 		{
@@ -633,7 +633,7 @@ namespace HiveAPI.CS
 			public string memo;
 			public UInt16 recurrence;
 			public UInt16 executions;
-			public Object[] extensions = {};
+			public Object[] extensions = Array.Empty<object>();
 	    }
 	}
 }

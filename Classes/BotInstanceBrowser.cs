@@ -118,7 +118,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 ClosePopups(driver);
                 NavigateToBattlePage(driver);
 
-                if (!unbanMode && Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), new object[] { })))
+                if (!unbanMode && Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), Array.Empty<object>())))
                 {
                     Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { true });
                     try
