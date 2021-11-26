@@ -93,6 +93,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             
         private async Task<bool> WaitForTransactionSuccess(string tx, int secondsToWait)
         {
+            if (tx.Length == 0)
+            {
+                return false;
+            }
             for (int i = 0; i < secondsToWait * 2; i++)
             {
                 await Task.Delay(500);
@@ -147,20 +151,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return customJsonOperation;
         }
 
-        private string GetStringForSplinterlandsAPI(CtransactionData oTransaction)
+        private string GetStringForSplinterlandsAPI(CtransactionData oTransaction, bool addSignedTx = true)
         {
             string json = JsonConvert.SerializeObject(oTransaction.tx);
-            string postData = "signed_tx=" + json.Replace("operations\":[{", "operations\":[[\"custom_json\",{")
+            string postData = (addSignedTx ? "signed_tx=" : "") + json.Replace("operations\":[{", "operations\":[[\"custom_json\",{")
                 .Replace(",\"opid\":18}", "}]");
             return postData;
         }
 
         private string StartNewMatch()
         {
-            lock (Settings.StartBattleLock)
-            {
-                Thread.Sleep(3000);
-            }
             string n = Helper.GenerateRandomString(10);
             string json = "{\"match_type\":\"Ranked\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
             
@@ -185,7 +185,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             int counter = 0;
             do
             {
-                var enemyHasPicked = await API.CheckEnemyHasPickedAsync(Username, tx);
+                var enemyHasPicked = await SplinterlandsAPI.CheckEnemyHasPickedAsync(Username, tx);
                 if (enemyHasPicked.enemyHasPicked)
                 {
                     return enemyHasPicked.surrender;
@@ -446,15 +446,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     APICounter = 0;
                     LastCacheUpdate = DateTime.Now;
-                    var playerDetails = await API.GetPlayerDetailsAsync(Username);
+                    var playerDetails = await SplinterlandsAPI.GetPlayerDetailsAsync(Username);
                     PowerCached = playerDetails.power;
                     RatingCached = playerDetails.rating;
                     LeagueCached = playerDetails.league;
-                    QuestCached = await API.GetPlayerQuestAsync(Username);
-                    CardsCached = await API.GetPlayerCardsAsync(Username);
+                    QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
+                    CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
                     if (Settings.UsePrivateAPI)
                     {
-                        API.UpdateCardsForPrivateAPI(Username, CardsCached);
+                        BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
                     }
                     ECRCached = await GetECRFromAPIAsync();
                 }
@@ -523,7 +523,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return SleepUntil;
                 }
 
-                await Task.Delay(Settings._Random.Next(3000, 8000));
+                await Task.Delay(Settings._Random.Next(4500, 8000));
                 var submittedTeam = SubmitTeam(tx, matchDetails, team);
                 if (!await WaitForTransactionSuccess(submittedTeam.tx, 10))
                 {
@@ -624,7 +624,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 }
 
-                JToken team = await API.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
@@ -666,7 +666,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (await WaitForGameState(GameState.quest_progress))
                 {
                     // this is a lazy way until quest is implemented as a class and we can update the quest object here
-                    QuestCached = await API.GetPlayerQuestAsync(Username);
+                    QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
                 }
                 RatingCached = newRating;
 
@@ -775,8 +775,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
                         Log.WriteToLog($"{Username}: { "Claimed quest reward:".Pastel(Color.Green) } {tx}");
                         //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
-                        //var postData = GetStringForSplinterlandsAPI(oTransaction);
-                        //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://broadcast.splinterlands.com/send", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
+                        //var postData = GetStringForSplinterlandsAPI(oTransaction, true);
+                        //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://broadcast.splinterlands.com/send", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
                         APICounter = 100; // set api counter to 100 to reload quest
                     }
@@ -798,7 +798,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private async Task<double> GetECRFromAPIAsync()
         {
-            var balanceInfo = ((JArray)await API.GetPlayerBalancesAsync(Username)).Where(x => (string)x["token"] == "ECR").First();
+            var balanceInfo = ((JArray)await SplinterlandsAPI.GetPlayerBalancesAsync(Username)).Where(x => (string)x["token"] == "ECR").First();
             var captureRate = (int)balanceInfo["balance"];
             DateTime lastRewardTime = (DateTime)balanceInfo["last_reward_time"];
             double ecrRegen = 0.0868;
@@ -806,13 +806,21 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return Math.Min(ecr, 10000) / 100;
         }
 
-        private void AdvanceLeague()
+        private async Task AdvanceLeague()
         {
             try
             {
                 if (!Settings.AdvanceLeague || RatingCached == -1|| RatingCached < 1000)
                 {
                     return;
+                }
+
+                if (APICounter != 0) // refresh league
+                {
+                    var playerDetails = await SplinterlandsAPI.GetPlayerDetailsAsync(Username);
+                    PowerCached = playerDetails.power;
+                    RatingCached = playerDetails.rating;
+                    LeagueCached = playerDetails.league;
                 }
 
                 int highestPossibleLeage = GetMaxLeagueByRankAndPower();

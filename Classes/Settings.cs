@@ -16,6 +16,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
     public static class Settings
     {
         public const string HIVE_NODE = "https://api.deathwing.me/";
+        public const string SPLINTERLANDS_API_URL = "https://api2.splinterlands.com";
+        public const string SPLINTERLANDS_API_URL_FALLBACK = "https://game-api.splinterlands.io";
         public const string SPLINTERLANDS_WEBSOCKET_URL = "wss://ws2.splinterlands.com/";
         public const string SPLINTERLANDS_APP = "splinterlands/0.7.139";
         public static char[] Subset = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
@@ -69,7 +71,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool RateLimited = false;
         public static object RateLimitedLock = new object();
-        public static object StartBattleLock = new object();
         public static object AccessTokenFileLock = new object();
         public static List<BotInstanceBrowser> BotInstancesBrowser { get; set; }
         public static List<BotInstanceBlockchain> BotInstancesBlockchain { get; set; }
