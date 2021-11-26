@@ -460,7 +460,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", jsonResponsePlain);
                 if (jsonResponsePlain == "" || !jsonResponsePlain.Contains("success") || !await WaitForTransactionSuccess(tx, 30))
                 {
-                    int sleepTime = 5;
+                    var sleepTime = 5;
                     Log.WriteToLog($"{Username}: Creating match was not successful: " + tx, Log.LogType.Warning);
                     Log.WriteToLog($"{Username}: Sleeping for { sleepTime } minutes", Log.LogType.Warning);
                     SleepUntil = DateTime.Now.AddMinutes(sleepTime);
@@ -801,7 +801,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (highestPossibleLeage > LeagueCached)
                 {
                     Log.WriteToLog($"{Username}: { "Advancing to higher league!".Pastel(Color.Green)}");
-                    APICounter = 100; // set api counter to 100 to reload details
 
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"notify\":\"false\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
@@ -815,6 +814,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     if (await WaitForTransactionSuccess(tx, 45))
                     {
                         Log.WriteToLog($"{Username}: { "Advanced league: ".Pastel(Color.Green) } {tx}");
+                        APICounter = 100; // set api counter to 100 to reload details
                     }
                     else
                     {

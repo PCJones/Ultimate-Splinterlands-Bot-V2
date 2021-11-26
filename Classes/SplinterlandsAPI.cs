@@ -29,7 +29,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"Could not get settings from splinterlands api: {ex}", Log.LogType.Error);
+                Log.WriteToLog($"Could not get settings from splinterlands API: {ex}", Log.LogType.Error);
             }
             return true;
         }
@@ -48,7 +48,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get player details from splinterlands api: {ex}", Log.LogType.Error);
+                Log.WriteToLog($"{username}: Could not get player details from splinterlands API: {ex}", Log.LogType.Error);
             }
             return (-1, -1, -1);
         }
@@ -78,7 +78,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get ongoing game from splinterlands api: {ex}", Log.LogType.Error);
+                Log.WriteToLog($"{username}: Could not get ongoing game from splinterlands API: {ex}", Log.LogType.Error);
             }
             return (true, true);
         }
@@ -123,7 +123,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get battle results from splinterlands api: {ex}", Log.LogType.Error);
+                Log.WriteToLog($"{username}: Could not get battle results from splinterlands API: {ex}", Log.LogType.Error);
             }
             return (-1, -1, -1, -1);
         }
@@ -145,7 +145,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get balances from splinterlands api: {ex}", Log.LogType.Error);
+                Log.WriteToLog($"{username}: Could not get balances from splinterlands API: {ex}", Log.LogType.Error);
             }
             return null;
         }
@@ -174,7 +174,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get quest from splinterlands api: {ex}", Log.LogType.Error);
+                Log.WriteToLog($"{username}: Could not get quest from splinterlands API: {ex}", Log.LogType.Error);
             }
             return (null, null);
         }
@@ -238,7 +238,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get cards from splinterlands api: {ex}{Environment.NewLine}Bot will play with phantom cards only.", Log.LogType.Error);
+                Log.WriteToLog($"{username}: Could not get cards from splinterlands API: {ex}{Environment.NewLine}Bot will play with phantom cards only.", Log.LogType.Error);
             }
             return Settings.PhantomCards.Select(x => new Card(x, "starter-" + x + "-" + Helper.GenerateRandomString(5), "1", false)).ToArray();
         }

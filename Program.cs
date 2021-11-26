@@ -112,7 +112,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                             if (firstRuntrough)
                             {
                                 // Delay accounts to avoid them fighting each other
-                                Thread.Sleep(Settings._Random.Next(1000, 3000));
+                                Thread.Sleep(Settings._Random.Next(1000, 6000));
                             }
 
                             if (Settings.LightningMode)
@@ -262,6 +262,13 @@ namespace Ultimate_Splinterlands_Bot_V2
                         break;
                     case "WRITE_LOG_TO_FILE":
                         Settings.WriteLogToFile = Boolean.Parse(temp[1]);
+                        break;
+                    case "DISABLE_CONSOLE_COLORS":
+                        if (Boolean.Parse(temp[1]))
+                        {
+                            Log.WriteToLog("Console colors disabled!");
+                            ConsoleExtensions.Disable();
+                        }
                         break;
                     case "SHOW_API_RESPONSE":
                         Settings.ShowAPIResponse = Boolean.Parse(temp[1]);
