@@ -193,10 +193,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 DateTime oneDayAgo = DateTime.Now.AddDays(-1);
 
-                List<Card> cards1 = new List<Card>(JToken.Parse(data)["cards"].Where(card =>
+                List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(card =>
                 {
                     string currentUser = card["delegated_to"].Type == JTokenType.Null ? (string)card["player"] : (string)card["delegated_to"];
                     bool cardOnCooldown = currentUser != (string)card["last_used_player"] ?
+                    card["last_used_date"].Type != JTokenType.Null &&
                     oneDayAgo < DateTime.Parse(JsonConvert.SerializeObject(card["last_used_date"]).Replace("\"", "").Trim()) : false;
                     bool forSale = (string)card["market_listing_type"] == "RENT" ? false : card["market_listing_type"].Type != JTokenType.Null ? true : false;
 
@@ -205,25 +206,25 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 .Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"]))
                 .Distinct().OrderByDescending(x => x.SortValue()).ToArray());
 
-                // lets hope nobody ever needs to touch this mess again
-                List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(x =>
-                ((x["delegated_to"].Type == JTokenType.Null && x["market_listing_type"].Type == JTokenType.Null)
-                || (string)x["delegated_to"] == username)
-                &&
-                    (string)x["market_listing_type"] == "RENT" &&
-                    (int)x["market_listing_status"] == 3
-                    ||
-                    (
-                        !((string)x["last_used_player"] != username &&
-                            (
-                                x["last_used_date"].Type != JTokenType.Null &&
-                                DateTime.Parse(JsonConvert.SerializeObject(x["last_used_date"]).Replace("\"", "").Trim()) > oneDayAgo
-                            )
-                        )
-                    )
-                )
-                .Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"]))
-                .Distinct().OrderByDescending(x => x.SortValue()).ToArray());
+                //// lets hope nobody ever needs to touch this mess again
+                //List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(x =>
+                //((x["delegated_to"].Type == JTokenType.Null && x["market_listing_type"].Type == JTokenType.Null)
+                //|| (string)x["delegated_to"] == username)
+                //&&
+                //    (string)x["market_listing_type"] == "RENT" &&
+                //    (int)x["market_listing_status"] == 3
+                //    ||
+                //    (
+                //        !((string)x["last_used_player"] != username &&
+                //            (
+                //                x["last_used_date"].Type != JTokenType.Null &&
+                //                DateTime.Parse(JsonConvert.SerializeObject(x["last_used_date"]).Replace("\"", "").Trim()) > oneDayAgo
+                //            )
+                //        )
+                //    )
+                //)
+                //.Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"]))
+                //.Distinct().OrderByDescending(x => x.SortValue()).ToArray());
 
                 // add basic cards
                 foreach (string cardId in Settings.PhantomCards)
