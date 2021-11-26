@@ -1,0 +1,68 @@
+##################General Settings##################
+PRIORITIZE_QUEST=true
+SLEEP_BETWEEN_BATTLES=5
+ECR_THRESHOLD=75
+CLAIM_SEASON_REWARD=false
+CLAIM_QUEST_REWARD=false
+
+##E.g. if you are almost bronze 1 and have enough power, it won't claim quest reward until you are bronze 1
+DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE=true
+
+##If enabled it will click on the advance to next league button
+ADVANCE_LEAGUE=true
+
+##seperate by comma like this: earth,life - it will request new quest on earth and life quest
+##Remove the # at the beginning of the next line to activate
+#REQUEST_NEW_QUEST=earth
+##################General Settings##################
+
+##################Lightning Mode Settings##################
+#####If you want to use the fast, low resource blockchain mode of the bot enable this#####
+#####It has 90% less requests to splinterlands API then playing via browser, so you  #####
+#####will not get soft banned from splinterlands anymore.                            #####
+USE_LIGHTNING_MODE=true
+
+##Threads = number of parallel accoounts.
+##Threads are MUCH faster than in the browser mode
+THREADS=1
+
+##Disable this if you want a cleaner log or you have problems with too many
+##requests to the splinterlands API (unlikely unless you run a lot of threads)
+SHOW_BATTLE_RESULTS=true
+##################Lightning Mode Settings##################
+
+###################Browser Mode Settings###################
+#####If you want to use the old browser based version of the bot enable this#####
+USE_BROWSER_MODE=false
+
+## HEADLESS true = invisible browser
+HEADLESS=true
+
+##MAX_BROWSER_INSTANCES = MultiThreading!
+##2 = 2 Browsers will open, so 2 accounts can fight at the same time
+MAX_BROWSER_INSTANCES=2
+###################Browser Mode Settings###################
+
+#######################API Settings########################
+
+USE_API=true
+API_URL=http://splinterlandsapi.pcjones.de:8080/
+
+##PRIVATE API Settings - ignore if you don't have it
+USE_PRIVATE_API=false
+PRIVATE_API_URL=
+PRIVATE_API_SHOP=
+#######################API Settings########################
+
+#####################Advanced Settings#####################
+SHOW_API_RESPONSE=true
+DEBUG=false
+WRITE_LOG_TO_FILE=false
+
+##Enable this if you get weird characters in your console that makes it hard to read
+DISABLE_CONSOLE_COLORS=false
+
+#Linux / VPS Variables - ignore if bot works
+#CHROME_BINARY_PATH=path/to/chrome/binary
+CHROME_NO_SANDBOX=false
+#####################Advanced Settings#####################
