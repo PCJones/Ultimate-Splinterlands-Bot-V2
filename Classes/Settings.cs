@@ -26,6 +26,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static CookieContainer CookieContainer = new();
         public static string StartupPath = "";
 
+        public static bool LegacyWindowsMode = false;
         public static bool DebugMode = false;
         public static bool WriteLogToFile = false;
         public static bool ShowAPIResponse = true;

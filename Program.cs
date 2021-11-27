@@ -21,6 +21,12 @@ namespace Ultimate_Splinterlands_Bot_V2
             {
                 handler = new ConsoleEventDelegate(ConsoleEventCallback);
                 SetConsoleCtrlHandler(handler, true);
+                if (Environment.OSVersion.Version.Major < 10)
+                {
+                    Console.WriteLine("Legacy mode for old Windows version activated - please update your Windows to Windows 10 or higher / Windows Server 2016 or higher to get maximum bot speed");
+                    Settings.LegacyWindowsMode = true;
+                    ConsoleExtensions.Disable();
+                }
             }
 
             Log.WriteStartupInfoToLog();
@@ -32,7 +38,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Environment.Exit(0);
             }
 
-            Thread.Sleep(3000); // Sleep 3 seconds to read config and welcome message
+            Thread.Sleep(1500); // Sleep 1.5 seconds to read config and welcome message
 
             Initialize();
 

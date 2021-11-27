@@ -77,7 +77,7 @@ namespace HiveAPI.CS
 			}
             catch (Exception ex)
             {
-                if (ex.Message.Contains("Internal error"))
+                if (ex.Message.Contains("Internal Error"))
                 {
 					return CreateTransaction(aOperations, astrPrivateKeys);
 				}
