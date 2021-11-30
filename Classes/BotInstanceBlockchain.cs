@@ -313,6 +313,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private string GetAccessToken()
         {
+            if (Settings.LegacyWindowsMode)
+            {
+                return "none";
+            }
             string filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
             IWebDriver driver = SeleniumAddons.CreateSeleniumInstance();
             try
@@ -908,7 +912,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                     else
                     {
-
+                        APICounter = 100;
                     }
                 }
 

@@ -87,6 +87,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 firstRuntrough = false;
                                 Log.LogBattleSummaryToTable();
                                 Log.WriteSupportInformationToLog();
+                                Thread.Sleep(5000);
                                 nextBotInstance = 0;
                                 while (SplinterlandsAPI.CheckForMaintenance().Result)
                                 {
