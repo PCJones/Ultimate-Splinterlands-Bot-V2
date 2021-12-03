@@ -52,3 +52,36 @@ In case you want to donate to me for creating this bot, I would be very happy!
 - Text me on Discord or Telegram for PayPal or any other crypto
 
 ## Bot configuration:
+Configuration with default values:
+
+# General Settings
+
+- `PRIORITIZE_QUEST=true` Disable/Enable quest priority
+
+- `SLEEP_BETWEEN_BATTLES=5` Sleep time in minutes before the bot will fight with an account again. You can set it to 0 to fight without any break.
+
+- `ECR_THRESHOLD=75` If your energy capture rate goes below this the bot will stop fighting with this account until it's above again. Set to 0 to disable
+
+- `CLAIM_SEASON_REWARD=false` Disable/Enable season reward claiming
+
+- `CLAIM_QUEST_REWARD=false` Disable/Enable quest reward claiming
+
+- `DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE=true` Example: If you are almost bronze 1 and have enough power for it, the bot won't claim the quest reward until you are bronze 1
+
+- `HEADLESS=true` Disable/Enable headless("invisible") browser (e.g. to see where the bot fails)
+
+- `KEEP_BROWSER_OPEN=true` Disable/Enable keeping the browser instances open after fighting. Recommended to have it on true to avoid having each account to login for each fight. Disable if CPU/Ram usage is too high (check in task manager)
+
+- `LOGIN_VIA_EMAIL=false` Disable/Enable login via e-mail adress. See below for further explanation
+
+- `EMAIL=account1@email.com,account2@email.com,account3@email.com` Your login e-mails, each account seperated by comma. Ignore line if `LOGIN_VIA_EMAIL` is `false`
+
+- `ACCUSERNAME=username1,username2,username3` Your login usernames, each account seperated by comma. **Even if you login via email you have to also set the usernames!**
+
+- `PASSWORD=password1,password2,password3` Your login passwords/posting keys. Use password if you login via email, **use the posting key if you login via username**
+
+- `USE_API=true` Enable/Disable the team selection API. If disabled the bot will play the most played cards from local newHistory.json file. **Experimental - set to false if you lose a lot**
+
+- `API_URL=` Ignore/Don't change unless you have the private API from the original bot
+
+- `USE_CLASSIC_BOT_PRIVATE_API=false` Set to false unless you have the private API from the original bot
