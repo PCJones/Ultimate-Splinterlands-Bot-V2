@@ -16,7 +16,7 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - The bot will play for the quests, including sneak and snipe (can be disabled)
 - Minimum Energy Capture Rate - the bot will pause automatically if the energy capture rate is below a specified percentage
 - Option to enable/disable automatic quest reward chest opening
-- And much more, see Bot configuration below
+- And much more, see [Bot configuration](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/blob/master/README.md#bot-configuration)
 - Any suggestions?
 
 ## How to install (Windows)
