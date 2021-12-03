@@ -56,32 +56,35 @@ Configuration with default values:
 
 # General Settings
 
-- `PRIORITIZE_QUEST=true` Disable/Enable quest priority
+- `PRIORITIZE_QUEST=true` Disable/Enable quest priority.
 
 - `SLEEP_BETWEEN_BATTLES=5` Sleep time in minutes before the bot will fight with an account again. You can set it to 0 to fight without any break.
 
-- `ECR_THRESHOLD=75` If your energy capture rate goes below this the bot will stop fighting with this account until it's above again. Set to 0 to disable
+- `ECR_THRESHOLD=75` If your energy capture rate goes below this the bot will stop fighting with this account until it's above again. Set to 0 to disable.
 
-- `CLAIM_SEASON_REWARD=false` Disable/Enable season reward claiming
+- `CLAIM_SEASON_REWARD=false` Disable/Enable season reward claiming.
 
-- `CLAIM_QUEST_REWARD=false` Disable/Enable quest reward claiming
+- `CLAIM_QUEST_REWARD=false` Disable/Enable quest reward claiming.
 
-- `DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE=true` Example: If you are almost bronze 1 and have enough power for it, the bot won't claim the quest reward until you are bronze 1
+- `DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE=true` Example: If you are almost bronze 1 and have enough power for it, the bot won't claim the quest reward until you are bronze 1.
 
-- `HEADLESS=true` Disable/Enable headless("invisible") browser (e.g. to see where the bot fails)
+- `ADVANCE_LEAGUE=true` Disable/Enable the bot advancing to silver and above.
 
-- `KEEP_BROWSER_OPEN=true` Disable/Enable keeping the browser instances open after fighting. Recommended to have it on true to avoid having each account to login for each fight. Disable if CPU/Ram usage is too high (check in task manager)
+- `REQUEST_NEW_QUEST=earth` Quests the bot isn't good at and where you want it to request a new one. Seperate by comma, possible options are: fire,water,earth,life,death,dragon
 
-- `LOGIN_VIA_EMAIL=false` Disable/Enable login via e-mail adress. See below for further explanation
+# Lightning Mode Settings
 
-- `EMAIL=account1@email.com,account2@email.com,account3@email.com` Your login e-mails, each account seperated by comma. Ignore line if `LOGIN_VIA_EMAIL` is `false`
+- `USE_LIGHTNING_MODE=true` Disable/Enable lightning mode. Lightning mode has 90% less API requests to the splinterlands API which means you can run a lot of accounts in parallel without getting IP banned. It's also super fast and barely takes any CPU and RAM resources.
 
-- `ACCUSERNAME=username1,username2,username3` Your login usernames, each account seperated by comma. **Even if you login via email you have to also set the usernames!**
+- `THREADS=1` Number of threads (= number of accounts fighting in parallel).
 
-- `PASSWORD=password1,password2,password3` Your login passwords/posting keys. Use password if you login via email, **use the posting key if you login via username**
+- `SHOW_BATTLE_RESULTS=true` Disable/enable showing battle results in console.
 
-- `USE_API=true` Enable/Disable the team selection API. If disabled the bot will play the most played cards from local newHistory.json file. **Experimental - set to false if you lose a lot**
+# Advanced Settings
+- `SHOW_API_RESPONSE=true` Disable/Enable showing the team picked by the battle API in console.
 
-- `API_URL=` Ignore/Don't change unless you have the private API from the original bot
+- `DEBUG=false` Disable/Enable showing more log in console. I don't recommend to enable this unless you have been asked to.
 
-- `USE_CLASSIC_BOT_PRIVATE_API=false` Set to false unless you have the private API from the original bot
+- `WRITE_LOG_TO_FILE=false` Disable/Enable writing the console log to a log.txt file in the bot main directory.
+
+- `DISABLE_CONSOLE_COLORS=false` Disable/Enable colors in console.
