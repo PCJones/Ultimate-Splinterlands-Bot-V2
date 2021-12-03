@@ -51,7 +51,7 @@ In case you want to donate to me for creating this bot, I would be very happy!
 - TRC20 USDT TG83ASaHPCi9TDTjKCfMbmyfjBvme9XjqC
 - Text me on Discord or Telegram for PayPal or any other crypto
 
-# Bot configuration:
+# Bot configuration
 ## Commands
 - `stop` Write this into the console and press enter. The bot will stop after all ongoing battles are finished.
 
