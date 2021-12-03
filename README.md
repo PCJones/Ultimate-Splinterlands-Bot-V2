@@ -9,6 +9,16 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 
 [Telegram](https://t.me/ultimatesplinterlandsbot) 
 
+## Features
+- Multiple accounts fighting in parallel (Multithreading)
+- Super fast lightning mode that will barely use any CPU or RAM
+- Smart Team Selection - the bot will chose cards with best win rate
+- The bot will play for the quests, including sneak and snipe (can be disabled)
+- Minimum Energy Capture Rate - the bot will pause automatically if the energy capture rate is below a specified percentage
+- Option to enable/disable automatic quest reward chest opening
+- And much more, see Bot configuration below
+- Any suggestions?
+
 ## How to install (Windows)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
 - Download the bot from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
@@ -40,3 +50,5 @@ In case you want to donate to me for creating this bot, I would be very happy!
 - BUSD/USDT/BNB etc (Binance Smart Chain) 0x951844e1525bf37f36d7e6d037b4e3335bae0986
 - TRC20 USDT TG83ASaHPCi9TDTjKCfMbmyfjBvme9XjqC
 - Text me on Discord or Telegram for PayPal or any other crypto
+
+## Bot configuration:
