@@ -52,7 +52,8 @@ In case you want to donate to me for creating this bot, I would be very happy!
 - Text me on Discord or Telegram for PayPal or any other crypto
 
 # Bot configuration:
-Configuration with default values:
+## Commands
+- `stop` Write this into the console and press enter. The bot will stop after all ongoing battles are finished.
 
 ## General Settings
 
