@@ -51,10 +51,10 @@ In case you want to donate to me for creating this bot, I would be very happy!
 - TRC20 USDT TG83ASaHPCi9TDTjKCfMbmyfjBvme9XjqC
 - Text me on Discord or Telegram for PayPal or any other crypto
 
-## Bot configuration:
+# Bot configuration:
 Configuration with default values:
 
-# General Settings
+## General Settings
 
 - `PRIORITIZE_QUEST=true` Disable/Enable quest priority.
 
@@ -72,7 +72,7 @@ Configuration with default values:
 
 - `REQUEST_NEW_QUEST=earth` Quests the bot isn't good at and where you want it to request a new one. Seperate by comma, possible options are: fire,water,earth,life,death,dragon
 
-# Lightning Mode Settings
+## Lightning Mode Settings
 
 - `USE_LIGHTNING_MODE=true` Disable/Enable lightning mode. Lightning mode has 90% less API requests to the splinterlands API which means you can run a lot of accounts in parallel without getting IP banned. It's also super fast and barely takes any CPU and RAM resources.
 
@@ -80,7 +80,7 @@ Configuration with default values:
 
 - `SHOW_BATTLE_RESULTS=true` Disable/enable showing battle results in console.
 
-# Advanced Settings
+## Advanced Settings
 - `SHOW_API_RESPONSE=true` Disable/Enable showing the team picked by the battle API in console.
 
 - `DEBUG=false` Disable/Enable showing more log in console. I don't recommend to enable this unless you have been asked to.
