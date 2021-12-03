@@ -81,6 +81,10 @@ namespace HiveAPI.CS
                 {
 					return CreateTransaction(aOperations, astrPrivateKeys);
 				}
+                else
+                {
+
+                }
             }
 			return null;
 		}

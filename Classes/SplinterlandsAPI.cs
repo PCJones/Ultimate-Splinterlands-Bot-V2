@@ -22,6 +22,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
+                    await Task.Delay(5000);
                     Log.WriteToLog($"Error with splinterlands API for settings, trying fallback api...", Log.LogType.Warning);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/settings");
                 }
@@ -42,6 +43,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     // Fallback API
                     Log.WriteToLog($"{username}: Error with splinterlands API for player details, trying fallback api...", Log.LogType.Warning);
+                    await Task.Delay(5000);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/players/details?username={ username }");
                 }
                 return ((int)JToken.Parse(data)["collection_power"], (int)JToken.Parse(data)["rating"], (int)JToken.Parse(data)["league"]);
@@ -62,7 +64,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     // Fallback API
                     // wait 10 seconds just in case for this method
-                    
+                    await Task.Delay(10000);
                     Log.WriteToLog($"{username}: Error with splinterlands API for ongoing game, trying fallback api...", Log.LogType.Warning);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/players/outstanding_match?username={ username }");
                 }
@@ -92,6 +94,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
+                    await Task.Delay(5000);
                     Log.WriteToLog($"{username}: Error with splinterlands API for battle result, trying fallback api...", Log.LogType.Warning);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/battle/history2?player={ username }");
                 }
@@ -136,6 +139,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
+                    await Task.Delay(5000);
                     Log.WriteToLog($"{username}: Error with splinterlands API for balances, trying fallback api...", Log.LogType.Warning);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/players/balances?username={ username }");
                 }
@@ -157,6 +161,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
+                    await Task.Delay(5000);
                     Log.WriteToLog($"{username}: Error with splinterlands API for quest, trying fallback api...", Log.LogType.Warning);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/players/quests?username={ username }");
                 }
@@ -187,6 +192,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
+                    await Task.Delay(5000);
                     Log.WriteToLog($"{username}: Error with splinterlands API for cards, trying fallback api...", Log.LogType.Warning);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/cards/collection/{ username }");
                 }

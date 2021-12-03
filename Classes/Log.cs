@@ -76,12 +76,19 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static void LogBattleSummaryToTable()
         {
-            var t = new TablePrinter("#", "Account", "Result", "Rating", "ECR", "QuestStatus");
-            Settings.LogSummaryList.ForEach(x => t.AddRow(x.index, x.account, x.battleResult, x.rating, x.ECR, x.questStatus));
-            Settings.LogSummaryList.Clear();
-            lock (_ConsoleLock)
+            try
             {
-                t.Print();
+                var t = new TablePrinter("#", "Account", "Result", "Rating", "ECR", "QuestStatus");
+                Settings.LogSummaryList.ForEach(x => t.AddRow(x.index, x.account, x.battleResult, x.rating, x.ECR, x.questStatus));
+                Settings.LogSummaryList.Clear();
+                lock (_ConsoleLock)
+                {
+                    t.Print();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog("Error at Battle Summary: " + ex.ToString(), LogType.Error);
             }
         }
 

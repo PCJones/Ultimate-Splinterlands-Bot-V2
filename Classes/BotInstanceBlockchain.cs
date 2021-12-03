@@ -198,7 +198,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return false;
         }
 
-        private (string secret, string tx) SubmitTeam(string tx, JToken matchDetails, JToken team)
+        private async Task<(string secret, string tx)> SubmitTeamAsync(string tx, JToken matchDetails, JToken team, bool secondTry = false)
         {
             try
             {
@@ -207,6 +207,24 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 for (int i = 0; i < 6; i++)
                 {
                     var monster = CardsCached.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
+                    if (monster == null)
+                    {
+                        if (Settings.UsePrivateAPI && !secondTry)
+                        {
+                            Log.WriteToLog($"{Username}: Requesting team from public API - private API needs card update!", Log.LogType.Warning);
+                            CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
+                            team = await GetTeamAsync(matchDetails, ignorePrivateAPI: true);
+                            if (Settings.UsePrivateAPI)
+                            {
+                                BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
+                            }
+                            return await SubmitTeamAsync(tx, matchDetails, team, secondTry: true);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
                     if (monster.card_detail_id.Length == 0)
                     {
                         break;
@@ -237,6 +255,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at submitting team: " + ex.ToString(), Log.LogType.Error);
+                // update cards for private API
+                APICounter = 100; 
             }
             return ("", "");
         }
@@ -540,13 +560,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
 
                     await Task.Delay(Settings._Random.Next(4500, 8000));
-                    var submittedTeam = SubmitTeam(tx, matchDetails, team);
+                    var submittedTeam = await SubmitTeamAsync(tx, matchDetails, team);
                     if (!await WaitForTransactionSuccess(submittedTeam.tx, 10))
                     {
                         SleepUntil = DateTime.Now.AddMinutes(5);
                         return SleepUntil;
                     }
-
 
                     bool surrender = false;
                     while (stopwatch.Elapsed.Seconds < 145)
@@ -609,7 +628,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return SleepUntil;
         }
 
-        private async Task<JToken> GetTeamAsync(JToken matchDetails)
+        private async Task<JToken> GetTeamAsync(JToken matchDetails, bool ignorePrivateAPI = false)
         {
             try
             {
@@ -649,7 +668,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 }
 
-                JToken team = await BattleAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username, true, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
@@ -795,7 +814,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             try
             {
                 string logText;
-                if ((int)QuestCached.Quest["total_items"] == (int)QuestCached.Quest["completed_items"]
+                if ((int)QuestCached.Quest["completed_items"] >= (int)QuestCached.Quest["total_items"]
                     && QuestCached.Quest["rewards"].Type == JTokenType.Null)
                 {
                     logText = "Quest reward can be claimed";

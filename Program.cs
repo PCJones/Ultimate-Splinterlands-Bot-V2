@@ -237,6 +237,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE":
                         Settings.DontClaimQuestNearHigherLeague = Boolean.Parse(temp[1]);
                         break;
+                    case "IGNORE_MISSING_CP_AT_QUEST_CLAIM":
+                        Settings.IgnoreMissingCPAtQuestClaim = Boolean.Parse(temp[1]);
+                        break;
                     case "ADVANCE_LEAGUE":
                         Settings.AdvanceLeague = Boolean.Parse(temp[1]);
                         break;
@@ -351,6 +354,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
                 $"REQUEST_NEW_QUEST: {String.Join(",", Settings.BadQuests)}{Environment.NewLine}" +
                 $"DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE: {String.Join(",", Settings.DontClaimQuestNearHigherLeague)}{Environment.NewLine}" +
+                $"IGNORE_MISSING_CP_AT_QUEST_CLAIM: {String.Join(",", Settings.IgnoreMissingCPAtQuestClaim)}{Environment.NewLine}" +
                 $"ADVANCE_LEAGUE: {String.Join(",", Settings.AdvanceLeague)}{Environment.NewLine}" +
                 $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
                 $"ECR_THRESHOLD: {Settings.ECRThreshold}{Environment.NewLine}" +
