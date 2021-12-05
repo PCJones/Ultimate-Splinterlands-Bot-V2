@@ -44,7 +44,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     // Fallback API
                     Log.WriteToLog($"{username}: Error with splinterlands API for player details, trying fallback api...", Log.LogType.Warning);
                     await Task.Delay(5000);
-                    data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/players/details?username={ username }");
+                    data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/players/details?name={ username }");
                 }
                 return ((int)JToken.Parse(data)["collection_power"], (int)JToken.Parse(data)["rating"], (int)JToken.Parse(data)["league"]);
             }
@@ -202,9 +202,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(card =>
                 {
                     string currentUser = card["delegated_to"].Type == JTokenType.Null ? (string)card["player"] : (string)card["delegated_to"];
-                    bool cardOnCooldown = currentUser != (string)card["last_used_player"] ?
-                    card["last_used_date"].Type != JTokenType.Null &&
-                    oneDayAgo < DateTime.Parse(JsonConvert.SerializeObject(card["last_used_date"]).Replace("\"", "").Trim()) : false;
+                    bool cardOnCooldown;
+                    if (card["last_transferred_date"].Type == JTokenType.Null || card["last_used_date"].Type == JTokenType.Null)
+                    {
+                        cardOnCooldown = false;
+                    }
+                    else
+                    {
+                        cardOnCooldown = DateTime.Parse(JsonConvert.SerializeObject(card["last_transferred_date"]).Replace("\"", "").Trim()) > oneDayAgo 
+                            && DateTime.Parse(JsonConvert.SerializeObject(card["last_used_date"]).Replace("\"", "").Trim()) > oneDayAgo && (
+                             currentUser != (string)card["last_used_player"]);
+                    }
                     bool forSale = (string)card["market_listing_type"] == "RENT" ? false : card["market_listing_type"].Type != JTokenType.Null ? true : false;
 
                     return currentUser == username && !cardOnCooldown && !forSale;

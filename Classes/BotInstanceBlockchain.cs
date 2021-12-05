@@ -831,12 +831,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             }
 
                             int rating = RatingCached;
-                            bool waitForHigherLeague = (rating is >= 300 and < 400) && (PowerCached is >= 1000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 1000)) || // bronze 2
-                                (rating is >= 600 and < 700) && (PowerCached is >= 5000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 5000)) || // bronze 1 
-                                (rating is >= 840 and < 1000) && (PowerCached is >= 15000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 15000)) || // silver 3
-                                (rating is >= 1200 and < 1300) && (PowerCached is >= 40000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 40000)) || // silver 2
-                                (rating is >= 1500 and < 1600) && (PowerCached is >= 70000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 70000)) || // silver 1
-                                (rating is >= 1800 and < 1900) && (PowerCached is >= 100000 || (Settings.RentalBotActivated && Settings.DesiredRentalPower >= 100000)); // gold 
+                            bool waitForHigherLeague = (rating is >= 300 and < 400) && (PowerCached is >= 1000 || (Settings.IgnoreMissingCPAtQuestClaim && PowerCached >= (0.1 * 1000))) || // bronze 2
+                                (rating is >= 600 and < 700) && (PowerCached is >= 5000 || (Settings.IgnoreMissingCPAtQuestClaim && PowerCached >= (0.2 * 5000))) || // bronze 1 
+                                (rating is >= 840 and < 1000) && (PowerCached is >= 15000 || (Settings.IgnoreMissingCPAtQuestClaim && PowerCached >= (0.5 * 15000))) || // silver 3
+                                (rating is >= 1200 and < 1300) && (PowerCached is >= 40000 || (Settings.IgnoreMissingCPAtQuestClaim && PowerCached >= (0.8 * 40000))) || // silver 2
+                                (rating is >= 1500 and < 1600) && (PowerCached is >= 70000 || (Settings.IgnoreMissingCPAtQuestClaim && PowerCached >= (0.85 * 70000))) || // silver 1
+                                (rating is >= 1800 and < 1900) && (PowerCached is >= 100000 || (Settings.IgnoreMissingCPAtQuestClaim && PowerCached >= (0.9 * 100000))); // gold 
 
                             if (waitForHigherLeague)
                             {
