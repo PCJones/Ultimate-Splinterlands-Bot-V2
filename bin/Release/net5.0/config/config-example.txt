@@ -67,7 +67,8 @@ DISABLE_CONSOLE_COLORS=false
 CHROME_NO_SANDBOX=false
 
 ##Advanced bot logic
-#If you enable DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE and this the bot will not only wait
+
+#If you enable both DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE and this the bot will not only wait
 #until you have enough rating for the higher league, but also until you have enough
 #power. Don't enable this unless you actively manage your power.
 WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM=false
