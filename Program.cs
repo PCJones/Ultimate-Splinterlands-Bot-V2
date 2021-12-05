@@ -31,7 +31,11 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Log.WriteStartupInfoToLog();
             SetStartupPath();
-            if (!ReadConfig() || !CheckForChromeDriver() || !ReadAccounts())
+
+            // We have to configure the http client early because it might be used in account constructor
+            Settings._httpClient.Timeout = new TimeSpan(0, 2, 15);
+
+            if (!ReadConfig() || (Settings.BrowserMode && !CheckForChromeDriver()) || !ReadAccounts())
             {
                 Log.WriteToLog("Press any key to close");
                 Console.ReadKey();
@@ -544,8 +548,6 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Settings.LogSummaryList = new List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)>();
 
-            Settings._httpClient.Timeout = new TimeSpan(0, 2, 15);
-
             if (Settings.LightningMode)
             {
                 Settings.oHived = new HiveAPI.CS.CHived(Settings._httpClient, "https://api.deathwing.me");
@@ -564,7 +566,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             var chromeDriverFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "chromedriver.exe" : "chromedriver";
             if (!File.Exists(Settings.StartupPath + @"/" + chromeDriverFileName))
             {
-                Log.WriteToLog("No ChromeDriver installed - please download from https://chromedriver.chromium.org/ and insert .exe into bot folder", Log.LogType.CriticalError);
+                Log.WriteToLog("No ChromeDriver installed - please download from https://chromedriver.chromium.org/ and insert .exe into bot folder or use lightning mode", Log.LogType.CriticalError);
                 return false;
             }
 

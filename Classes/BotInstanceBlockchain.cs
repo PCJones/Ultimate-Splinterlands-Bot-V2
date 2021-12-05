@@ -1,4 +1,5 @@
-﻿using HiveAPI.CS;
+﻿using Cryptography.ECDSA;
+using HiveAPI.CS;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
@@ -308,7 +309,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 try
                 {
                     await Task.Delay(7500);
-                    JToken matchDetails = JToken.Parse(await Helper.DownloadPageAsync("https://api.splinterlands.io/battle/status?id=" + trxId));
+                    JToken matchDetails = JToken.Parse(await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/battle/status?id=" + trxId));
                     if (i > 2 && ((string)matchDetails).Contains("no battle"))
                     {
                         Log.WriteToLog($"{Username}: Error at waiting for match details: " + matchDetails.ToString(), Log.LogType.Error);
@@ -331,40 +332,36 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return null;
         }
 
-        private string GetAccessToken()
+        private async Task<string> GetAccessTokenAsync()
         {
             if (Settings.LegacyWindowsMode)
             {
                 return "none";
             }
-            string filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
-            IWebDriver driver = SeleniumAddons.CreateSeleniumInstance();
             try
             {
                 Log.WriteToLog($"{Username}: Requesting access token... (this only happens once per account)");
-                BotInstanceBrowser instance = new(Username, PostingKey, 0);
+                var filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
+                var bid = "bid_" + Helper.GenerateRandomString(20);
+                var sid = "sid_" + Helper.GenerateRandomString(20);
+                var ts = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds().ToString();
+                var hash = Sha256Manager.GetHash(Encoding.ASCII.GetBytes(Username + ts));
+                var sig = Secp256K1Manager.SignCompressedCompact(hash, CBase58.DecodePrivateWif(PostingKey));
+                var signature = Hex.ToString(sig);
+                var response = await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/players/login?name=" + Username + "&ref=&browser_id=" + bid + "&session_id=" + sid + "&sig=" + signature + "&ts=" + ts);
 
-                if (instance.Login(driver, false))
+                var token = Helper.DoQuickRegex("\"name\":\"" + Username + "\",\"token\":\"([A-Z0-9]{10})\"", response);
+                if (token.Length > 0)
                 {
-                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-                    string token = (string)js.ExecuteScript("return SM.Player.token");
+                    Log.WriteToLog($"{Username}: Successfully requested access token!", Log.LogType.Success);
                     File.AppendAllText(filePathAccessTokens, Username + ":" + token + Environment.NewLine);
-
-                    return token;
                 }
-                else
-                {
-                    return "";
-                }
+                return token;
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at requesting access token: {ex}", Log.LogType.Error);
                 return "";
-            }
-            finally
-            {
-                driver.Quit();
             }
         }
         public BotInstanceBlockchain(string username, string password, string accessToken, int index, string activeKey = "")
@@ -372,12 +369,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             Username = username;
             PostingKey = password;
             ActiveKey = activeKey;
-            AccessToken = accessToken.Length > 0 ? accessToken : GetAccessToken();
+            AccessToken = accessToken.Length > 0 ? accessToken : GetAccessTokenAsync().Result;
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * -1);
             while (AccessToken.Length == 0)
             {
+                // Sleep 20 seconds to not spam retries
+                Thread.Sleep(20000);
                 Log.WriteToLog($"{Username}: Could not get Access Token for this account - trying again", Log.LogType.Error);
-                AccessToken = GetAccessToken();
+                AccessToken = GetAccessTokenAsync().Result;
             }
             LastCacheUpdate = DateTime.MinValue;
             LogSummary = new LogSummary(index, username);

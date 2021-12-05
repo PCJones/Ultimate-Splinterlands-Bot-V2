@@ -35,7 +35,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 buf[i] = Settings.Subset[index];
             }
 
-            return new String(buf);
+            return new string(buf);
         }
         public async static Task<string> DownloadPageAsync(string url)
         {
