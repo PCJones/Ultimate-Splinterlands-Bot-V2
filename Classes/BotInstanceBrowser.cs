@@ -618,12 +618,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         // todo: check if league can be reached
                         int rating = Convert.ToInt32(currentRating.Replace(".", "").Replace(",", ""));
                         int power = (int)Convert.ToDecimal(driver.FindElement(By.CssSelector("div#power_progress div.progress__info span.number_text")).Text, CultureInfo.InvariantCulture);
-                        bool waitForHigherLeague = (rating is >= 300 and < 400) && (power is >= 1000 || (Settings.IgnoreMissingCPAtQuestClaim && power >= (0.1 * 1000))) || // bronze 2
-                            (rating is >= 600 and < 700) && (power is >= 5000 || (Settings.IgnoreMissingCPAtQuestClaim && power >= (0.2 * 5000))) || // bronze 1 
-                            (rating is >= 840 and < 1000) && (power is >= 15000 || (Settings.IgnoreMissingCPAtQuestClaim && power >= (0.5 * 15000))) || // silver 3
-                            (rating is >= 1200 and < 1300) && (power is >= 40000 || (Settings.IgnoreMissingCPAtQuestClaim && power >= (0.8 * 40000))) || // silver 2
-                            (rating is >= 1500 and < 1600) && (power is >= 70000 || (Settings.IgnoreMissingCPAtQuestClaim && power >= (0.85 * 70000))) || // silver 1
-                            (rating is >= 1800 and < 1900) && (power is >= 100000 || (Settings.IgnoreMissingCPAtQuestClaim && power >= (0.9 * 100000))); // gold 
+                        bool waitForHigherLeague = (rating is >= 300 and < 400) && (power is >= 1000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.1 * 1000))) || // bronze 2
+                            (rating is >= 600 and < 700) && (power is >= 5000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.2 * 5000))) || // bronze 1 
+                            (rating is >= 840 and < 1000) && (power is >= 15000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.5 * 15000))) || // silver 3
+                            (rating is >= 1200 and < 1300) && (power is >= 40000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.8 * 40000))) || // silver 2
+                            (rating is >= 1500 and < 1600) && (power is >= 70000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.85 * 70000))) || // silver 1
+                            (rating is >= 1800 and < 1900) && (power is >= 100000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.9 * 100000))); // gold 
 
                         if (waitForHigherLeague)
                         {
