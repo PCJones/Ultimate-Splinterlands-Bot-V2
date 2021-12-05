@@ -353,9 +353,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                 $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
                 $"REQUEST_NEW_QUEST: {String.Join(",", Settings.BadQuests)}{Environment.NewLine}" +
-                $"DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE: {String.Join(",", Settings.DontClaimQuestNearHigherLeague)}{Environment.NewLine}" +
-                $"IGNORE_MISSING_CP_AT_QUEST_CLAIM: {String.Join(",", Settings.IgnoreMissingCPAtQuestClaim)}{Environment.NewLine}" +
-                $"ADVANCE_LEAGUE: {String.Join(",", Settings.AdvanceLeague)}{Environment.NewLine}" +
+                $"DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE: {Settings.DontClaimQuestNearHigherLeague}{Environment.NewLine}" +
+                $"IGNORE_MISSING_CP_AT_QUEST_CLAIM: {Settings.IgnoreMissingCPAtQuestClaim}{Environment.NewLine}" +
+                $"ADVANCE_LEAGUE: {Settings.AdvanceLeague}{Environment.NewLine}" +
                 $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
                 $"ECR_THRESHOLD: {Settings.ECRThreshold}{Environment.NewLine}" +
                 $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
