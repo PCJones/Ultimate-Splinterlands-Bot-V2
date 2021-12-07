@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Classes.Http;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Utils
 {
     public static class Helper
     {
@@ -40,7 +42,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public async static Task<string> DownloadPageAsync(string url)
         {
             // Use static HttpClient to avoid exhausting system resources for network connections.
-            var result = await Settings._httpClient.GetAsync(url);
+            var result = await HttpClient.getInstance().GetAsync(url);
             var response = await result.Content.ReadAsStringAsync();
             // Write status code.
             return response;
@@ -50,6 +52,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             Regex r = new Regex(Pattern, RegexOptions.Singleline);
             return r.Match(Match).Groups[1].Value;
+        }
+
+        public static string capitalize(string input) {
+            if (input.Length == 0)
+            {
+                return input;
+            }
+            else if (input.Length == 1)
+            {
+                return char.ToUpper(input[0]).ToString();
+            }
+            return char.ToUpper(input[0]) + input.Substring(1).ToLower();
         }
     }
 }

@@ -9,8 +9,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Classes.Model;
+using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
 {
     public static class SplinterlandsAPI
     {
@@ -169,7 +172,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 var questLessDetails = new JObject(
                     new JProperty("name", quest["name"]),
-                    new JProperty("splinter", Settings.QuestTypes[(string)quest["name"]]),
+                    new JProperty("splinter", Quest.Types[(string)quest["name"]]),
                     new JProperty("total", quest["total_items"]),
                     new JProperty("completed", quest["completed_items"])
                     );

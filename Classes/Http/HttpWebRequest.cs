@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Http
 {
     class HttpWebRequest
     {
@@ -61,6 +61,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
+                //TODO: log ex?
                 return websiteResponse;
             }
         }

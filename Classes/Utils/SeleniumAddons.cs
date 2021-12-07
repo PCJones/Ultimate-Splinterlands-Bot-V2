@@ -11,8 +11,10 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Utils
 {
     // SeleniumAddons Class by PC Jones
     public static class SeleniumAddons

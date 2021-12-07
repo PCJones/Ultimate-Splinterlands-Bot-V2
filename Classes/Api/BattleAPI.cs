@@ -6,17 +6,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Classes.Http;
+using Ultimate_Splinterlands_Bot_V2.Classes.Model;
+using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
 {
     public static class BattleAPI
     {
         public static async Task<JToken> GetTeamFromAPIAsync(int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, bool secondTry = false, bool ignorePrivateAPI = false)
         {
-            if (Settings.UsePrivateAPI && !ignorePrivateAPI)
+            if (Settings.UsePrivateApi && !ignorePrivateAPI)
             {
                 return await GetTeamFromPrivateAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, secondTry);
             }
@@ -41,8 +44,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         questLessDetails : "")
                     );
 
-                string urlGetTeam = $"{Settings.PublicAPIUrl}get_team/";
-                string urlGetTeamByHash = $"{Settings.PublicAPIUrl}get_team_by_hash/";
+                string urlGetTeam = $"{Settings.PublicApiUrl}get_team/";
+                string urlGetTeamByHash = $"{Settings.PublicApiUrl}get_team_by_hash/";
                 string APIResponse = await PostJSONToApi(matchDetails, urlGetTeam, username);
                 int counter = 0;
                 do
@@ -125,7 +128,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         questLessDetails : "")
                     );
 
-                string urlGetTeam = $"{Settings.PrivateAPIUrl}get_team_private/{username}/";
+                string urlGetTeam = $"{Settings.PrivateApiUrl}get_team_private/{username}/";
                 string APIResponse = await PostJSONToApi(matchDetails, urlGetTeam, username);
                 Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }", debugOnly: true);
 
@@ -184,14 +187,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static void ReportLoss(string enemy, string username)
         {
-            _ = Helper.DownloadPageAsync($"{ Settings.PublicAPIUrl }report_loss/{enemy}/{username}");
+            _ = Helper.DownloadPageAsync($"{ Settings.PublicApiUrl }report_loss/{enemy}/{username}");
         }
 
         private async static Task<string> PostJSONToApi(object json, string url, string username)
         {
-            using (var content = new StringContent(JsonConvert.SerializeObject(json), Encoding.UTF8, "application/json"))
+            using (var content = new System.Net.Http.StringContent(JsonConvert.SerializeObject(json), Encoding.UTF8, "application/json"))
             {
-                HttpResponseMessage result = await Settings._httpClient.PostAsync(url, content);
+                System.Net.Http.HttpResponseMessage result = await HttpClient.getInstance().PostAsync(url, content);
                 if (result.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     string returnValue = await result.Content.ReadAsStringAsync();
@@ -205,7 +208,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static void UpdateCardsForPrivateAPI(string username, Card[] cards)
         {
             string postData = "account=" + username + "&cards=" + JsonConvert.SerializeObject(cards);
-            string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.PrivateAPIShop + "index.php?site=updatecards", "", "", Encoding.Default);
+            string response = HttpWebRequest.WebRequestPost(HttpClient.CookieContainer, postData, Settings.PrivateApiShop + "index.php?site=updatecards", "", "", Encoding.Default);
 
             if (!response.Contains("success"))
             {
@@ -213,7 +216,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 postDataLogin += "&txtPassword=" + Uri.EscapeDataString(Settings.PrivateAPIPassword);
                 postDataLogin += "&btnLoginSubmit=" + "Login";
 
-                response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postDataLogin, Settings.PrivateAPIShop + "index.php", "", "", Encoding.Default);
+                response = HttpWebRequest.WebRequestPost(HttpClient.CookieContainer, postDataLogin, Settings.PrivateApiShop + "index.php", "", "", Encoding.Default);
 
                 if (!response.Contains("Login Successfully"))
                 {
@@ -226,7 +229,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 return;
             }
 
-            response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.PrivateAPIShop + "index.php?site=updatecards", "", "", Encoding.Default);
+            response = HttpWebRequest.WebRequestPost(HttpClient.CookieContainer, postData, Settings.PrivateApiShop + "index.php?site=updatecards", "", "", Encoding.Default);
 
             if (!response.Contains("success"))
             {
@@ -261,7 +264,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 do
                 {
                     await Task.Delay(80000);
-                    APIResponse = await Helper.DownloadPageAsync($"{Settings.PublicAPIUrl}rate_limited/");
+                    APIResponse = await Helper.DownloadPageAsync($"{Settings.PublicApiUrl}rate_limited/");
                     Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }");
                 } while (APIResponse.Contains("rate limit"));
                 lock (Settings.RateLimitedLock)

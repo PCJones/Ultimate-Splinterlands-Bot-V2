@@ -11,8 +11,12 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Ultimate_Splinterlands_Bot_V2.Classes.Api;
+using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Classes.Model;
+using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
 {
     public record LogSummary
     {
@@ -141,7 +145,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 var quest = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
                 Card[] cards = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
-                if (Settings.UsePrivateAPI && Settings._Random.Next(0, 10) > 5)
+                if (Settings.UsePrivateApi && Settings._Random.Next(0, 10) > 5)
                 {
                     BattleAPI.UpdateCardsForPrivateAPI(Username, cards);
                 }
@@ -174,9 +178,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 LogSummary.ECR = $"{ecr} %";
                 // todo: add log with different colors in same line
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
-                if (ecr < Settings.ECRThreshold)
+                if (ecr < Settings.EcrThreshold)
                 {
-                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
+                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.EcrThreshold}% - skipping this account.", Log.LogType.Warning);
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                     return (SleepUntil, false);
                 }
@@ -220,7 +224,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return (SleepUntil, true);
                 }
 
-                if (Settings.ShowAPIResponse)
+                if (Settings.ShowApiResponse)
                 {
                     Log.WriteToLog($"{Username}: API Response:");
                     Log.LogTeamToTable(team, mana, rulesets);
@@ -618,12 +622,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         // todo: check if league can be reached
                         int rating = Convert.ToInt32(currentRating.Replace(".", "").Replace(",", ""));
                         int power = (int)Convert.ToDecimal(driver.FindElement(By.CssSelector("div#power_progress div.progress__info span.number_text")).Text, CultureInfo.InvariantCulture);
-                        bool waitForHigherLeague = (rating is >= 300 and < 400) && (power is >= 1000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.1 * 1000))) || // bronze 2
-                            (rating is >= 600 and < 700) && (power is >= 5000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.2 * 5000))) || // bronze 1 
-                            (rating is >= 840 and < 1000) && (power is >= 15000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.5 * 15000))) || // silver 3
-                            (rating is >= 1200 and < 1300) && (power is >= 40000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.8 * 40000))) || // silver 2
-                            (rating is >= 1500 and < 1600) && (power is >= 70000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.85 * 70000))) || // silver 1
-                            (rating is >= 1800 and < 1900) && (power is >= 100000 || (Settings.WaitForMissingCPAtQuestClaim && power >= (0.9 * 100000))); // gold 
+                        bool waitForHigherLeague = (rating is >= 300 and < 400) && (power is >= 1000 || (Settings.WaitForMissingCpAtQuestClaim && power >= (0.1 * 1000))) || // bronze 2
+                            (rating is >= 600 and < 700) && (power is >= 5000 || (Settings.WaitForMissingCpAtQuestClaim && power >= (0.2 * 5000))) || // bronze 1 
+                            (rating is >= 840 and < 1000) && (power is >= 15000 || (Settings.WaitForMissingCpAtQuestClaim && power >= (0.5 * 15000))) || // silver 3
+                            (rating is >= 1200 and < 1300) && (power is >= 40000 || (Settings.WaitForMissingCpAtQuestClaim && power >= (0.8 * 40000))) || // silver 2
+                            (rating is >= 1500 and < 1600) && (power is >= 70000 || (Settings.WaitForMissingCpAtQuestClaim && power >= (0.85 * 70000))) || // silver 1
+                            (rating is >= 1800 and < 1900) && (power is >= 100000 || (Settings.WaitForMissingCpAtQuestClaim && power >= (0.9 * 100000))); // gold 
 
                         if (waitForHigherLeague)
                         {

@@ -17,8 +17,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
 using static HiveAPI.CS.CHived;
+using Ultimate_Splinterlands_Bot_V2.Classes.Api;
+using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Classes.Http;
+using Ultimate_Splinterlands_Bot_V2.Classes.Model;
+using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
 {
     public class BotInstanceBlockchain
     {
@@ -174,7 +179,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Finding match...");
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
-                return HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
+                return HttpWebRequest.WebRequestPost(HttpClient.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "", Encoding.UTF8);
             }
             catch (Exception ex)
             {
@@ -210,12 +215,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     var monster = CardsCached.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
                     if (monster == null)
                     {
-                        if (Settings.UsePrivateAPI && !secondTry)
+                        if (Settings.UsePrivateApi && !secondTry)
                         {
                             Log.WriteToLog($"{Username}: Requesting team from public API - private API needs card update!", Log.LogType.Warning);
                             CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
                             team = await GetTeamAsync(matchDetails, ignorePrivateAPI: true);
-                            if (Settings.UsePrivateAPI)
+                            if (Settings.UsePrivateApi)
                             {
                                 BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
                             }
@@ -249,7 +254,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Submitting team...");
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
-                var response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
+                var response = HttpWebRequest.WebRequestPost(HttpClient.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
                 string responseTx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
                 return (secret, responseTx);
             }
@@ -294,7 +299,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Revealing team...");
                 CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
-                var response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
+                var response = HttpWebRequest.WebRequestPost(HttpClient.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
             }
             catch (Exception ex)
             {
@@ -455,7 +460,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     LeagueCached = playerDetails.league;
                     QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
                     CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
-                    if (Settings.UsePrivateAPI)
+                    if (Settings.UsePrivateApi)
                     {
                         BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
                     }
@@ -475,9 +480,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 //signed_tx={"ref_block_num":1642,"ref_block_prefix":2848869945,"expiration":"2021-11-21T19:34:48","operations":[["custom_json",{"required_auths":[],"required_posting_auths":["username"],"id":"sm_claim_reward","json":"{\"type\":\"league_season\",\"season\":74,\"app\":\"splinterlands/0.7.139\",\"n\":\"oKt0H53ZsS\"}"}]],"extensions":[],"signatures":["1f6c4ef8937995b2f318fc7c9651bd52772e89073a4bb13afbccd45f326cd9f5a10113940fa9f55fd7bc73e72d0bd0fdcb23cd9cb44c1578cbfc821cc309188b06"]}
 
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
-                if (ECRCached < Settings.ECRThreshold)
+                if (ECRCached < Settings.EcrThreshold)
                 {
-                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
+                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.EcrThreshold}% - skipping this account.", Log.LogType.Warning);
                     SleepUntil = DateTime.Now.AddMinutes(5);
                     await Task.Delay(1500); // Short delay to not spam splinterlands api
                     return SleepUntil;
@@ -673,7 +678,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return null;
                 }
 
-                if (Settings.ShowAPIResponse)
+                if (Settings.ShowApiResponse)
                 {
                     Log.WriteToLog($"{Username}: API Response:");
                     Log.LogTeamToTable(team, mana, rulesets);
@@ -830,12 +835,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             }
 
                             int rating = RatingCached;
-                            bool waitForHigherLeague = (rating is >= 300 and < 400) && (PowerCached is >= 1000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.1 * 1000))) || // bronze 2
-                                (rating is >= 600 and < 700) && (PowerCached is >= 5000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.2 * 5000))) || // bronze 1 
-                                (rating is >= 840 and < 1000) && (PowerCached is >= 15000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.5 * 15000))) || // silver 3
-                                (rating is >= 1200 and < 1300) && (PowerCached is >= 40000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.8 * 40000))) || // silver 2
-                                (rating is >= 1500 and < 1600) && (PowerCached is >= 70000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.85 * 70000))) || // silver 1
-                                (rating is >= 1800 and < 1900) && (PowerCached is >= 100000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.9 * 100000))); // gold 
+                            bool waitForHigherLeague = (rating is >= 300 and < 400) && (PowerCached is >= 1000 || (Settings.WaitForMissingCpAtQuestClaim && PowerCached >= (0.1 * 1000))) || // bronze 2
+                                (rating is >= 600 and < 700) && (PowerCached is >= 5000 || (Settings.WaitForMissingCpAtQuestClaim && PowerCached >= (0.2 * 5000))) || // bronze 1 
+                                (rating is >= 840 and < 1000) && (PowerCached is >= 15000 || (Settings.WaitForMissingCpAtQuestClaim && PowerCached >= (0.5 * 15000))) || // silver 3
+                                (rating is >= 1200 and < 1300) && (PowerCached is >= 40000 || (Settings.WaitForMissingCpAtQuestClaim && PowerCached >= (0.8 * 40000))) || // silver 2
+                                (rating is >= 1500 and < 1600) && (PowerCached is >= 70000 || (Settings.WaitForMissingCpAtQuestClaim && PowerCached >= (0.85 * 70000))) || // silver 1
+                                (rating is >= 1800 and < 1900) && (PowerCached is >= 100000 || (Settings.WaitForMissingCpAtQuestClaim && PowerCached >= (0.9 * 100000))); // gold 
 
                             if (waitForHigherLeague)
                             {
@@ -852,7 +857,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                         string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
                         //var postData = GetStringForSplinterlandsAPI(oTransaction);
-                        //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
+                        //string response = HttpWebRequest.WebRequestPost(HttpClient.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
                         //string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
                         if (await WaitForTransactionSuccess(tx, 45))
@@ -865,7 +870,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         //    if (response.Contains("There was an issue broadcasting"))
                         //    {
                         //        var v = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
-                        //        response = HttpWebRequest.WebRequestGet(Settings.CookieContainer, $"https://api2.splinterlands.com/players/delegation?v={v}&token={AccessToken}&username={Username}", "", "https://splinterlands.com/");
+                        //        response = HttpWebRequest.WebRequestGet(HttpClient.CookieContainer, $"https://api2.splinterlands.com/players/delegation?v={v}&token={AccessToken}&username={Username}", "", "https://splinterlands.com/");
                         //        await Task.Delay(15000);
                         //        custom_Json = CreateCustomJson(false, true, "sm_claim_reward", json);
                         //        tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
@@ -920,7 +925,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                     string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
                     //var postData = GetStringForSplinterlandsAPI(oTransaction);
-                    //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
+                    //string response = HttpWebRequest.WebRequestPost(HttpClient.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
                     //string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
                     if (await WaitForTransactionSuccess(tx, 45))
