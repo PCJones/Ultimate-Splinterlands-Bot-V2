@@ -61,6 +61,7 @@ namespace HiveAPI.CS
 			}
 			return new CtransactionData { tx = oTransaction, txid = Hex.ToString(Sha256Manager.GetHash(msg)).Substring(0, 40) };
 		}
+
 		public CtransactionData CreateTransaction(Object[] aOperations, string[] astrPrivateKeys)
 		{
             try
