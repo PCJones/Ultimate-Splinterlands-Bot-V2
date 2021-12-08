@@ -501,6 +501,8 @@ namespace Ultimate_Splinterlands_Bot_V2
                 { "Stealth Mission", "sneak" }
             };
 
+            Settings.CardsDetails = Newtonsoft.Json.Linq.JArray.Parse(File.ReadAllText(Settings.StartupPath + @"/data/cardsDetails.json"));
+
             Settings.Summoners = new Dictionary<string, string>
             {
                 { "260", "fire" },
@@ -553,8 +555,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                 { "205", "dragon" },
                 { "130", "dragon" }
             };
-
-            Settings.CardsDetails = Newtonsoft.Json.Linq.JArray.Parse(File.ReadAllText(Settings.StartupPath + @"/data/cardsDetails.json"));
 
             Settings.LogSummaryList = new List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)>();
 
