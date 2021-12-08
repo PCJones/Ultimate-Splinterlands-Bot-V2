@@ -528,7 +528,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                 { "49", "death" },
                 { "5", "fire" },
                 { "70", "fire" },
-                { "38", "life" },
                 { "73", "life" },
                 { "259", "earth" },
                 { "74", "death" },
@@ -551,7 +550,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                 { "56", "dragon" },
                 { "112", "earth" },
                 { "111", "water" },
-                { "56", "dragon" },
                 { "205", "dragon" },
                 { "130", "dragon" }
             };
@@ -567,8 +565,8 @@ namespace Ultimate_Splinterlands_Bot_V2
         static void SetStartupPath()
         {
             // Setup startup path
-            string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            string directory = System.IO.Path.GetDirectoryName(path);
+            string path = Assembly.GetExecutingAssembly().Location;
+            string directory = Path.GetDirectoryName(path);
             Settings.StartupPath = directory;
         }
         static bool CheckForChromeDriver()

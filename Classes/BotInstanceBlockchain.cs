@@ -199,16 +199,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return false;
         }
 
-        private async Task<(string secret, string tx)> SubmitTeamAsync(string tx, JToken matchDetails, JToken team, bool secondTry = false)
+        private async Task<(string secret, string tx, JToken team)> SubmitTeamAsync(string tx, JToken matchDetails, JToken team, bool secondTry = false)
         {
             try
             {
-                string summoner = CardsCached.Where(x => x.card_detail_id == (string)team["summoner_id"]).First().card_long_id;
+                var cardQuery = CardsCached.Where(x => x.card_detail_id == (string)team["summoner_id"]);
+                string summoner = cardQuery.Any() ? cardQuery.First().card_long_id : null;
                 string monsters = "";
                 for (int i = 0; i < 6; i++)
                 {
                     var monster = CardsCached.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
-                    if (monster == null)
+                    if (monster == null || summoner == null)
                     {
                         if (Settings.UsePrivateAPI && !secondTry)
                         {
@@ -251,7 +252,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 var postData = GetStringForSplinterlandsAPI(oTransaction);
                 var response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
                 string responseTx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
-                return (secret, responseTx);
+                return (secret, responseTx, team);
             }
             catch (Exception ex)
             {
@@ -259,7 +260,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 // update cards for private API
                 APICounter = 100; 
             }
-            return ("", "");
+            return ("", "", null);
         }
 
         private void RevealTeam(string tx, JToken matchDetails, JToken team, string secret)
@@ -596,7 +597,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                     else
                     {
-                        RevealTeam(tx, matchDetails, team, submittedTeam.secret);
+                        RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
                     }
                 }
 
