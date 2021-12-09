@@ -23,9 +23,6 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
 - Download the windows.zip from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
 - Install https://dotnet.microsoft.com/download/dotnet/5.0/runtime (for console applications)
-- Install Google Chrome
-- Download the correct win32 chromedriver for your Chrome version (if you have chrome 96 download chromedriver 96): https://chromedriver.chromium.org/downloads 
-- Put the chromedriver.exe (inside the .zip) in bot main folder
 - Create config.txt and accounts.txt in config folder - see config-example.txt and accounts-example.txt
 - Start the bot by double clicking on Ultimate Splinterlands Bot V2.exe in main folder
 
