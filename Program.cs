@@ -42,6 +42,13 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Environment.Exit(0);
             }
 
+            if (Settings.LightningMode && Settings.ClaimSeasonReward)
+            {
+                Log.WriteToLog("Season Reward Claiming mode activated - set CLAIM_SEASON_REWARD=false to disable!", Log.LogType.Warning);
+                Log.WriteToLog("The bot will only claim rewards, it will not fight!", Log.LogType.Warning);
+                Thread.Sleep(3500);
+            }
+
             Thread.Sleep(1500); // Sleep 1.5 seconds to read config and welcome message
 
             Initialize();

@@ -579,9 +579,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     driver.ClickElementOnPage(By.Id("claim-btn"));
                     Thread.Sleep(5000);
                     WaitForLoadingBanner(driver);
-                    Thread.Sleep(3000);
+                    driver.WaitForWebsiteLoadedAndElementShown(By.ClassName("card_img"));
+                    driver.ExecuteJavaScript("revealAll();");
+                    Thread.Sleep(10000);
                     driver.Navigate().Refresh();
-                    Thread.Sleep(5000);
+                    Thread.Sleep(2000);
                     WaitForLoadingBanner(driver);
                     Thread.Sleep(10000);
                     ClosePopups(driver);

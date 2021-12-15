@@ -74,7 +74,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         var sw = new Stopwatch();
                         sw.Start();
                         Log.WriteToLog($"{username}: API Rate Limit reached! Waiting until no longer blocked...", Log.LogType.Warning);
-                        await CheckRateLimitLoopAsync(username);
+                        await CheckRateLimitLoopAsync(username, Settings.PublicAPIUrl);
                         sw.Stop();
                         // return null so team doesn't get submitted
                         if (sw.Elapsed.TotalSeconds > 200)
@@ -140,8 +140,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                     else
                     {
-                        Log.WriteToLog($"{username}: API Rate Limit reached! Waiting until no longer blocked...", Log.LogType.Warning);
-                        await CheckRateLimitLoopAsync(username);
+                        Log.WriteToLog($"{username}: Private API Rate Limit reached! This should not happen unless there is an error or you are abusing it!", Log.LogType.CriticalError);
+                        await CheckRateLimitLoopAsync(username, Settings.PrivateAPIUrl);
                     }
                 }
                 else if (APIResponse.Contains("API Error") && !secondTry)
@@ -233,7 +233,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{username}: Failed to update cards for private API: +  " + response, Log.LogType.Error);
             }
         }
-        public async static Task CheckRateLimitLoopAsync(string username)
+        public async static Task CheckRateLimitLoopAsync(string username, string apiUrl)
         {
             bool alreadyChecking = false;
             lock (Settings.RateLimitedLock)
@@ -261,7 +261,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 do
                 {
                     await Task.Delay(80000);
-                    APIResponse = await Helper.DownloadPageAsync($"{Settings.PublicAPIUrl}rate_limited/");
+                    APIResponse = await Helper.DownloadPageAsync($"{apiUrl}rate_limited/");
                     Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }");
                 } while (APIResponse.Contains("rate limit"));
                 lock (Settings.RateLimitedLock)
