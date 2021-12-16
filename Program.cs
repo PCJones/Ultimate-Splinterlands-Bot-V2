@@ -127,7 +127,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
                         lock (_TaskLock)
                         {
-                            if (firstRuntrough)
+                            if (firstRuntrough && !Settings.ClaimSeasonReward)
                             {
                                 // Delay accounts to avoid them fighting each other
                                 Thread.Sleep(Settings._Random.Next(1000, 6000));

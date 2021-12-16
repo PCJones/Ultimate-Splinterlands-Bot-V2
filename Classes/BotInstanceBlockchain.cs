@@ -479,8 +479,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 await AdvanceLeague();
                 RequestNewQuestViaAPI();
                 await ClaimQuestReward();
-                // claim season reward
-                //signed_tx={"ref_block_num":1642,"ref_block_prefix":2848869945,"expiration":"2021-11-21T19:34:48","operations":[["custom_json",{"required_auths":[],"required_posting_auths":["username"],"id":"sm_claim_reward","json":"{\"type\":\"league_season\",\"season\":74,\"app\":\"splinterlands/0.7.139\",\"n\":\"oKt0H53ZsS\"}"}]],"extensions":[],"signatures":["1f6c4ef8937995b2f318fc7c9651bd52772e89073a4bb13afbccd45f326cd9f5a10113940fa9f55fd7bc73e72d0bd0fdcb23cd9cb44c1578cbfc821cc309188b06"]}
 
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
                 if (ECRCached < Settings.ECRThreshold)
@@ -490,7 +488,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     await Task.Delay(1500); // Short delay to not spam splinterlands api
                     return SleepUntil;
                 }
-
 
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
@@ -676,30 +673,27 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             if (rewardsRaw.Contains(" not found"))
                             {
                                 continue;
+                            } else if (rewardsRaw.Contains("as already claimed their rewards from the specified season"))
+                            {
+                                Log.WriteToLog($"{Username}: Rewards already claimed!", Log.LogType.Error);
+                                return;
                             }
                             var rewards = JToken.Parse(rewardsRaw)["trx_info"]["result"];
-                            try
-                            {
-                                var test = rewards["rewards"];
-                            }
-                            catch (Exception)
-                            {
+                           
 
-                                
-                            }
                             if (!((string)rewards).Contains("success\":true"))
                             {
                                 Log.WriteToLog($"{Username}: Error at claiming season rewards: " + (string)rewards, Log.LogType.Error);
                                 return;
                             }
+                            else if (((string)rewards).Contains("success\":true"))
+                            { 
+                                Log.WriteToLog($"{Username}: Successfully claimed season rewards!", Log.LogType.Success);
+                                return;
+                            }
                             else
                             {
-                                //foreach (string reward in ((string)rewards["rewards"]).Split('{'))
-                                //{
 
-                                //}
-                                Log.WriteToLog($"{Username}: Successfully claimed season rewards!", Log.LogType.Success);
-                                Log.WriteToLog($"{Username}: ");
                             }
                         }
                     }
