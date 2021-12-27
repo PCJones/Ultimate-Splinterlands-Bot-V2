@@ -46,7 +46,7 @@ MAX_BROWSER_INSTANCES=2
 #######################API Settings########################
 
 USE_API=true
-API_URL=http://splinterlandsapi.pcjones.de:8080/
+API_URL=http://lostvoid.xyz/v2/
 
 ##PRIVATE API Settings - ignore if you don't have it
 USE_PRIVATE_API=false
