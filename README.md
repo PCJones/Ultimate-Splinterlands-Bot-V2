@@ -30,7 +30,14 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - [Youtube Tutorial](https://www.youtube.com/watch?v=kTS0FdAei7c)
 - [Chrome download](https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb)
 - [Chromedriver download](https://chromedriver.chromium.org/downloads)
-- Text instructions coming soon, please ask for instructions on discord or Telegram
+
+## How to install on Linux Ubuntu 20.04 LTS
+- wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+- sudo dpkg -i packages-microsoft-prod.deb
+- sudo apt install -y apt-transport-https && sudo apt update
+- sudo apt install -y dotnet-sdk-5.0
+- Check the installation: dotnet --list-sdks && dotnet --list-runtimes
+- And you're good to go!
 
 [Discord](https://discord.gg/hwSr7KNGs9)
 
