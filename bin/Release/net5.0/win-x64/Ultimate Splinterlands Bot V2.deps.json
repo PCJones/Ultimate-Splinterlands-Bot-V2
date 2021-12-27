@@ -1,12 +1,12 @@
 {
   "runtimeTarget": {
-    "name": ".NETCoreApp,Version=v5.0/linux-x64",
+    "name": ".NETCoreApp,Version=v5.0/win-x64",
     "signature": ""
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v5.0": {},
-    ".NETCoreApp,Version=v5.0/linux-x64": {
+    ".NETCoreApp,Version=v5.0/win-x64": {
       "Ultimate Splinterlands Bot V2/1.0.0": {
         "dependencies": {
           "Cryptography.ECDSA.Secp256K1": "1.1.3",

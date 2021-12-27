@@ -28,10 +28,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private static async Task<JToken> GetTeamFromPublicAPIAsync(int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, bool secondTry = false)
         {
-            Log.WriteToLog($"{username}: Requesting team from public API...");
+            Log.WriteToLog($"{username}: Requesting team from API...");
             try
             {
                 JObject matchDetails = new JObject(
+                        new JProperty("player", username),
                         new JProperty("mana", mana),
                         new JProperty("rules", rules),
                         new JProperty("splinters", splinters),
