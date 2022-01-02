@@ -157,10 +157,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private string GetStringForSplinterlandsAPI(CtransactionData oTransaction)
         {
-            string json = JsonConvert.SerializeObject(oTransaction.tx);
-            string postData = "signed_tx=" + json.Replace("operations\":[{", "operations\":[[\"custom_json\",{")
-                .Replace(",\"opid\":18}", "}]");
-            return postData;
+            try
+            {
+                string json = JsonConvert.SerializeObject(oTransaction.tx);
+                string postData = "signed_tx=" + json.Replace("operations\":[{", "operations\":[[\"custom_json\",{")
+                    .Replace(",\"opid\":18}", "}]");
+                return postData;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog("Error at GetStringForSplinterlandsAPI:" + ex.ToString());
+            }
+            return "";
         }
 
         private string StartNewMatch()
@@ -429,7 +437,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     wsClient.MessageReceived.Subscribe(msg => HandleWebsocketMessage(msg));
                     await wsClient.Start();
                     wsClient.ReconnectionHappened.Subscribe(info =>
-                        Log.WriteToLog($"Reconnection happened, type: {info.Type}"));
+                        Log.WriteToLog($"{Username}: Reconnection happened, type: {info.Type}"));
                     _ = WebsocketPingLoop(wsClient).ConfigureAwait(false);
                     WebsocketAuthenticate(wsClient);
                 }
