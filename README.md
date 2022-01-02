@@ -41,7 +41,7 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 In case you want to donate to me for creating this bot, I would be very happy!
 
 - DEC/SPS into the game to the player **pcjones** 
-- Bitcoin 3KU85k1HFTqCC4geQz3XUFk84R6uekuzD8
+- Bitcoin 3Dri7HkoP2UyGEjPhMV7LXJyRYZkJ2bygT
 - Ethereum 0xcFE8c78F07e0190EBdD9077cF9d9E3A8DCED8d91 
 - WAX to account **lshru.wam** (please copy the name)
 - BUSD/USDT/BNB etc (Binance Smart Chain) 0x951844e1525bf37f36d7e6d037b4e3335bae0986
