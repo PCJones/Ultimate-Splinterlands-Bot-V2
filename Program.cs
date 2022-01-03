@@ -85,6 +85,10 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             DateTime[] sleepInfo = new DateTime[Settings.LightningMode ? Settings.BotInstancesBlockchain.Count : Settings.BotInstancesBrowser.Count];
 
+            var ts = new CancellationTokenSource();
+            var cancellationToken = ts.Token;
+            DateTime lastResetTime = DateTime.Now;
+
             while (!token.IsCancellationRequested)
             {
                 while (instances.Count < (Settings.BrowserMode ? Settings.MaxBrowserInstances : Settings.Threads) && !token.IsCancellationRequested)
@@ -104,6 +108,19 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 {
                                     Log.WriteToLog("Splinterlands maintenance - waiting 3 minutes");
                                     Thread.Sleep(3 * 60000);
+                                }
+
+                                //if ((DateTime.Now - lastResetTime).Hours > 4)
+                                if ((DateTime.Now - lastResetTime).Minutes > 2)
+                                {
+                                    Log.WriteToLog("[ThreadReset] 4 hours passed - resetting all threads...");
+                                    Log.WriteToLog("[ThreadReset] Waiting 4 minutes to finish all battles...");
+                                    Thread.Sleep(4 * 60000);
+                                    Log.WriteToLog("[ThreadReset] Stopping threads...");
+                                    ts.Cancel();
+                                    Task.WhenAll(instances).Wait();
+                                    ts = new CancellationTokenSource();
+                                    cancellationToken = ts.Token;
                                 }
                             }
 
@@ -151,7 +168,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                     {
                                         sleepInfo[nextBotInstance] = result;
                                     }
-                                }, CancellationToken.None));
+                                }, cancellationToken));
                             }
                             else
                             {
@@ -181,7 +198,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                         sleepInfo[nextBotInstance] = result.sleepTime;
                                         Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
                                     }
-                                }, CancellationToken.None));
+                                }, cancellationToken));
                             }
                         }
                     }
