@@ -62,7 +62,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 } while (counter++ < 19);
 
-                if (APIResponse.Contains("api limit reached"))
+                if (APIResponse.Contains("api limit reached") || APIResponse.Contains("Rate limit exceeded"))
                 {
                     if (APIResponse.Contains("overload"))
                     {
