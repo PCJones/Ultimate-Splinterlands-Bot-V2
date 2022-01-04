@@ -19,6 +19,9 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - And much more, see [Bot configuration](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/blob/master/README.md#bot-configuration)
 - Any suggestions?
 
+## New Features
+- Added Fallback API Option
+
 ## How to install (Windows)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
 - Download the windows.zip from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
@@ -32,13 +35,25 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - [Chromedriver download](https://chromedriver.chromium.org/downloads)
 
 ## How to install on Linux Ubuntu 20.04 LTS
-- wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-- sudo dpkg -i packages-microsoft-prod.deb
-- sudo apt install -y apt-transport-https && sudo apt update
-- sudo apt install -y dotnet-sdk-5.0
-- Check the installation: dotnet --list-sdks && dotnet --list-runtimes
-- And you're good to go!
-
+```
+mv linux-x64/config/ config_bak_temp/
+wget https://github.com/Sir-Void/Ultimate-Splinterlands-Bot-V2/releases/download/v2.7.2-alternative/linux-x64.zip
+rm -r linux-x64/
+unzip linux-x64.zip
+rm linux-x64.zip
+rm -r ./linux-x64/config
+mv config_bak_temp/ linux-x64/config/
+chmod +x linux-x64/Ultimate\ Splinterlands\ Bot\ V2
+```
+### If you get dotnet error:
+```
+wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+sudo apt install -y apt-transport-https && sudo apt update
+sudo apt install -y dotnet-sdk-5.0
+Check the installation: dotnet --list-sdks && dotnet --list-runtimes
+And you're good to go!
+```
 [Discord](https://discord.gg/hwSr7KNGs9)
 
 [Telegram](https://t.me/ultimatesplinterlandsbot) 
