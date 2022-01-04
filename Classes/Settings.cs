@@ -44,6 +44,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool UseAPI = true;
         public static string PublicAPIUrl = "";
+        public static string FallBackPublicAPIUrl = "";
         public static bool UsePrivateAPI = false;
         public static string PrivateAPIUrl = "";
         public static string PrivateAPIShop= "";

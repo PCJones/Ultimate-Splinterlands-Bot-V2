@@ -295,6 +295,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "API_URL":
                         Settings.PublicAPIUrl = temp[1];
                         break;
+                    case "FALLBACK_API_URL":
+                        Settings.PublicAPIUrl = temp[1];
+                        break;
                     case "DEBUG":
                         Settings.DebugMode = Boolean.Parse(temp[1]);
                         break;

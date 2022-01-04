@@ -43,6 +43,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     );
 
                 string urlGetTeam = $"{Settings.PublicAPIUrl}get_team/";
+                string urlGetTeamFallBack = $"{Settings.FallBackPublicAPIUrl}get_team/";
                 string urlGetTeamByHash = $"{Settings.PublicAPIUrl}get_team_by_hash/";
                 string APIResponse = await PostJSONToApi(matchDetails, urlGetTeam, username);
                 int counter = 0;
@@ -64,25 +65,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 if (APIResponse.Contains("api limit reached") || APIResponse.Contains("Rate limit exceeded"))
                 {
-                    if (APIResponse.Contains("overload"))
-                    {
-                        Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
-                        System.Threading.Thread.Sleep(25000);
-                        return await GetTeamFromPublicAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, true);
-                    }
-                    else
-                    {
-                        var sw = new Stopwatch();
-                        sw.Start();
-                        Log.WriteToLog($"{username}: API Rate Limit reached! Waiting until no longer blocked...", Log.LogType.Warning);
-                        await CheckRateLimitLoopAsync(username, Settings.PublicAPIUrl);
-                        sw.Stop();
-                        // return null so team doesn't get submitted
-                        if (sw.Elapsed.TotalSeconds > 200)
-                        {
-                            return null;
-                        }
-                    }
+                    Log.WriteToLog($"{username}: API Rate Limit reached! Trying FallBack API", Log.LogType.Warning);
+                    APIResponse = await PostJSONToApi(matchDetails, urlGetTeamFallBack, username);
+                }
+                else if (APIResponse.Contains("overload"))
+                {
+                    Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
+                    System.Threading.Thread.Sleep(25000);
+                    return await GetTeamFromPublicAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, true);
+                }
+                else
+                {
+                    Log.WriteToLog($"{username}: API Rate Limit reached!", Log.LogType.Warning);
                 }
 
                 if (APIResponse == null || APIResponse.Length < 5 || APIResponse.Contains("hash"))
