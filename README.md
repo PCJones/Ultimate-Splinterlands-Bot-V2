@@ -19,6 +19,9 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - And much more, see [Bot configuration](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/blob/master/README.md#bot-configuration)
 - Any suggestions?
 
+## New Features
+- Added Fallback API Option
+
 ## How to install (Windows)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
 - Download the windows.zip from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
