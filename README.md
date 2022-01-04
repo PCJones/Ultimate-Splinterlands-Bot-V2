@@ -45,7 +45,7 @@ rm -r ./linux-x64/config
 mv config_bak_temp/ linux-x64/config/
 chmod +x linux-x64/Ultimate\ Splinterlands\ Bot\ V2
 ```
-# If you get dotnet error:
+### If you get dotnet error:
 ```
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
