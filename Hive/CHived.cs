@@ -30,11 +30,11 @@ namespace HiveAPI.CS
 		#region private Methods
 		public class CTransaction
 		{
-			public UInt16 ref_block_num;
-			public UInt32 ref_block_prefix;
+			public ushort ref_block_num;
+			public uint ref_block_prefix;
 			public DateTime expiration;
-			public Object[] operations;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] operations;
+			public object[] extensions = Array.Empty<object>();
 			public string[] signatures = Array.Empty<string>();
 		}
 		public class CtransactionData
@@ -42,12 +42,12 @@ namespace HiveAPI.CS
 			public CTransaction tx;
 			public string txid;
 		}
-		private CtransactionData SignTransaction(CTransaction oTransaction, String[] astrPrivateKeys)
+		private static CtransactionData SignTransaction(CTransaction oTransaction, string[] astrPrivateKeys)
 		{
-			CSerializer oSerializer = new CSerializer();
+			CSerializer oSerializer = new();
 			byte[] msg = oSerializer.Serialize(oTransaction);
 
-			using (MemoryStream oStream = new MemoryStream())
+			using (MemoryStream oStream = new())
 			{
 				byte[] oChainID = Hex.HexToBytes(CHAINID);
 				oStream.Write(oChainID, 0, oChainID.Length);
@@ -62,14 +62,14 @@ namespace HiveAPI.CS
 			return new CtransactionData { tx = oTransaction, txid = Hex.ToString(Sha256Manager.GetHash(msg)).Substring(0, 40) };
 		}
 
-		public CtransactionData CreateTransaction(Object[] aOperations, string[] astrPrivateKeys)
+		public CtransactionData CreateTransaction(object[] aOperations, string[] astrPrivateKeys)
 		{
             try
             {
 				JObject oDGP = get_dynamic_global_properties();
-				CTransaction oTransaction = new CTransaction
-				{
-					ref_block_num = Convert.ToUInt16((UInt32)oDGP["head_block_number"] & 0xFFFF),
+				CTransaction oTransaction = new()
+                {
+					ref_block_num = Convert.ToUInt16((uint)oDGP["head_block_number"] & 0xFFFF),
 					ref_block_prefix = BitConverter.ToUInt32(Hex.HexToBytes(oDGP["head_block_id"].ToString()), 4),
 					expiration = Convert.ToDateTime(oDGP["time"]).AddSeconds(30),
 					operations = aOperations
@@ -94,7 +94,7 @@ namespace HiveAPI.CS
 
 		#region public Methods
 
-		public string broadcast_transaction(Object[] operations, string[] keys)
+		public string broadcast_transaction(object[] operations, string[] keys)
 		{
 			CtransactionData oTransaction = CreateTransaction(operations, keys);
 
@@ -103,7 +103,7 @@ namespace HiveAPI.CS
 				object op = oTransaction.tx.operations[i];
 				oTransaction.tx.operations[i] = new Op { name = op.GetType().Name, payload = op };
 			}
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(oTransaction.tx);
 
 			call_api(CONDENSER_API + MethodBase.GetCurrentMethod().Name, arrParams);
@@ -149,25 +149,25 @@ namespace HiveAPI.CS
 		}
 		public JArray get_accounts(ArrayList arrAccounts)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(arrAccounts);
 			return call_api_array(CONDENSER_API + MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 		public JObject get_accounts(string strAccount)
 		{
-			ArrayList arrAccounts = new ArrayList();
+			ArrayList arrAccounts = new();
 			arrAccounts.Add(strAccount);
 			return (JObject)get_accounts(arrAccounts).First;
 		}
 		public JArray lookup_account_names(ArrayList arrAccounts)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(arrAccounts);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 		public JArray lookup_accounts(string strLowerbound, uint nLimit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(strLowerbound);
 			arrParams.Add(nLimit);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
@@ -178,58 +178,58 @@ namespace HiveAPI.CS
 		}
 		public JArray get_owner_history(string strAccount)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(strAccount);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 		public JObject get_recovery_request(string strAccount)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(strAccount);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 		public JObject get_block_header(long lBlockID)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(lBlockID);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 		public JObject get_block(long lBlockID)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(lBlockID);
 			return call_api(CONDENSER_API + MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 		public JObject get_ops_in_block(long block_num, bool only_virtual)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(block_num);
 			arrParams.Add(only_virtual);
 			return call_api(CONDENSER_API + MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 		public JArray get_witnesses(ArrayList arrWitnesses)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(arrWitnesses);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 		public JArray get_conversion_requests(string strAccount)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(strAccount);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 
 		public JObject get_witness_by_account(string strAccount)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(strAccount);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 
 		public JArray get_witnesses_by_vote(string strFrom, int nLimit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(strFrom);
 			arrParams.Add(nLimit);
 			return call_api_array(CONDENSER_API + MethodBase.GetCurrentMethod().Name, arrParams);
@@ -243,7 +243,7 @@ namespace HiveAPI.CS
 		// if permlink Is "" then it will return all votes for author
 		public JArray get_active_votes(string author, string permlink)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(author);
 			arrParams.Add(permlink);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
@@ -251,7 +251,7 @@ namespace HiveAPI.CS
 
 		public JObject get_content(string strAuthor, string strPermlink)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(strAuthor);
 			arrParams.Add(strPermlink);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
@@ -259,7 +259,7 @@ namespace HiveAPI.CS
 
 		public JArray get_content_replies(string parent, string parent_permlink)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(parent);
 			arrParams.Add(parent_permlink);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
@@ -324,7 +324,7 @@ namespace HiveAPI.CS
 		//  pending payout means the pending payout of all children as well.
 		public JArray get_replies_by_last_update(string start_author, string start_permlink, uint limit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(start_author);
 			arrParams.Add(start_permlink);
 			arrParams.Add(limit);
@@ -337,7 +337,7 @@ namespace HiveAPI.CS
 		// should allow easy pagination.
 		public JArray get_discussions_by_author_before_date(string author, string start_permlink, DateTime before_date, uint limit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(author);
 			arrParams.Add(start_permlink);
 			arrParams.Add(before_date);
@@ -350,9 +350,9 @@ namespace HiveAPI.CS
 		//
 		// from - the absolute sequence number, -1 means most recent, limit Is the number of operations before from.
 		// limit - the maximum number of items that can be queried (0 to 1000], must be less than from
-		public JToken get_account_history(string account, Int64 from , UInt32 limit)
+		public JToken get_account_history(string account, long from , uint limit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account);
 			arrParams.Add(from);
 			arrParams.Add(limit);

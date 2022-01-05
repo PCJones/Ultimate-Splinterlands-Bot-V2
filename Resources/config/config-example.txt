@@ -1,8 +1,8 @@
 ##################General Settings##################
 PRIORITIZE_QUEST=true
 SLEEP_BETWEEN_BATTLES=5
-START_BATTLE_AT_ECR=0
-STOP_BATTLE_AT_ECR=75
+START_BATTLE_ABOVE_ECR=0
+STOP_BATTLE_BELOW_ECR=75
 MINIMUM_BATTLE_POWER=0
 CLAIM_SEASON_REWARD=false
 CLAIM_QUEST_REWARD=false
@@ -42,6 +42,7 @@ API_URL=http://splinterlandsapi.pcjones.de:8080/
 USE_PRIVATE_API=false
 PRIVATE_API_URL=
 PRIVATE_API_SHOP=
+POWER_TRANSFER_BOT=false
 #######################API Settings########################
 
 #####################Advanced Settings#####################

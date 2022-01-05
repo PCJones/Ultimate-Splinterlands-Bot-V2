@@ -28,9 +28,9 @@ namespace HiveAPI.CS
 		//    owner: The name Of the account owning the order To cancel_order (type String)
 		//    orderid: The unique identifier assigned To the order by its creator (type: uint32_t)
 		//    broadcast: true if you wish to broadcast the transaction (type: bool) 
-		public JObject cancel_order(string owner, UInt32 orderid, bool broadcast = true)
+		public JObject cancel_order(string owner, uint orderid, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(owner);
 			arrParams.Add(orderid);
 			arrParams.Add(broadcast);
@@ -39,7 +39,7 @@ namespace HiveAPI.CS
 
 		public JObject challenge(string challenger, string challenged, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(challenger);
 			arrParams.Add(challenged);
 			arrParams.Add(broadcast);
@@ -48,7 +48,7 @@ namespace HiveAPI.CS
 
 		public JObject change_recovery_account(string owner, string new_recovery_account, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(owner);
 			arrParams.Add(new_recovery_account);
 			arrParams.Add(broadcast);
@@ -57,7 +57,7 @@ namespace HiveAPI.CS
 
         public JObject claim_reward_balance(string account, string reward_steem, string reward_sbd, string reward_vests,bool broadcast = true)
         {
-            ArrayList arrParams = new ArrayList();
+            ArrayList arrParams = new();
             arrParams.Add(account);
             arrParams.Add(reward_steem);
             arrParams.Add(reward_sbd);
@@ -74,9 +74,9 @@ namespace HiveAPI.CS
         //    (type: String)
         //    amount: The amount Of SBD To convert (type: asset)
         //    broadcast: true if you wish to broadcast the transaction (type: bool)
-        public JObject convert_sbd(string from, Decimal amount, bool broadcast = true)
+        public JObject convert_sbd(string from, decimal amount, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(amount);
 			arrParams.Add(broadcast);
@@ -94,7 +94,7 @@ namespace HiveAPI.CS
 		//    broadcast: true if you wish to broadcast the transaction (type: bool)
 		public JObject create_account(string creator, string new_account_name, string json_meta, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(creator);
 			arrParams.Add(new_account_name);
 			arrParams.Add(json_meta);
@@ -118,7 +118,7 @@ namespace HiveAPI.CS
 		//    broadcast: true if you wish to broadcast the transaction (type: bool)
 		public JObject create_account_with_keys(string creator, string newname, string json_meta, string owner, string active, string posting, string memo, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(creator);
 			arrParams.Add(newname);
 			arrParams.Add(json_meta);
@@ -141,9 +141,9 @@ namespace HiveAPI.CS
 		//    fill_or_kill: true if you want the order to be killed if it cannot immediately be filled (type: bool)
 		//    expiration: the time the order should expire If it has Not been filled (type: uint32_t)
 		//    broadcast: true if you wish to broadcast the transaction (type: bool)
-		public JObject create_order(string owner, UInt32 order_id, Decimal amount_to_sell, Decimal min_to_receive, bool fill_or_kill, UInt32 expiration, bool broadcast = true)
+		public JObject create_order(string owner, uint order_id, decimal amount_to_sell, decimal min_to_receive, bool fill_or_kill, uint expiration, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(owner);
 			arrParams.Add(order_id);
 			arrParams.Add(amount_to_sell);
@@ -156,7 +156,7 @@ namespace HiveAPI.CS
 
 		public JObject decline_voting_rights(string account, bool decline, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account);
 			arrParams.Add(decline);
 			arrParams.Add(broadcast);
@@ -165,7 +165,7 @@ namespace HiveAPI.CS
 
 		public string decrypt_memo(string memo)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(memo);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams).ToString();
 		}
@@ -176,7 +176,7 @@ namespace HiveAPI.CS
 		//     what: - a set of things to follow: posts, comments, votes, ignore (type: Set<String>)
 		public JObject follow(string follower, string following, ArrayList what, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(follower);
 			arrParams.Add(following);
 			arrParams.Add(what);
@@ -191,7 +191,7 @@ namespace HiveAPI.CS
 		//    the Public account data stored In the blockchain
 		public JObject get_account(string account_name)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account_name);
 
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
@@ -205,9 +205,9 @@ namespace HiveAPI.CS
 		//    from: - the absolute sequence number, -1 means most recent, limit Is
 		//    the number Of operations before from. (type: uint32_t)
 		//    limit: - the maximum number of items that can be queried (0 to 1000], must be less than from (type: uint32_t)
-		public JToken get_account_history(string account, UInt32 from, UInt32 limit)
+		public JToken get_account_history(string account, uint from, uint limit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account);
 			arrParams.Add(from);
 			arrParams.Add(limit);
@@ -227,9 +227,9 @@ namespace HiveAPI.CS
 		//
 		//Returns
 		//    Public block data On the blockchain
-		public JObject get_block(UInt32 num)
+		public JObject get_block(uint num)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(num);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
@@ -243,14 +243,14 @@ namespace HiveAPI.CS
 		//    All pending conversion requests by account
 		public JArray get_conversion_requests(string owner)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(owner);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 
 		public string get_encrypted_memo(string from, string to, string memo)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(to);
 			arrParams.Add(memo);
@@ -263,9 +263,9 @@ namespace HiveAPI.CS
 			return call_api(MethodBase.GetCurrentMethod().Name);
 		}
 
-		public JArray get_inbox(string account, DateTime newest, UInt32 limit)
+		public JArray get_inbox(string account, DateTime newest, uint limit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account);
 			arrParams.Add(newest);
 			arrParams.Add(limit);
@@ -282,16 +282,16 @@ namespace HiveAPI.CS
 		//
 		//Parameters:
 		//     limit: Maximum number Of orders To return For bids And asks. Max Is 1000. (type: uint32_t)
-		public JObject get_order_book(UInt32 limit)
+		public JObject get_order_book(uint limit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(limit);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 
-		public JArray get_outbox(string account, DateTime newest, UInt32 limit)
+		public JArray get_outbox(string account, DateTime newest, uint limit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account);
 			arrParams.Add(newest);
 			arrParams.Add(limit);
@@ -300,14 +300,14 @@ namespace HiveAPI.CS
 
 		public JArray get_owner_history(string strAccount)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(strAccount);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 
 		public string get_private_key(string pubkey)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(pubkey);
 			return call_api_value(MethodBase.GetCurrentMethod().Name, arrParams).ToString();
 		}
@@ -317,7 +317,7 @@ namespace HiveAPI.CS
 		// role: - active | owner | posting | memo (type: String)
 		public JObject get_private_key_from_password(string account, string role, string password)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account);
 			arrParams.Add(role);
 			arrParams.Add(password);
@@ -343,7 +343,7 @@ namespace HiveAPI.CS
 		//    a Default-constructed operation of the given type
 		public JObject get_prototype_operation(string operation_type)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(operation_type);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
@@ -351,7 +351,7 @@ namespace HiveAPI.CS
 		//Returns the state info associated With the URL
 		public JObject get_state(string url)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(url);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
@@ -359,14 +359,14 @@ namespace HiveAPI.CS
 		//Returns transaction by ID.
 		public JObject get_transaction(string trx_id)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(trx_id);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 
 		public JArray get_withdraw_routes(string account, string type)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account);
 			arrParams.Add(type);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
@@ -381,7 +381,7 @@ namespace HiveAPI.CS
 		//        the information about the witness stored In the block chain
 		public JObject get_witness(string owner_account)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(owner_account);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
@@ -395,7 +395,7 @@ namespace HiveAPI.CS
 		//        a multi-line String suitable For displaying On a terminal
 		public string gethelp(string method)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(method);
 			return call_api_value(MethodBase.GetCurrentMethod().Name, arrParams).ToString();
 		}
@@ -420,7 +420,7 @@ namespace HiveAPI.CS
 		//         wif_key: the WIF Private Key To import (type: String)
 		public bool import_key(string wif_key)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(wif_key);
 			return (bool)call_api_value(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
@@ -468,9 +468,9 @@ namespace HiveAPI.CS
 		//
 		//    Returns
 		//        a list Of accounts mapping account names To account ids
-		public JArray list_accounts(string lowerbound, UInt32 limit)
+		public JArray list_accounts(string lowerbound, uint limit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(lowerbound);
 			arrParams.Add(limit);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
@@ -513,9 +513,9 @@ namespace HiveAPI.CS
 		//    Returns
 		//        a list Of witnesss mapping witness names To witness ids
 		//
-		public JArray list_witnesses(string lowerbound, UInt32 limit)
+		public JArray list_witnesses(string lowerbound, uint limit)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(lowerbound);
 			arrParams.Add(limit);
 			return call_api_array(MethodBase.GetCurrentMethod().Name, arrParams);
@@ -533,7 +533,7 @@ namespace HiveAPI.CS
 		//        true if the specified wallet Is loaded
 		public bool load_wallet_file(string wallet_filename)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(wallet_filename);
 			return (bool)call_api_value(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
@@ -568,7 +568,7 @@ namespace HiveAPI.CS
 		//        the brain key In its normalized form
 		public string normalize_brain_key(string key)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(key);
 			return call_api_value(MethodBase.GetCurrentMethod().Name, arrParams).ToString();
 		}
@@ -588,7 +588,7 @@ namespace HiveAPI.CS
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
 		public JObject post_comment(string author, string permlink, string parent_author, string parent_permlink, string title, string body, string json, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(author);
 			arrParams.Add(permlink);
 			arrParams.Add(parent_author);
@@ -603,7 +603,7 @@ namespace HiveAPI.CS
 
 		public JObject prove(string challenged, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(challenged);
 			arrParams.Add(broadcast);
 			return call_api(MethodBase.GetCurrentMethod().Name, arrParams);
@@ -617,9 +617,9 @@ namespace HiveAPI.CS
 		//         witness: The witness publishing the price feed (type: String)
 		//        exchange_rate: The desired exchange rate (type: price)
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
-		public JObject publish_feed(string witness, Decimal exchange_rate, bool broadcast = true)
+		public JObject publish_feed(string witness, decimal exchange_rate, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(witness);
 			arrParams.Add(exchange_rate);
 			arrParams.Add(broadcast);
@@ -629,7 +629,7 @@ namespace HiveAPI.CS
 
 		public JObject recover_account(string account_to_recover, Hashtable recent_authority, Hashtable new_authority, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account_to_recover);
 			arrParams.Add(recent_authority);
 			arrParams.Add(new_authority);
@@ -639,7 +639,7 @@ namespace HiveAPI.CS
 
 		public JObject request_account_recovery(string recovery_account, string account_to_recover, Hashtable new_authority, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(recovery_account);
 			arrParams.Add(account_to_recover);
 			arrParams.Add(new_authority);
@@ -655,14 +655,14 @@ namespace HiveAPI.CS
 		//        filename. (type: String)
 		public void save_wallet_file(string wallet_filename)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(wallet_filename);
 			call_api_sub(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 
 		public JObject send_private_message(string from, string to, string subject, string body, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(to);
 			arrParams.Add(subject);
@@ -675,14 +675,14 @@ namespace HiveAPI.CS
 		//The wallet must be either 'new' or 'unlocked' to execute this command.
 		public void set_password(string password)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(password);
 			call_api_sub(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
 
-		public void set_transaction_expiration(UInt32 seconds)
+		public void set_transaction_expiration(uint seconds)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(seconds);
 			call_api_sub(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
@@ -706,7 +706,7 @@ namespace HiveAPI.CS
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
 		public JObject set_voting_proxy(string account_to_modify, string proxy, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account_to_modify);
 			arrParams.Add(proxy);
 			arrParams.Add(broadcast);
@@ -714,9 +714,9 @@ namespace HiveAPI.CS
 		}
 
 
-		public JObject set_withdraw_vesting_route(string from, string to, UInt16 percent, bool auto_vest, bool broadcast)
+		public JObject set_withdraw_vesting_route(string from, string to, ushort percent, bool auto_vest, bool broadcast)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(to);
 			arrParams.Add(percent);
@@ -750,7 +750,7 @@ namespace HiveAPI.CS
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
 		public JObject transfer(string from, string to, string amount, string memo, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(to);
 			arrParams.Add(amount);
@@ -770,9 +770,9 @@ namespace HiveAPI.CS
 		//        amount: The amount Of STEEM To vest i.e. "100.00 STEEM" (type: asset)
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
 
-		public JObject transfer_to_vesting(string from, string to, Decimal amount, bool broadcast = true)
+		public JObject transfer_to_vesting(string from, string to, decimal amount, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(to);
 			arrParams.Add(amount);
@@ -784,7 +784,7 @@ namespace HiveAPI.CS
 		//
 		public JObject transfer_to_savings(string from, string to, string amount, string memo, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(to);
 			arrParams.Add(amount);
@@ -796,9 +796,9 @@ namespace HiveAPI.CS
 		// Transfers transfers from savings take 72 hours
 		// request_id - an unique ID assigned by from account, the id is used to cancel the operation and can be reused after the transfer completes
 		//
-		public JObject transfer_from_savings(string from, UInt32 request_id, string to, string amount, string memo, bool broadcast = true)
+		public JObject transfer_from_savings(string from, uint request_id, string to, string amount, string memo, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(request_id);
 			arrParams.Add(to);
@@ -810,9 +810,9 @@ namespace HiveAPI.CS
 		// @param from the account that initiated the transfer
 		// @param request_id the id used in transfer_from_savings
 		//
-		public JObject cancel_transfer_from_savings(string from, UInt32 request_id, bool broadcast = true)
+		public JObject cancel_transfer_from_savings(string from, uint request_id, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(request_id);
 			arrParams.Add(broadcast);
@@ -825,7 +825,7 @@ namespace HiveAPI.CS
 		//         password: the password previously Set With 'set_password()' (type: String)
 		public void unlock(string password)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(password);
 			call_api_sub(MethodBase.GetCurrentMethod().Name, arrParams);
 		}
@@ -843,7 +843,7 @@ namespace HiveAPI.CS
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
 		public JObject update_account(string accountname, string json_meta, string owner, string active, string posting, string memo, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(accountname);
 			arrParams.Add(json_meta);
 			arrParams.Add(owner);
@@ -869,9 +869,9 @@ namespace HiveAPI.CS
 		//        weight: The weight the key should have In the authority. A weight Of 0
 		//        indicates the removal Of the key. (type: weight_type)
 		//        broadcast: true if you wish to broadcast the transaction. (type: bool)
-		public JObject update_account_auth_account(string account_name, string type, string auth_account, UInt16 weight, bool broadcast = true)
+		public JObject update_account_auth_account(string account_name, string type, string auth_account, ushort weight, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account_name);
 			arrParams.Add(type);
 			arrParams.Add(auth_account);
@@ -882,7 +882,7 @@ namespace HiveAPI.CS
 
 		public JObject update_account_auth_key(string account_name, string type, string key, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account_name);
 			arrParams.Add(type);
 			arrParams.Add(key);
@@ -904,9 +904,9 @@ namespace HiveAPI.CS
 		//        threshold: The weight threshold required For the authority To be met
 		//        (type: uint32_t)
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
-		public JObject update_account_auth_threshold(string account_name , string type , UInt32 threshold, bool broadcast = true)
+		public JObject update_account_auth_threshold(string account_name , string type , uint threshold, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account_name);
 			arrParams.Add(type);
 			arrParams.Add(threshold);
@@ -922,7 +922,7 @@ namespace HiveAPI.CS
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
 		public JObject update_account_memo_key(string account_name, string key, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account_name);
 			arrParams.Add(key);
 			arrParams.Add(broadcast);
@@ -938,7 +938,7 @@ namespace HiveAPI.CS
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
 		public JObject update_account_meta(string account_name, string json_meta, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account_name);
 			arrParams.Add(json_meta);
 			arrParams.Add(broadcast);
@@ -959,7 +959,7 @@ namespace HiveAPI.CS
 		//        broadcast: true if you wish to broadcast the transaction. (type: bool)
 		public JObject update_witness(string witness_name, string url, string block_signing_key, JArray props, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(witness_name);
 			arrParams.Add(url);
 			arrParams.Add(block_signing_key);
@@ -977,9 +977,9 @@ namespace HiveAPI.CS
 		//        permlink) Is a unique pair (type: String)
 		//        weight: The weight [-100,100] Of the vote (type: int16_t)
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
-		public JObject vote(string voter, string author, string permlink, Int16 weight, bool broadcast = true)
+		public JObject vote(string voter, string author, string permlink, short weight, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(voter);
 			arrParams.Add(author);
 			arrParams.Add(permlink);
@@ -1003,7 +1003,7 @@ namespace HiveAPI.CS
 
 		public JObject vote_for_witness(string account_to_vote_with, string witness_to_vote_for, bool approve, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(account_to_vote_with);
 			arrParams.Add(witness_to_vote_for);
 			arrParams.Add(approve);
@@ -1020,9 +1020,9 @@ namespace HiveAPI.CS
 		//        years. Each week (amount/104) shares are withdrawn And depositted
 		//        back as STEEM. i.e. "10.000000 VESTS" (type: asset)
 		//        broadcast: true if you wish to broadcast the transaction (type: bool)
-		public JObject withdraw_vesting(string from, Decimal vesting_shares, bool broadcast = true)
+		public JObject withdraw_vesting(string from, decimal vesting_shares, bool broadcast = true)
 		{
-			ArrayList arrParams = new ArrayList();
+			ArrayList arrParams = new();
 			arrParams.Add(from);
 			arrParams.Add(vesting_shares);
 			arrParams.Add(broadcast);

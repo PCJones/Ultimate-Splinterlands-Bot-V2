@@ -22,7 +22,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public const string SPLINTERLANDS_WEBSOCKET_URL = "wss://ws2.splinterlands.com/";
         public const string SPLINTERLANDS_APP = "splinterlands/0.7.139";
         public static char[] Subset = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
-        public static Random _Random = new Random();
+        public static Random _Random = new();
         public static CookieContainer CookieContainer = new();
         public static string StartupPath = "";
 
@@ -49,6 +49,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static string PrivateAPIShop= "";
         public static string PrivateAPIUsername= "";
         public static string PrivateAPIPassword= "";
+        public static bool PowerTransferBot = false;
 
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
@@ -57,9 +58,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool WaitForMissingCPAtQuestClaim = false;
         public static bool AdvanceLeague = false;
         public static int SleepBetweenBattles = 30;
-        public static int StartBattleAtECR = 0;
-        public static int StopBattleAtECR = 75;
-        public static int MinimumBattlePower = 75;
+        public static int StartBattleAboveECR = 0;
+        public static int StopBattleBelowECR = 75;
+        public static int MinimumBattlePower = 0;
         public static string[] BadQuests = Array.Empty<string>();
 
         public static string RentalBotDllPath = "";
@@ -73,13 +74,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static MethodInfo RentalBotMethodSetActive = null;
 
         public static bool RateLimited = false;
-        public static object RateLimitedLock = new object();
+        public static object RateLimitedLock = new();
         public static List<BotInstanceBrowser> BotInstancesBrowser { get; set; }
         public static List<BotInstanceBlockchain> BotInstancesBlockchain { get; set; }
         public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }
         public static List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)> LogSummaryList { get; set; }
 
-        public readonly static HttpClient _httpClient = new HttpClient();
+        public readonly static HttpClient _httpClient = new();
         public static CHived oHived;
 
         public static JArray CardsDetails;

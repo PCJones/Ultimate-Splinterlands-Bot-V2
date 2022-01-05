@@ -18,7 +18,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 byte[] hashBytes = md5.ComputeHash(inputBytes);
 
                 // Convert the byte array to hexadecimal string
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 for (int i = 0; i < hashBytes.Length; i++)
                 {
                     sb.Append(hashBytes[i].ToString("x2"));
@@ -48,7 +48,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static string DoQuickRegex(string Pattern, string Match)
         {
-            Regex r = new Regex(Pattern, RegexOptions.Singleline);
+            Regex r = new(Pattern, RegexOptions.Singleline);
             return r.Match(Match).Groups[1].Value;
         }
     }

@@ -145,7 +145,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private COperations.custom_json CreateCustomJson(bool activeKey, bool postingKey, string methodName, string json)
         {
-            COperations.custom_json customJsonOperation = new COperations.custom_json
+            COperations.custom_json customJsonOperation = new()
             {
                 required_auths = activeKey ? new string[] { Username } : Array.Empty<string>(),
                 required_posting_auths = postingKey ? new string[] { Username } : Array.Empty<string>(),
@@ -155,7 +155,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return customJsonOperation;
         }
 
-        private string GetStringForSplinterlandsAPI(CtransactionData oTransaction)
+        private static string GetStringForSplinterlandsAPI(CtransactionData oTransaction)
         {
             try
             {
@@ -489,15 +489,27 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 await ClaimQuestReward();
 
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
-                if (ECRCached < Settings.ECRThreshold)
+                if (ECRCached < Settings.StopBattleBelowECR)
                 {
-                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
-                    SleepUntil = DateTime.Now.AddMinutes(5);
+                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
+                    //if (Settings.StartBattleAtECR >= 10)
+                    if (Settings.StartBattleAboveECR >= 0)
+                    {
+                        double missingECR = Settings.StartBattleAboveECR - ECRCached;
+                        double hoursUntilEcrReached = missingECR / 1.041666;
+                        SleepUntil = DateTime.Now.AddHours(hoursUntilEcrReached).AddMinutes(1);
+                        Log.WriteToLog($"{Username}: Sleeping until {SleepUntil.ToShortTimeString()} to reach an ECR of {Settings.StartBattleAboveECR}%.", Log.LogType.Warning);
+                        APICounter = 999;
+                    }
+                    else
+                    {
+                        SleepUntil = DateTime.Now.AddMinutes(5);
+                    }
                     await Task.Delay(1500); // Short delay to not spam splinterlands api
                     return SleepUntil;
                 }
 
-                Stopwatch stopwatch = new Stopwatch();
+                Stopwatch stopwatch = new();
                 stopwatch.Start();
                 string jsonResponsePlain = StartNewMatch();
                 string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", jsonResponsePlain);
@@ -1020,7 +1032,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         APICounter = 100;
                     }
                 }
-
             }
             catch (Exception ex)
             {

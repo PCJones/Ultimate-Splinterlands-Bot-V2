@@ -39,7 +39,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 webRequest.Referer = Referer;
                 webRequest.ContentType = "application/x-www-form-urlencoded";
 
-                ASCIIEncoding encoding = new ASCIIEncoding();
+                ASCIIEncoding encoding = new();
                 byte[] dataBytes = encoding.GetBytes(PostData);
                 webRequest.ContentLength = dataBytes.Length;
 
@@ -49,7 +49,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 System.Net.HttpWebResponse webResponse = (System.Net.HttpWebResponse)webRequest.GetResponse();
 
-                System.IO.StreamReader streamReader = new System.IO.StreamReader(webResponse.GetResponseStream(), responseEncoding);
+                System.IO.StreamReader streamReader = new(webResponse.GetResponseStream(), responseEncoding);
 
                 websiteResponse = streamReader.ReadToEnd();
 
@@ -100,7 +100,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 System.Net.HttpWebResponse webResponse = (System.Net.HttpWebResponse)webRequest.GetResponse();
 
-                System.IO.StreamReader streamReader = new System.IO.StreamReader(webResponse.GetResponseStream(), Encoding.UTF8);
+                System.IO.StreamReader streamReader = new(webResponse.GetResponseStream(), Encoding.UTF8);
                 websiteResponse = streamReader.ReadToEnd();
 
                 streamReader.Close();

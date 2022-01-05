@@ -199,7 +199,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 DateTime oneDayAgo = DateTime.Now.AddDays(-1);
 
-                List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(card =>
+                List<Card> cards = new(JToken.Parse(data)["cards"].Where(card =>
                 {
                     string currentUser = card["delegated_to"].Type == JTokenType.Null ? (string)card["player"] : (string)card["delegated_to"];
                     bool cardOnCooldown;
