@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Splinterlands Rental Bot", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Splinterlands Market Bot", "..\Splinterlands Market Bot\Splinterlands Market Bot.csproj", "{F5867D1F-B28B-489D-ADF6-D0FEF94973E0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Power Transfer Bot", "..\Power Transfer Bot\Power Transfer Bot.csproj", "{1EF5B782-BC3B-440C-804C-56636815D67C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{F5867D1F-B28B-489D-ADF6-D0FEF94973E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5867D1F-B28B-489D-ADF6-D0FEF94973E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5867D1F-B28B-489D-ADF6-D0FEF94973E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EF5B782-BC3B-440C-804C-56636815D67C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EF5B782-BC3B-440C-804C-56636815D67C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EF5B782-BC3B-440C-804C-56636815D67C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EF5B782-BC3B-440C-804C-56636815D67C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

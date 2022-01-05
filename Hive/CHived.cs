@@ -84,8 +84,9 @@ namespace HiveAPI.CS
 				}
                 else
                 {
-					
-                }
+					Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Error at creating blockchain transaction: "
+						+ Environment.NewLine + ex.Message, Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.CriticalError);
+				}
             }
 			return null;
 		}

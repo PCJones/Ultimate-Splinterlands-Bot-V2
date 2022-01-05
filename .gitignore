@@ -27,6 +27,7 @@ compile.bat
 mono_crash.*
 
 # Build results
+[Rr]elease/
 [Dd]ebug/
 [Dd]ebugPublic/
 x64/

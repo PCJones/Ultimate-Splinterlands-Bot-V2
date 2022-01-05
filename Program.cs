@@ -111,7 +111,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 }
 
                                 //if ((DateTime.Now - lastResetTime).Hours > 4)
-                                if ((DateTime.Now - lastResetTime).Minutes > 2)
+                                if ((DateTime.Now - lastResetTime).Hours > 4)
                                 {
                                     Log.WriteToLog("[ThreadReset] 4 hours passed - resetting all threads...");
                                     Log.WriteToLog("[ThreadReset] Waiting 4 minutes to finish all battles...");
