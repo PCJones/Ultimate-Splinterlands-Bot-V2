@@ -57,7 +57,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool WaitForMissingCPAtQuestClaim = false;
         public static bool AdvanceLeague = false;
         public static int SleepBetweenBattles = 30;
-        public static int ECRThreshold = 75;
+        public static int StartBattleAtECR = 0;
+        public static int StopBattleAtECR = 75;
+        public static int MinimumBattlePower = 75;
         public static string[] BadQuests = Array.Empty<string>();
 
         public static string RentalBotDllPath = "";
