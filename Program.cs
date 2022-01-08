@@ -128,23 +128,28 @@ namespace Ultimate_Splinterlands_Bot_V2
                             bool sleep = false;
                             do
                             {
-                                if (Settings.LightningMode)
+                                lock (_SleepInfoLock)
                                 {
-                                    while (Settings.BotInstancesBlockchain.All(x => x.CurrentlyActive
-                                        || ((DateTime)sleepInfo[Settings.BotInstancesBlockchain.IndexOf(x)] > DateTime.Now
-                                        && !Settings.PlannedPowerTransfers.ContainsKey(x.Username))))
+
+                                    if (Settings.LightningMode)
                                     {
-                                        sleep = true;
+                                        while (Settings.BotInstancesBlockchain.All(x => x.CurrentlyActive
+                                            || ((DateTime)sleepInfo[Settings.BotInstancesBlockchain.IndexOf(x)] > DateTime.Now
+                                            && !Settings.PlannedPowerTransfers.ContainsKey(x.Username))))
+                                        {
+                                            sleep = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        while (Settings.BotInstancesBrowser.All(x => x.CurrentlyActive
+                                            || (DateTime)sleepInfo[Settings.BotInstancesBrowser.IndexOf(x)] > DateTime.Now))
+                                        {
+                                            sleep = true;
+                                        }
                                     }
                                 }
-                                else
-                                {
-                                    while (Settings.BotInstancesBrowser.All(x => x.CurrentlyActive
-                                        || (DateTime)sleepInfo[Settings.BotInstancesBrowser.IndexOf(x)] > DateTime.Now))
-                                    {
-                                        sleep = true;
-                                    }
-                                }
+
                                 if (sleep)
                                 {
                                     Thread.Sleep(20 * 1000);
