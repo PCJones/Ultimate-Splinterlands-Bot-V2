@@ -88,7 +88,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             var ts = new CancellationTokenSource();
             var cancellationToken = ts.Token;
-            DateTime lastResetTime = DateTime.Now;
+            //DateTime lastResetTime = DateTime.Now;
 
             while (!token.IsCancellationRequested)
             {
@@ -112,17 +112,17 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 }
 
                                 //if ((DateTime.Now - lastResetTime).Hours > 4)
-                                if ((DateTime.Now - lastResetTime).Hours > 4)
-                                {
-                                    Log.WriteToLog("[ThreadReset] 4 hours passed - resetting all threads...");
-                                    Log.WriteToLog("[ThreadReset] Waiting 4 minutes to finish all battles...");
-                                    Thread.Sleep(4 * 60000);
-                                    Log.WriteToLog("[ThreadReset] Stopping threads...");
-                                    ts.Cancel();
-                                    Task.WhenAll(instances).Wait();
-                                    ts = new CancellationTokenSource();
-                                    cancellationToken = ts.Token;
-                                }
+                                //if ((DateTime.Now - lastResetTime).Hours > 4)
+                                //{
+                                //    Log.WriteToLog("[ThreadReset] 4 hours passed - resetting all threads...");
+                                //    Log.WriteToLog("[ThreadReset] Waiting 4 minutes to finish all battles...");
+                                //    Thread.Sleep(4 * 60000);
+                                //    Log.WriteToLog("[ThreadReset] Stopping threads...");
+                                //    ts.Cancel();
+                                //    Task.WhenAll(instances).Wait();
+                                //    ts = new CancellationTokenSource();
+                                //    cancellationToken = ts.Token;
+                                //}
                             }
 
                             bool sleep = true;
