@@ -51,5 +51,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             Regex r = new(Pattern, RegexOptions.Singleline);
             return r.Match(Match).Groups[1].Value;
         }
+
+        public static bool RunProcessWithResult(string file, string args)
+        {
+            System.Diagnostics.Process process = new();
+            process.StartInfo.FileName = file;
+            process.StartInfo.Arguments = args;
+            //process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            process.Start();
+            process.WaitForExit();
+            return process.ExitCode == 0;
+        }
     }
 }

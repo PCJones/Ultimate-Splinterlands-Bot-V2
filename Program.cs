@@ -15,6 +15,7 @@ namespace Ultimate_Splinterlands_Bot_V2
     class Program
     {
         private static object _TaskLock = new();
+        private static object _SleepInfoLock = new();
         static void Main(string[] args)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -124,22 +125,31 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 }
                             }
 
-                            if (Settings.LightningMode)
+                            bool sleep = false;
+                            do
                             {
-                                while (Settings.BotInstancesBlockchain.All(x => x.CurrentlyActive
-                                    || (DateTime)sleepInfo[Settings.BotInstancesBlockchain.IndexOf(x)] > DateTime.Now))
+                                if (Settings.LightningMode)
                                 {
-                                    Thread.Sleep(20000);
+                                    while (Settings.BotInstancesBlockchain.All(x => x.CurrentlyActive
+                                        || ((DateTime)sleepInfo[Settings.BotInstancesBlockchain.IndexOf(x)] > DateTime.Now
+                                        && !Settings.PlannedPowerTransfers.ContainsKey(x.Username))))
+                                    {
+                                        sleep = true;
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                while (Settings.BotInstancesBrowser.All(x => x.CurrentlyActive
-                                    || (DateTime)sleepInfo[Settings.BotInstancesBrowser.IndexOf(x)] > DateTime.Now))
+                                else
                                 {
-                                    Thread.Sleep(20000);
+                                    while (Settings.BotInstancesBrowser.All(x => x.CurrentlyActive
+                                        || (DateTime)sleepInfo[Settings.BotInstancesBrowser.IndexOf(x)] > DateTime.Now))
+                                    {
+                                        sleep = true;
+                                    }
                                 }
-                            }
+                                if (sleep)
+                                {
+                                    Thread.Sleep(20 * 1000);
+                                }
+                            } while (sleep);
                         }
 
                         lock (_TaskLock)
@@ -164,7 +174,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 instances.Add(Task.Run(async () =>
                                 {
                                     var result = await Settings.BotInstancesBlockchain[botInstance].DoBattleAsync(browserInstance, logoutNeeded, botInstance);
-                                    lock (_TaskLock)
+                                    lock (_SleepInfoLock)
                                     {
                                         sleepInfo[nextBotInstance] = result;
                                     }
@@ -193,7 +203,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 instances.Add(Task.Run(async () =>
                                 {
                                     var result = await Settings.BotInstancesBrowser[botInstance].DoBattleAsync(browserInstance, logoutNeeded, botInstance);
-                                    lock (_TaskLock)
+                                    lock (_SleepInfoLock)
                                     {
                                         sleepInfo[nextBotInstance] = result.sleepTime;
                                         Settings.SeleniumInstances[browserInstance] = (Settings.SeleniumInstances[browserInstance].driver, true);
@@ -356,6 +366,10 @@ namespace Ultimate_Splinterlands_Bot_V2
                         break;
                     case "POWER_TRANSFER_BOT":
                         Settings.PowerTransferBot = bool.Parse(temp[1]);
+                        if (Settings.PowerTransferBot)
+                        {
+                            Settings.AvailablePowerTransfers = new();
+                        }
                         break;
                     case "RENT_DAYS":
                         Settings.DaysToRent = Convert.ToInt32(temp[1]);
@@ -477,7 +491,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                         Settings.BotInstancesBrowser.Add(new BotInstanceBrowser(temp[0].Trim().ToLower(), temp[1].Trim(), indexCounter++));
                     }
                 }
-                else if (temp.Length == 3)
+                else if (temp.Length >= 3)
                 {
                     if (Settings.LightningMode)
                     {

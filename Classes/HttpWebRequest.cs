@@ -61,6 +61,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
+                Log.WriteToLog("Error at WebRequest: " + ex.ToString());
                 return websiteResponse;
             }
         }
@@ -111,7 +112,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             catch (Exception ex)
             {
-                string exception = ex.Message;
+                Log.WriteToLog("Error at WebRequest: " + ex.ToString());
                 return websiteResponse;
             }
         }

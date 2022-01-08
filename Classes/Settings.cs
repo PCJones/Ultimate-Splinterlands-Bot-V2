@@ -50,6 +50,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static string PrivateAPIUsername= "";
         public static string PrivateAPIPassword= "";
         public static bool PowerTransferBot = false;
+        public static Dictionary<string, BotInstanceBlockchain> PlannedPowerTransfers = new();
+        public static Queue<BotInstanceBlockchain> AvailablePowerTransfers;
+        public static object PowerTransferBotLock = new();
 
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
