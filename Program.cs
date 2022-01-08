@@ -125,27 +125,26 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 }
                             }
 
-                            bool sleep = false;
+                            bool sleep = true;
                             do
                             {
                                 lock (_SleepInfoLock)
                                 {
-
                                     if (Settings.LightningMode)
                                     {
-                                        while (Settings.BotInstancesBlockchain.All(x => x.CurrentlyActive
+                                        if (!Settings.BotInstancesBlockchain.All(x => x.CurrentlyActive
                                             || ((DateTime)sleepInfo[Settings.BotInstancesBlockchain.IndexOf(x)] > DateTime.Now
                                             && !Settings.PlannedPowerTransfers.ContainsKey(x.Username))))
                                         {
-                                            sleep = true;
+                                            sleep = false;
                                         }
                                     }
                                     else
                                     {
-                                        while (Settings.BotInstancesBrowser.All(x => x.CurrentlyActive
+                                        if (!Settings.BotInstancesBrowser.All(x => x.CurrentlyActive
                                             || (DateTime)sleepInfo[Settings.BotInstancesBrowser.IndexOf(x)] > DateTime.Now))
                                         {
-                                            sleep = true;
+                                            sleep = false;
                                         }
                                     }
                                 }
@@ -154,7 +153,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 {
                                     Thread.Sleep(20 * 1000);
                                 }
-                            } while (sleep);
+                            } while (sleep && !token.IsCancellationRequested);
                         }
 
                         lock (_TaskLock)
