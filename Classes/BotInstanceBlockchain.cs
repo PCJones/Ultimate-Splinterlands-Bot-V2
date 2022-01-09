@@ -493,7 +493,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     ECRCached = await GetECRFromAPIAsync();
 
                     // Only at start of bot
-                    if (APICounter == 99999 && Settings.StartBattleAboveECR >= 10 && ECRCached < Settings.StartBattleAboveECR)
+                    if (APICounter >= 99999 && Settings.StartBattleAboveECR >= 10 && ECRCached < Settings.StartBattleAboveECR)
                     {
                         SetSleepUntilStartEcrReached();
                         return SleepUntil;
