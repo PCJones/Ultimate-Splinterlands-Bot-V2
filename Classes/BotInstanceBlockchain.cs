@@ -482,7 +482,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 APICounter++;
                 if ((Settings.LegacyWindowsMode && APICounter >= 5) || APICounter >= 10 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 50)
                 {
-                    APICounter = 0;
                     LastCacheUpdate = DateTime.Now;
                     (PowerCached, RatingCached, LeagueCached) = await SplinterlandsAPI.GetPlayerDetailsAsync(Username);
                     QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
@@ -499,6 +498,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         SetSleepUntilStartEcrReached();
                         return SleepUntil;
                     }
+                    APICounter = 0;
                 }
 
                 LogSummary.Rating = RatingCached.ToString();
@@ -542,6 +542,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                                     // Show this as available to any account
                                     if (!Settings.AvailablePowerTransfers.Contains(this))
                                     {
+                                        Log.WriteToLog($"{Username}: No eligible account for power transfer found - will transfer cards once there is an account that needs cards!");
                                         Settings.AvailablePowerTransfers.Enqueue(this);
                                     }
                                 }
