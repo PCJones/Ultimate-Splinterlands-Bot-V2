@@ -32,7 +32,7 @@ namespace HiveAPI.CS
 		private async Task<string> Post(string strMethod, ArrayList arrParams = null)
 		{
 			string		strResult = string.Empty;
-			Hashtable arrRequest = new Hashtable();
+			Hashtable arrRequest = new();
 
 			arrRequest.Add("id", 1);
 			arrRequest.Add("jsonrpc", "2.0");
@@ -62,7 +62,7 @@ namespace HiveAPI.CS
 				return t.Result;
 			}
 		}
-		private object ProcessResult(JObject obj)
+		private static object ProcessResult(JObject obj)
 		{
 			if (obj[STR_RESULT] != null)
 			{

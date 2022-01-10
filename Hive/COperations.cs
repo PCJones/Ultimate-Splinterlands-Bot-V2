@@ -11,11 +11,11 @@ namespace HiveAPI.CS
 
 	public class AssetJsonConverter : JsonConverter
 	{
-		public override void WriteJson(JsonWriter writer, Object value, JsonSerializer serializer)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
 			writer.WriteValue(value.ToString());
 		}
-		public override Object ReadJson(JsonReader reader, Type objectType, Object existingValue, JsonSerializer serializer)
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			throw new NotImplementedException();
 		}
@@ -30,7 +30,7 @@ namespace HiveAPI.CS
 		public decimal amount;
 		public string symbol;
 
-		private string CheckSymbol(string strSymbol)
+		private static string CheckSymbol(string strSymbol)
 		{
 			string[] aSymbols = { "HIVE", "HBD", "TESTS", "TBD", "VESTS" };
 
@@ -77,11 +77,11 @@ namespace HiveAPI.CS
 
 	public class PublicKeyJsonConverter : JsonConverter
 	{
-		public override void WriteJson(JsonWriter writer, Object value, JsonSerializer serializer)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
 			writer.WriteValue(value.ToString());
 		}
-		public override Object ReadJson(JsonReader reader, Type objectType, Object existingValue, JsonSerializer serializer)
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			return new PublicKey((string)reader.Value);
 		}
@@ -102,7 +102,7 @@ namespace HiveAPI.CS
 		{
 			return key;
 		}
-		public Byte[] Decode()
+		public byte[] Decode()
 		{
 			return Base58.RemoveCheckSum(Base58.Decode(key.Substring(3)));
 		}
@@ -115,12 +115,12 @@ namespace HiveAPI.CS
 
 	public class AccountAuthsJsonConverter : JsonConverter
 	{
-		public override void WriteJson(JsonWriter writer, Object value, JsonSerializer serializer)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			Dictionary<string, UInt16> auths = (Dictionary<string, UInt16>)value;
+			Dictionary<string, ushort> auths = (Dictionary<string, ushort>)value;
 
 			writer.WriteStartArray();
-			foreach (KeyValuePair<string, UInt16> auth in auths)
+			foreach (KeyValuePair<string, ushort> auth in auths)
 			{
 				writer.WriteStartArray();
 				writer.WriteValue(auth.Key);
@@ -129,7 +129,7 @@ namespace HiveAPI.CS
 			}
 			writer.WriteEndArray();
 		}
-		public override Object ReadJson(JsonReader reader, Type objectType, Object existingValue, JsonSerializer serializer)
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			return new PublicKey((string)reader.Value);
 		}
@@ -141,12 +141,12 @@ namespace HiveAPI.CS
 
 	public class KeyAuthsJsonConverter : JsonConverter
 	{
-		public override void WriteJson(JsonWriter writer, Object value, JsonSerializer serializer)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			Dictionary<PublicKey, UInt16> auths = (Dictionary<PublicKey, UInt16>)value;
+			Dictionary<PublicKey, ushort> auths = (Dictionary<PublicKey, ushort>)value;
 
 			writer.WriteStartArray();
-			foreach (KeyValuePair<PublicKey, UInt16> auth in auths)
+			foreach (KeyValuePair<PublicKey, ushort> auth in auths)
 			{
 				writer.WriteStartArray();
 				writer.WriteValue(auth.Key.ToString());
@@ -155,7 +155,7 @@ namespace HiveAPI.CS
 			}
 			writer.WriteEndArray();
 		}
-		public override Object ReadJson(JsonReader reader, Type objectType, Object existingValue, JsonSerializer serializer)
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			return new PublicKey((string)reader.Value);
 		}
@@ -167,25 +167,25 @@ namespace HiveAPI.CS
 
 	public class Authority
 	{
-		public UInt32 weight_threshold;
-		[JsonConverter(typeof(AccountAuthsJsonConverter))] public Dictionary<string, UInt16> account_auths = new Dictionary<string, UInt16>();
-		[JsonConverter(typeof(KeyAuthsJsonConverter))] public Dictionary<PublicKey, UInt16> key_auths = new Dictionary<PublicKey, UInt16>();
+		public uint weight_threshold;
+		[JsonConverter(typeof(AccountAuthsJsonConverter))] public Dictionary<string, ushort> account_auths = new();
+		[JsonConverter(typeof(KeyAuthsJsonConverter))] public Dictionary<PublicKey, ushort> key_auths = new();
 	}
 
 	public class ChainProperties
 	{
 		public Asset account_creation_fee;
-		public UInt32 maximum_block_size;
-		public UInt16 hbd_interest_rate;
+		public uint maximum_block_size;
+		public ushort hbd_interest_rate;
 	}
 
 	public class WitnessProperties
 	{
 		public Asset account_creation_fee;
-		public UInt32 account_voidsidy_budget;
-		public UInt32 account_voidsidy_decay;
-		public UInt32 maximum_block_size;
-		public UInt16 hbd_interest_rate;
+		public uint account_voidsidy_budget;
+		public uint account_voidsidy_decay;
+		public uint maximum_block_size;
+		public ushort hbd_interest_rate;
 		public Price hbd_exchange_rate;
 		public string url;
 		public PublicKey new_signing_key;
@@ -229,7 +229,7 @@ namespace HiveAPI.CS
 			public string voter;
 			public string author;
 			public string permlink;
-			public Int16 weight;
+			public short weight;
 		}
 		public class comment : IOperationID
 		{
@@ -267,7 +267,7 @@ namespace HiveAPI.CS
 		{
 			public int opid => 5;
 			public string owner;
-			public UInt32 orderid;
+			public uint orderid;
 			public Asset amount_to_sell;
 			public Asset min_to_receive;
 			public bool fill_or_kill;
@@ -277,7 +277,7 @@ namespace HiveAPI.CS
 		{
 			public int opid => 6;
 			public string owner;
-			public UInt32 orderid;
+			public uint orderid;
 		}
 		public class feed_publish : IOperationID
 		{
@@ -289,7 +289,7 @@ namespace HiveAPI.CS
 		{
 			public int opid => 8;
 			public string owner;
-			public UInt32 requestid;
+			public uint requestid;
 			public Asset amount;
 		}
 		public class account_create : IOperationID
@@ -341,8 +341,8 @@ namespace HiveAPI.CS
 		{
 			public int opid => 15;
 			public string required_auths;
-			public UInt16 id;
-			public Byte[] data;
+			public ushort id;
+			public byte[] data;
 		}
 		// report_over_production_operation (id=16) has been deprecated
 		public class delete_comment : IOperationID
@@ -365,10 +365,10 @@ namespace HiveAPI.CS
 			public string author;
 			public string permlink;
 			public Asset max_accepted_payout;
-			public UInt16 percent_hbd;
+			public ushort percent_hbd;
 			public bool allow_votes;
 			public bool allow_curation_rewards;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 
 		public class set_withdraw_vesting_route : IOperationID
@@ -376,14 +376,14 @@ namespace HiveAPI.CS
 			public int opid => 20;
 			public string from_account;
 			public string to_account;
-			public UInt16 percent;
+			public ushort percent;
 			public bool auto_vest;
 		}
 		public class limit_order_create2 : IOperationID
 		{
 			public int opid => 21;
 			public string owner;
-			public UInt32 orderid;
+			public uint orderid;
 			public Asset amount_to_sell;
 			public bool fill_or_kill;
 			public Price exchange_rate;
@@ -394,7 +394,7 @@ namespace HiveAPI.CS
 			public int opid => 22;
 			public string creator;
 			public Asset fee;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class create_claimed_account : IOperationID
 		{
@@ -406,7 +406,7 @@ namespace HiveAPI.CS
 			public Authority posting;
 			public PublicKey memo_key;
 			public string json_metadata;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class request_account_recovery : IOperationID
 		{
@@ -414,7 +414,7 @@ namespace HiveAPI.CS
 			public string recovery_account;
 			public string account_to_recover;
 			public Authority new_owner_authority;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class recover_account : IOperationID
 		{
@@ -422,14 +422,14 @@ namespace HiveAPI.CS
 			public string account_to_recover;
 			public Authority new_owner_authority;
 			public Authority recent_owner_authority;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class change_recovery_account : IOperationID
 		{
 			public int opid => 26;
 			public string account_to_recover;
 			public string new_recovery_account;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 
 		public class escrow_transfer : IOperationID
@@ -438,7 +438,7 @@ namespace HiveAPI.CS
 			public string from;
 			public string to;
 			public string agent;
-			public UInt32 escrow_id;
+			public uint escrow_id;
 			public Asset hbd_amount;
 			public Asset hive_amount;
 			public Asset fee;
@@ -453,7 +453,7 @@ namespace HiveAPI.CS
 			public string to;
 			public string agent;
 			public string who;
-			public UInt32 escrow_id;
+			public uint escrow_id;
 		}
 		public class escrow_release : IOperationID
 		{
@@ -463,7 +463,7 @@ namespace HiveAPI.CS
 			public string agent;
 			public string who;
 			public string receiver;
-			public UInt32 escrow_id;
+			public uint escrow_id;
 			public Asset hbd_amount;
 			public Asset hive_amount;
 		}
@@ -475,7 +475,7 @@ namespace HiveAPI.CS
 			public string to;
 			public string agent;
 			public string who;
-			public UInt32 escrow_id;
+			public uint escrow_id;
 			public bool approve;
 		}
 		public class transfer_to_savings : IOperationID
@@ -490,7 +490,7 @@ namespace HiveAPI.CS
 		{
 			public int opid => 33;
 			public string from;
-			public UInt32 request_id;
+			public uint request_id;
 			public string to;
 			public Asset amount;
 			public string memo;
@@ -499,7 +499,7 @@ namespace HiveAPI.CS
 		{
 			public int opid => 34;
 			public string from;
-			public UInt32 request_id;
+			public uint request_id;
 		}
 		public class custom_binary : IOperationID
 		{
@@ -509,7 +509,7 @@ namespace HiveAPI.CS
 			public string required_posting_auths;
 			public Authority[] required_auths;
 			public string id;
-			public Byte[] data;
+			public byte[] data;
 		}
 		public class decline_voting_rights : IOperationID
 		{
@@ -559,14 +559,14 @@ namespace HiveAPI.CS
 			public Authority posting;
 			public PublicKey memo_key;
 			public string json_metadata;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class witness_set_properties : IOperationID
 		{
 			public int opid => 42;
 			public string owner;
 			public WitnessProperties props;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class account_update2 : IOperationID
 		{
@@ -578,7 +578,7 @@ namespace HiveAPI.CS
 			[OptionalField] public PublicKey memo_key;
 			public string json_metadata;
 			public string posting_json_metadata;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class create_proposal : IOperationID
 		{
@@ -590,38 +590,38 @@ namespace HiveAPI.CS
 			public Asset daily_pay;
 			public string voidject;
 			public string permlink;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class update_proposal_votes : IOperationID
 		{
 			public int opid => 45;
 			public string voter;
-			public Int64[] proposal_ids;
+			public long[] proposal_ids;
 			public bool approve;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class remove_proposal : IOperationID
 		{
 			public int opid => 46;
 			public string proposal_owner;
-			public Int64[] proposal_ids;
-			public Object[] extensions = Array.Empty<object>();
+			public long[] proposal_ids;
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class update_proposal : IOperationID
 		{
 			public int opid => 47;
-			public UInt64 proposal_id;
+			public ulong proposal_id;
 			public string creator;
 			public Asset daily_pay;
 			public string voidject;
 			public string permlink;
-			public Object[] extensions = Array.Empty<object>();
+			public object[] extensions = Array.Empty<object>();
 		}
 		public class collateralized_convert : IOperationID
 		{
 			public int opid => 48;
 			public string owner;
-			public UInt32 requestid;
+			public uint requestid;
 			public Asset amount;
 		}
 		public class recurrent_transfer : IOperationID
@@ -631,9 +631,9 @@ namespace HiveAPI.CS
 			public string to;
 			public Asset amount;
 			public string memo;
-			public UInt16 recurrence;
-			public UInt16 executions;
-			public Object[] extensions = Array.Empty<object>();
+			public ushort recurrence;
+			public ushort executions;
+			public object[] extensions = Array.Empty<object>();
 	    }
 	}
 }

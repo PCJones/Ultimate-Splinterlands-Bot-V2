@@ -12,7 +12,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
     class Log
     {
-        private static object _ConsoleLock = new object();
+        private static readonly object _ConsoleLock = new();
         public enum LogType
         {
             Success,

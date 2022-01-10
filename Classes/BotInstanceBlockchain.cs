@@ -22,7 +22,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
     public class BotInstanceBlockchain
     {
-        private string Username { get; set; }
+        public string Username { get; private set; }
         private string PostingKey { get; init; }
         private string ActiveKey { get; init; } // only needed for plugins, not used by normal bot
         private string AccessToken { get; init; } // used for websocket authentication
@@ -58,6 +58,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 else
                 {
                     GameStates.Add(state, json["data"]);
+                }
+
+                if (state == GameState.ecr_update)
+                {
+                    ECRCached = ((double)GameStates[GameState.ecr_update]["capture_rate"]) / 100;
                 }
             }
             else if(json["data"]["trx_info"] != null 
@@ -122,17 +127,31 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private async Task WebsocketPingLoop(IWebsocketClient wsClient)
         {
-            while (CurrentlyActive)
+            try
             {
-                try
+                while (CurrentlyActive)
                 {
-                    await Task.Delay(60 * 1000);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        await Task.Delay(20 * 1000);
+                        if (!CurrentlyActive)
+                        {
+                            return;
+                        }
+                    }
+
                     Log.WriteToLog($"{Username}: ping", debugOnly: true);
                     wsClient.Send("{\"type\":\"ping\"}");
                 }
-                catch (Exception)
-                {
-                }
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at WebSocket ping { ex }");
+            }
+            finally
+            {
+                await wsClient.Stop(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "");
+                wsClient.Dispose();
             }
         }
 
@@ -145,7 +164,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private COperations.custom_json CreateCustomJson(bool activeKey, bool postingKey, string methodName, string json)
         {
-            COperations.custom_json customJsonOperation = new COperations.custom_json
+            COperations.custom_json customJsonOperation = new()
             {
                 required_auths = activeKey ? new string[] { Username } : Array.Empty<string>(),
                 required_posting_auths = postingKey ? new string[] { Username } : Array.Empty<string>(),
@@ -155,7 +174,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return customJsonOperation;
         }
 
-        private string GetStringForSplinterlandsAPI(CtransactionData oTransaction)
+        private static string GetStringForSplinterlandsAPI(CtransactionData oTransaction)
         {
             try
             {
@@ -391,7 +410,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             LastCacheUpdate = DateTime.MinValue;
             LogSummary = new LogSummary(index, username);
             _activeLock = new object();
-            APICounter = 100;
+            APICounter = 99999;
             GameStates = new Dictionary<GameState, JToken>();
         }
 
@@ -461,9 +480,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 APICounter++;
-                if ((Settings.LegacyWindowsMode && APICounter >= 6) || APICounter >= 10 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 50)
+                if ((Settings.LegacyWindowsMode && APICounter >= 5) || APICounter >= 10 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 50)
                 {
-                    APICounter = 0;
                     LastCacheUpdate = DateTime.Now;
                     (PowerCached, RatingCached, LeagueCached) = await SplinterlandsAPI.GetPlayerDetailsAsync(Username);
                     QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
@@ -473,6 +491,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
                     }
                     ECRCached = await GetECRFromAPIAsync();
+
+                    // Only at start of bot
+                    if (APICounter >= 99999 && Settings.StartBattleAboveECR >= 10 && ECRCached < Settings.StartBattleAboveECR)
+                    {
+                        SetSleepUntilStartEcrReached();
+                        return SleepUntil;
+                    }
+                    APICounter = 0;
                 }
 
                 LogSummary.Rating = RatingCached.ToString();
@@ -489,15 +515,98 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 await ClaimQuestReward();
 
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
-                if (ECRCached < Settings.ECRThreshold)
+                if (ECRCached < Settings.StopBattleBelowECR)
                 {
-                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
-                    SleepUntil = DateTime.Now.AddMinutes(5);
+                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
+                    if (Settings.StartBattleAboveECR >= 10)
+                    {
+                        SetSleepUntilStartEcrReached();
+                        if (Settings.PowerTransferBot && PowerCached >= Settings.MinimumBattlePower)
+                        {
+                            lock (Settings.PowerTransferBotLock)
+                            {
+                                var query = Settings.BotInstancesBlockchain.Where(x =>
+                                    x.ECRCached >= Settings.StartBattleAboveECR && x.PowerCached < Settings.MinimumBattlePower)
+                                    .OrderByDescending(y => y.ECRCached);
+
+                                if (query.Any())
+                                {
+                                    var receivingAccount = query.First();
+                                    Settings.PlannedPowerTransfers.Add(receivingAccount.Username, this);
+
+                                    // Remove any remaining sleep
+                                    receivingAccount.SleepUntil = DateTime.Now;
+                                }
+                                else
+                                {
+                                    // Show this as available to any account
+                                    if (!Settings.AvailablePowerTransfers.Contains(this))
+                                    {
+                                        Log.WriteToLog($"{Username}: No eligible account for power transfer found - will transfer cards once there is an account that needs cards!");
+                                        Settings.AvailablePowerTransfers.Enqueue(this);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        SleepUntil = DateTime.Now.AddMinutes(5);
+                    }
                     await Task.Delay(1500); // Short delay to not spam splinterlands api
                     return SleepUntil;
                 }
 
-                Stopwatch stopwatch = new Stopwatch();
+                if (PowerCached < Settings.MinimumBattlePower)
+                {
+                    bool transferPower = false;
+                    if (Settings.PowerTransferBot)
+                    {
+                        BotInstanceBlockchain account = null;
+                        lock (Settings.PowerTransferBotLock)
+                        {
+                            if (Settings.PlannedPowerTransfers.ContainsKey(this.Username))
+                            {
+                                account = Settings.PlannedPowerTransfers[Username];
+                                Settings.PlannedPowerTransfers.Remove(Username);
+                                transferPower = true;
+                            } else if (Settings.AvailablePowerTransfers.Any())
+                            {
+                                account = Settings.AvailablePowerTransfers.Dequeue();
+                                transferPower = true;
+                            }
+                        }
+
+                        if (transferPower)
+                        {
+                            var sessionID = Settings.CookieContainer.GetCookies(new Uri("http://jofri.pf-control.de/prgrms/splnterlnds/")).FirstOrDefault();
+                            var args = $"{account.Username} {this.Username} {account.ActiveKey} {Settings.PrivateAPIUsername} {Settings.PrivateAPIPassword} {sessionID.Name} {sessionID.Value}";
+                            var fileName = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) ?
+                                 "Power Transfer Bot.exe" : "Power Transfer Bot";
+
+                            if (Helper.RunProcessWithResult(Settings.StartupPath + "/PowerTransferBot/" + fileName, args))
+                            {
+                                Log.WriteToLog($"{Username}: Successfully transfered power from {account.Username} to {this.Username}", Log.LogType.Success);
+                                SleepUntil = DateTime.Now.AddSeconds(30);
+                                APICounter = 999;
+                                account.APICounter = 999;
+                            }
+                            else
+                            {
+                                Log.WriteToLog($"{Username}: Error at transfering power from {account.Username} to {this.Username}", Log.LogType.Error);
+                            }
+                        }
+                    }
+                    if (!transferPower)
+                    {
+                        Log.WriteToLog($"{Username}: Power is below threshold of {Settings.MinimumBattlePower} - skipping this account.", Log.LogType.Warning);
+                        SleepUntil = DateTime.Now.AddMinutes(Settings.PowerTransferBot ? 60 : 30);
+                    }
+                    await Task.Delay(1500); // Short delay to not spam splinterlands api
+                    return SleepUntil;
+                }
+
+                Stopwatch stopwatch = new();
                 stopwatch.Start();
                 string jsonResponsePlain = StartNewMatch();
                 string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", jsonResponsePlain);
@@ -630,7 +739,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             finally
             {
-                if (!Settings.LegacyWindowsMode) wsClient.Dispose();
                 Settings.LogSummaryList.Add((LogSummary.Index, LogSummary.Account, LogSummary.BattleResult, LogSummary.Rating, LogSummary.ECR, LogSummary.QuestStatus));
                 lock (_activeLock)
                 {
@@ -638,6 +746,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
             }
             return SleepUntil;
+        }
+
+        private void SetSleepUntilStartEcrReached()
+        {
+            double missingECR = Settings.StartBattleAboveECR - ECRCached;
+            double hoursUntilEcrReached = missingECR / 1.041666;
+            SleepUntil = DateTime.Now.AddHours(hoursUntilEcrReached).AddMinutes(1);
+            Log.WriteToLog($"{Username}: Sleeping until {SleepUntil.ToShortTimeString()} to reach an ECR of {Settings.StartBattleAboveECR}%.", Log.LogType.Warning);
+            APICounter = 999;
         }
 
         private async Task ClaimSeasonReward()
@@ -844,10 +961,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 int ratingChange = newRating - RatingCached;
 
-                if (await WaitForGameState(GameState.ecr_update))
-                {
-                    ECRCached = ((double)GameStates[GameState.ecr_update]["capture_rate"]) / 100;
-                }
                 if (await WaitForGameState(GameState.quest_progress))
                 {
                     // this is a lazy way until quest is implemented as a class and we can update the quest object here
@@ -1020,7 +1133,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         APICounter = 100;
                     }
                 }
-
             }
             catch (Exception ex)
             {

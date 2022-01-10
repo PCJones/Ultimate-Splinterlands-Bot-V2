@@ -11,7 +11,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static IEnumerable<T> SelectTokensWithRegex<T>(
             this JsonReader jsonReader, Regex regex)
         {
-            JsonSerializer serializer = new JsonSerializer();
+            JsonSerializer serializer = new();
             while (jsonReader.Read())
             {
                 if (regex.IsMatch(jsonReader.Path)

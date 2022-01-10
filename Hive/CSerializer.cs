@@ -7,7 +7,7 @@ namespace HiveAPI.CS
 {
 	class CSerializer
 	{
-		private void WriteVarint32(MemoryStream oStream, UInt32 n)
+		private static void WriteVarint32(MemoryStream oStream, uint n)
 		{
 			while( n >= 0x80)
 			{
@@ -16,7 +16,7 @@ namespace HiveAPI.CS
 			}
 			oStream.WriteByte(Convert.ToByte(n));
 		}
-		private void AddToStream(MemoryStream oStream, Object obj)
+		private void AddToStream(MemoryStream oStream, object obj)
 		{
 			byte[] buf;
 
@@ -26,30 +26,30 @@ namespace HiveAPI.CS
 				case bool value:
 					oStream.WriteByte((byte)(value ? 1 : 0));
 					break;
-				case Byte value:
+				case byte value:
 					oStream.WriteByte(value);
 					break;
-				case Int16 value:
+				case short value:
 					buf = BitConverter.GetBytes(value);
 					oStream.Write(buf, 0, buf.Length);
 					break;
-				case UInt16 value:
+				case ushort value:
 					buf = BitConverter.GetBytes(value);
 					oStream.Write(buf, 0, buf.Length);
 					break;
-				case Int32 value:
+				case int value:
 					buf = BitConverter.GetBytes(value);
 					oStream.Write(buf, 0, buf.Length);
 					break;
-				case UInt32 value:
+				case uint value:
 					buf = BitConverter.GetBytes(value);
 					oStream.Write(buf, 0, buf.Length);
 					break;
-				case Int64 value:
+				case long value:
 					buf = BitConverter.GetBytes(value);
 					oStream.Write(buf, 0, buf.Length);
 					break;
-				case UInt64 value:
+				case ulong value:
 					buf = BitConverter.GetBytes(value);
 					oStream.Write(buf, 0, buf.Length);
 					break;
@@ -71,8 +71,8 @@ namespace HiveAPI.CS
 						break;
 					}
 					buf = System.Text.Encoding.UTF8.GetBytes(value);
-					UInt32 len = Convert.ToUInt32(buf.Length);
-					WriteVarint32(oStream, len);
+                    uint len = Convert.ToUInt32(buf.Length);
+                    WriteVarint32(oStream, len);
 					oStream.Write(buf, 0, (int)len);
 					break;
 				case DateTime value:
@@ -95,7 +95,7 @@ namespace HiveAPI.CS
 				case PublicKey value:
 					if (value==null || value.key=="STM1111111111111111111111111111111114T1Anm")
 					{
-						buf = new Byte[33];
+						buf = new byte[33];
 						oStream.Write(buf, 0, 33);
 					}
 					else
@@ -105,31 +105,31 @@ namespace HiveAPI.CS
 					}
 					break;
 				case object[] value:
-					WriteVarint32(oStream, (UInt32)value.Length);
+                    WriteVarint32(oStream, (uint)value.Length);
 					if (value.Length == 0) break;
 					foreach (object item in value)
 					{
 						Serialize(oStream, item);
 					}
 					break;
-				case Dictionary<PublicKey, UInt16> value:
-					WriteVarint32(oStream, (UInt32)value.Count);
+				case Dictionary<PublicKey, ushort> value:
+                    WriteVarint32(oStream, (uint)value.Count);
 					if (value.Count==0) break;
-					foreach (KeyValuePair<PublicKey, UInt16> item in value) {
+					foreach (KeyValuePair<PublicKey, ushort> item in value) {
 						Serialize(oStream, item);
 					}
 					break;
 
-				case Dictionary<string, UInt16> value:
-					WriteVarint32(oStream, (UInt32)value.Count);
+				case Dictionary<string, ushort> value:
+                    WriteVarint32(oStream, (uint)value.Count);
 					if (value.Count == 0) break;
-					foreach (KeyValuePair<string, UInt16> item in value)
+					foreach (KeyValuePair<string, ushort> item in value)
 					{
 						Serialize(oStream, item);
 					}
 					break;
 
-				case Object value:
+				case object value:
 					Serialize(oStream, obj);
 					break;
 
@@ -138,20 +138,20 @@ namespace HiveAPI.CS
 			}
 		}
 
-		public Byte[] Serialize(Object obj)
+		public byte[] Serialize(object obj)
 		{
-			using (MemoryStream oStream = new MemoryStream())
+			using (MemoryStream oStream = new())
 			{
 				Serialize(oStream, obj);
 				return oStream.ToArray();
 			}
 		}
-		public void Serialize(MemoryStream oStream, Object obj)
+		public void Serialize(MemoryStream oStream, object obj)
 		{
 			Type oType = obj.GetType();
 			if (obj is COperations.IOperationID)
 			{
-				WriteVarint32(oStream, (UInt32)((COperations.IOperationID)obj).opid);
+                WriteVarint32(oStream, (uint)((COperations.IOperationID)obj).opid);
 			}
 			if (oType.Namespace == "System")
 				AddToStream(oStream, obj);
@@ -162,7 +162,7 @@ namespace HiveAPI.CS
 				{
 					if (!(oType.Name == "CTransaction" && (oField.Name == "signatures" || oField.Name == "txid"))) {
 						if (oField.FieldType.Namespace == "System.Collections.Generic" && oField.GetValue(obj) == null)
-							WriteVarint32(oStream, 0);
+                            WriteVarint32(oStream, 0);
 						else
 						{
 							if (Attribute.IsDefined(oField, typeof(OptionalField)))

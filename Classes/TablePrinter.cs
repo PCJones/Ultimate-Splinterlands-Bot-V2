@@ -11,7 +11,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
     {
         private readonly string[] titles;
         private readonly List<int> lengths;
-        private readonly List<string[]> rows = new List<string[]>();
+        private readonly List<string[]> rows = new();
 
         public TablePrinter(params string[] titles)
         {

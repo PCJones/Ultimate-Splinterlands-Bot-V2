@@ -54,7 +54,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         Log.WriteToLog($"{username}: Waiting 10 seconds for API to calculate team...");
                         await Task.Delay(10 * 1000);
-                        JObject hashData = new JObject(new JProperty("hash", APIResponse.Split(":")[1]));
+                        JObject hashData = new(new JProperty("hash", APIResponse.Split(":")[1]));
                         APIResponse = await PostJSONToApi(hashData, urlGetTeamByHash, username);
                     }
                     else
@@ -111,7 +111,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             Log.WriteToLog($"{username}: Requesting team from private API...");
             try
             {
-                JObject matchDetails = new JObject(
+                JObject matchDetails = new(
                         new JProperty("mana", mana),
                         new JProperty("rules", rules),
                         new JProperty("splinters", splinters),

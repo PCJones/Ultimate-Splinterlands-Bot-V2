@@ -1,7 +1,9 @@
 ##################General Settings##################
 PRIORITIZE_QUEST=true
 SLEEP_BETWEEN_BATTLES=5
-ECR_THRESHOLD=75
+START_BATTLE_ABOVE_ECR=0
+STOP_BATTLE_BELOW_ECR=75
+MINIMUM_BATTLE_POWER=0
 CLAIM_SEASON_REWARD=false
 CLAIM_QUEST_REWARD=false
 
@@ -31,18 +33,6 @@ THREADS=1
 SHOW_BATTLE_RESULTS=true
 ##################Lightning Mode Settings##################
 
-###################Browser Mode Settings###################
-#####If you want to use the old browser based version of the bot enable this#####
-USE_BROWSER_MODE=false
-
-## HEADLESS true = invisible browser
-HEADLESS=true
-
-##MAX_BROWSER_INSTANCES = MultiThreading!
-##2 = 2 Browsers will open, so 2 accounts can fight at the same time
-MAX_BROWSER_INSTANCES=2
-###################Browser Mode Settings###################
-
 #######################API Settings########################
 
 USE_API=true
@@ -53,6 +43,7 @@ FALLBACK_API_URL=http://splinterlandsapi.pcjones.de:8080/
 USE_PRIVATE_API=false
 PRIVATE_API_URL=
 PRIVATE_API_SHOP=
+POWER_TRANSFER_BOT=false
 #######################API Settings########################
 
 #####################Advanced Settings#####################
@@ -74,3 +65,16 @@ CHROME_NO_SANDBOX=false
 #power. Don't enable this unless you actively manage your power.
 WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM=false
 #####################Advanced Settings#####################
+
+
+###################Browser Mode Settings###################
+#####If you want to use the old browser based version of the bot enable this#####
+USE_BROWSER_MODE=false
+
+## HEADLESS true = invisible browser
+HEADLESS=true
+
+##MAX_BROWSER_INSTANCES = MultiThreading!
+##2 = 2 Browsers will open, so 2 accounts can fight at the same time
+MAX_BROWSER_INSTANCES=2
+###################Browser Mode Settings###################
