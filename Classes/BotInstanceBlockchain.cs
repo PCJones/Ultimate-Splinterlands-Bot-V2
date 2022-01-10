@@ -748,6 +748,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                                 // Remove any remaining sleep
                                 receivingAccount.SleepUntil = DateTime.Now;
+                                break;
                             }
                         }
                     }
