@@ -63,6 +63,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 } while (counter++ < 19);
 
+                if (APIResponse.Contains("No Available Team"))
+                {
+                    Log.WriteToLog($"{username}: API Error: No Available Team", Log.LogType.Warning);
+                    return null;
+                }
+
                 if (APIResponse.Contains("api limit reached") || APIResponse.Contains("Rate limit exceeded"))
                 {
                     Log.WriteToLog($"{username}: API Rate Limit reached! Trying FallBack API", Log.LogType.Warning);
@@ -73,10 +79,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
                     System.Threading.Thread.Sleep(25000);
                     return await GetTeamFromPublicAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, true);
-                }
-                else
-                {
-                    Log.WriteToLog($"{username}: API Rate Limit reached!", Log.LogType.Warning);
                 }
 
                 if (APIResponse == null || APIResponse.Length < 5 || APIResponse.Contains("hash"))
