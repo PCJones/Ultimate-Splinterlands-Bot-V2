@@ -5,6 +5,8 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 
 # Support / Community
 
+[LostVoid Discord](https://discord.gg/sr3Cvhn54a)
+
 [Discord](https://discord.gg/hwSr7KNGs9)
 
 [Telegram](https://t.me/ultimatesplinterlandsbot) 
