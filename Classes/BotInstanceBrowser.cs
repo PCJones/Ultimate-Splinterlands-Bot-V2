@@ -47,10 +47,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public string Key { get; init; } // only needed for plugins, not used by normal bot
         public bool CurrentlyActive { get; private set; }
 
-        private object _activeLock;
+        private readonly object _activeLock;
         private DateTime SleepUntil;
         private bool UnknownUsername;
-        private LogSummary LogSummary;
+        private readonly LogSummary LogSummary;
 
         public BotInstanceBrowser(string username, string password, int index, string key = "")
         {
@@ -174,9 +174,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 LogSummary.ECR = $"{ecr} %";
                 // todo: add log with different colors in same line
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ecr >= 50 ? ecr.ToString().Pastel(Color.Green) : ecr.ToString().Pastel(Color.Red)) }%");
-                if (ecr < Settings.ECRThreshold)
+                if (ecr < Settings.StopBattleBelowECR)
                 {
-                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.ECRThreshold}% - skipping this account.", Log.LogType.Warning);
+                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
                     SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles / 2);
                     return (SleepUntil, false);
                 }
@@ -515,7 +515,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return (string)Settings.CardsDetails[Convert.ToInt32(id) - 1]["color"];
         }
 
-        private int GetMana(IWebDriver driver)
+        private static int GetMana(IWebDriver driver)
         {
             driver.WaitForWebsiteLoadedAndElementShown(By.CssSelector("div.col-md-12 > div.mana-cap__icon"));
             Thread.Sleep(100);
@@ -524,13 +524,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return mana;
         }
 
-        private string GetRulesets(IWebDriver driver)
+        private static string GetRulesets(IWebDriver driver)
         {
-            string rulesets = String.Join("|", driver.FindElements(By.CssSelector("div.combat__rules > div.row > div>  img"))
+            string rulesets = string.Join("|", driver.FindElements(By.CssSelector("div.combat__rules > div.row > div>  img"))
                     .Select(x => x.GetAttribute("data-original-title").Split(':')[0].Trim()));
             return rulesets;
         }
-        private string[] GetAllowedSplinters(IWebDriver driver)
+        private static string[] GetAllowedSplinters(IWebDriver driver)
         {
             string[] splinters = driver.FindElements(By.CssSelector("div.col-sm-4 > img"))
                 .Where(x => x.GetAttribute("data-original-title").Split(':')[1].Trim() == "Active")
@@ -863,7 +863,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return true;
         }
 
-        private void WaitForLoadingBanner(IWebDriver driver)
+        private static void WaitForLoadingBanner(IWebDriver driver)
         {
             do
             {
