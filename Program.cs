@@ -161,7 +161,14 @@ namespace Ultimate_Splinterlands_Bot_V2
                             if (firstRuntrough && !Settings.ClaimSeasonReward)
                             {
                                 // Delay accounts to avoid them fighting each other
-                                Thread.Sleep(Settings._Random.Next(1000, 6000));
+                                if (Settings.Threads >= 5)
+                                {
+                                    Thread.Sleep(Settings._Random.Next(1000, 6000));
+                                }
+                                else
+                                {
+                                    Thread.Sleep(Settings._Random.Next(500, 2000));
+                                }
                             }
 
                             if (Settings.LightningMode)

@@ -496,6 +496,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     if (APICounter >= 99999 && Settings.StartBattleAboveECR >= 10 && ECRCached < Settings.StartBattleAboveECR)
                     {
                         SetSleepUntilStartEcrReached();
+                        TransferPowerIfNeeded();
                         return SleepUntil;
                     }
                     APICounter = 0;
@@ -521,33 +522,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     if (Settings.StartBattleAboveECR >= 10)
                     {
                         SetSleepUntilStartEcrReached();
-                        if (Settings.PowerTransferBot && PowerCached >= Settings.MinimumBattlePower)
-                        {
-                            lock (Settings.PowerTransferBotLock)
-                            {
-                                var query = Settings.BotInstancesBlockchain.Where(x =>
-                                    x.ECRCached >= Settings.StartBattleAboveECR && x.PowerCached < Settings.MinimumBattlePower)
-                                    .OrderByDescending(y => y.ECRCached);
-
-                                if (query.Any())
-                                {
-                                    var receivingAccount = query.First();
-                                    Settings.PlannedPowerTransfers.Add(receivingAccount.Username, this);
-
-                                    // Remove any remaining sleep
-                                    receivingAccount.SleepUntil = DateTime.Now;
-                                }
-                                else
-                                {
-                                    // Show this as available to any account
-                                    if (!Settings.AvailablePowerTransfers.Contains(this))
-                                    {
-                                        Log.WriteToLog($"{Username}: No eligible account for power transfer found - will transfer cards once there is an account that needs cards!");
-                                        Settings.AvailablePowerTransfers.Enqueue(this);
-                                    }
-                                }
-                            }
-                        }
+                        TransferPowerIfNeeded();
                     }
                     else
                     {
@@ -746,6 +721,49 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
             }
             return SleepUntil;
+        }
+
+        private void TransferPowerIfNeeded()
+        {
+            if (Settings.PowerTransferBot && PowerCached >= Settings.MinimumBattlePower)
+            {
+                lock (Settings.PowerTransferBotLock)
+                {
+                    var query = Settings.BotInstancesBlockchain.Where(x =>
+                        x.ECRCached >= Settings.StartBattleAboveECR && x.PowerCached < Settings.MinimumBattlePower)
+                        .OrderByDescending(y => y.ECRCached);
+
+                    bool availableForAnyAccount = true;
+                    BotInstanceBlockchain[] accountsECRSorted = query.ToArray();
+
+                    if (accountsECRSorted.Any())
+                    {
+                        for (int i = 0; i < accountsECRSorted.Length; i++)
+                        {
+                            var receivingAccount = accountsECRSorted[i];
+                            if (!Settings.PlannedPowerTransfers.ContainsKey(receivingAccount.Username))
+                            {
+                                availableForAnyAccount = false;
+                                Settings.PlannedPowerTransfers.Add(receivingAccount.Username, this);
+
+                                // Remove any remaining sleep
+                                receivingAccount.SleepUntil = DateTime.Now;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (availableForAnyAccount)
+                    {
+                        // Show this as available to any account
+                        if (!Settings.AvailablePowerTransfers.Contains(this))
+                        {
+                            Log.WriteToLog($"{Username}: No eligible account for power transfer found - will transfer cards once there is an account that needs cards!");
+                            Settings.AvailablePowerTransfers.Enqueue(this);
+                        }
+                    }
+                }
+            }
         }
 
         private void SetSleepUntilStartEcrReached()
