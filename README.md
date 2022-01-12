@@ -28,8 +28,8 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 
 ## How to install (Linux / MacOS)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=kTS0FdAei7c)
-- Chrome download(Chrome is no longer needed)
-- Chromedriver download(Chromedriver is no longer needed)
+- Chrome download (Chrome is no longer needed)
+- Chromedriver download (Chromedriver is no longer needed)
 - Text instructions coming soon, please ask for instructions on discord or Telegram
 
 [Discord](https://discord.gg/hwSr7KNGs9)
