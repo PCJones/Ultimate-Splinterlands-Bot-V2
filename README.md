@@ -16,7 +16,7 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 - The bot will play for the quests, including sneak and snipe (can be disabled)
 - Minimum Energy Capture Rate - the bot will pause automatically if the energy capture rate is below a specified percentage
 - Option to enable/disable automatic quest reward chest opening
-- And much more, see [Bot configuration](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/blob/master/README.md#bot-configuration)
+- And much more, see [Bot configuration](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2#bot-configuration)
 - Any suggestions?
 
 ## How to install (Windows)
@@ -28,8 +28,8 @@ A completely rewritten new version of this bot: https://github.com/PCJones/ultim
 
 ## How to install (Linux / MacOS)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=kTS0FdAei7c)
-- [Chrome download](https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb)
-- [Chromedriver download](https://chromedriver.chromium.org/downloads)
+- Chrome download (Chrome is no longer needed)
+- Chromedriver download (Chromedriver is no longer needed)
 - Text instructions coming soon, please ask for instructions on discord or Telegram
 
 [Discord](https://discord.gg/hwSr7KNGs9)
