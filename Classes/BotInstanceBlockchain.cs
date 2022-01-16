@@ -447,7 +447,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 LogSummary.Reset();
                 if (SleepUntil > DateTime.Now)
                 {
-                    Log.WriteToLog($"{Username}: is sleeping until {SleepUntil.ToString().Pastel(Color.Red)}");
+                    if (!Settings.DebugMode) Log.WriteToLog($"{Username}: is sleeping until {SleepUntil.ToString().Pastel(Color.Red)}");
                     return SleepUntil;
                 }
 
@@ -550,12 +550,22 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                                 account = Settings.AvailablePowerTransfers.Dequeue();
                                 transferPower = true;
                             }
+
+                            if (transferPower)
+                            {
+                                // Set the power to a high value temporarily so no other account will try to send cards to it
+                                PowerCached = 999999;
+                                APICounter = 999;
+                                account.PowerCached = 0;
+                                account.APICounter = 999;
+                            }
                         }
 
                         if (transferPower)
                         {
-                            var sessionID = Settings.CookieContainer.GetCookies(new Uri("http://jofri.pf-control.de/prgrms/splnterlnds/")).FirstOrDefault();
-                            var args = $"{account.Username} {this.Username} {account.ActiveKey} {Settings.PrivateAPIUsername} {Settings.PrivateAPIPassword} {sessionID.Name} {sessionID.Value}";
+                            var sessionID = Settings.CookieContainer.GetCookies(new Uri(Settings.PrivateAPIShop)).FirstOrDefault();
+                            var args = $"{account.Username} {this.Username} {account.ActiveKey} {Settings.PrivateAPIUsername} " +
+                                $"{Settings.PrivateAPIPassword} {sessionID.Name} {sessionID.Value} {Settings.DebugMode}";
                             var fileName = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) ?
                                  "Power Transfer Bot.exe" : "Power Transfer Bot";
 
@@ -563,8 +573,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             {
                                 Log.WriteToLog($"{Username}: Successfully transfered power from {account.Username} to {this.Username}", Log.LogType.Success);
                                 SleepUntil = DateTime.Now.AddSeconds(30);
-                                APICounter = 999;
-                                account.APICounter = 999;
                             }
                             else
                             {
@@ -725,6 +733,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private void TransferPowerIfNeeded()
         {
+            Log.WriteToLog($"{Username}: PowerTransferDebug: PowerCached: {this.PowerCached}", debugOnly: true);
             if (Settings.PowerTransferBot && PowerCached >= Settings.MinimumBattlePower)
             {
                 lock (Settings.PowerTransferBotLock)
@@ -740,6 +749,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         for (int i = 0; i < accountsECRSorted.Length; i++)
                         {
+                            Log.WriteToLog($"{Username}: PowerTransferDebug: {accountsECRSorted[i].Username}", debugOnly: true);
                             var receivingAccount = accountsECRSorted[i];
                             if (!Settings.PlannedPowerTransfers.ContainsKey(receivingAccount.Username))
                             {
