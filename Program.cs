@@ -405,13 +405,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                 return false;
             }
 
-            // no longer needed
-            //if (Settings.SleepBetweenBattles < 4 && Settings.LightningMode && !Settings.ShowBattleResults)
-            //{
-            //    Log.WriteToLog("Lightning Mode without SHOW_BATTLE_RESULTS enabled - setting minimum sleep time to 4 minutes.", Log.LogType.Warning);
-            //    Settings.SleepBetweenBattles = 4;
-            //}
-
             Log.WriteToLog("Config loaded!", Log.LogType.Success);
             Log.WriteToLog($"Config parameters:{Environment.NewLine}" +
                 $"MODE: {(Settings.LightningMode ? "LIGHTNING (blockchain)" : "BROWSER")}{Environment.NewLine}" +
@@ -429,7 +422,8 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"START_BATTLE_ABOVE_ECR: {Settings.StartBattleAboveECR}{Environment.NewLine}" +
                 $"STOP_BATTLE_BELOW_ECR: {Settings.StopBattleBelowECR}{Environment.NewLine}" +
                 $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
-                $"USE_PRIVATE_API: {Settings.UsePrivateAPI}");
+                $"USE_PRIVATE_API: {Settings.UsePrivateAPI}{ Environment.NewLine}" +
+                $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot}");
                 
             if (Settings.LightningMode)
             {

@@ -44,29 +44,41 @@ namespace HiveAPI.CS
 		}
 		private static CtransactionData SignTransaction(CTransaction oTransaction, string[] astrPrivateKeys)
 		{
-			CSerializer oSerializer = new();
-			byte[] msg = oSerializer.Serialize(oTransaction);
-
-			using (MemoryStream oStream = new())
+			try
 			{
-				byte[] oChainID = Hex.HexToBytes(CHAINID);
-				oStream.Write(oChainID, 0, oChainID.Length);
-				oStream.Write(msg, 0, msg.Length);
-				byte[] oDigest = Sha256Manager.GetHash(oStream.ToArray());
-				foreach (string key in astrPrivateKeys)
+				CSerializer oSerializer = new();
+				byte[] msg = oSerializer.Serialize(oTransaction);
+
+				using (MemoryStream oStream = new())
 				{
-					Array.Resize(ref oTransaction.signatures, oTransaction.signatures.Length + 1);
-					oTransaction.signatures[oTransaction.signatures.Length-1] = Hex.ToString(Secp256K1Manager.SignCompressedCompact(oDigest, CBase58.DecodePrivateWif(key)));
+					byte[] oChainID = Hex.HexToBytes(CHAINID);
+					oStream.Write(oChainID, 0, oChainID.Length);
+					oStream.Write(msg, 0, msg.Length);
+					byte[] oDigest = Sha256Manager.GetHash(oStream.ToArray());
+					foreach (string key in astrPrivateKeys)
+					{
+						Array.Resize(ref oTransaction.signatures, oTransaction.signatures.Length + 1);
+						oTransaction.signatures[oTransaction.signatures.Length - 1] = Hex.ToString(Secp256K1Manager.SignCompressedCompact(oDigest, CBase58.DecodePrivateWif(key)));
+					}
 				}
+				return new CtransactionData { tx = oTransaction, txid = Hex.ToString(Sha256Manager.GetHash(msg)).Substring(0, 40) };
+
 			}
-			return new CtransactionData { tx = oTransaction, txid = Hex.ToString(Sha256Manager.GetHash(msg)).Substring(0, 40) };
+			catch (Exception ex)
+			{
+				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Error at signing blockchain transaction: "
+										+ Environment.NewLine + ex.Message + Environment.NewLine + ex.ToString(), Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.CriticalError);
+			}
+			return null;
 		}
 
 		public CtransactionData CreateTransaction(object[] aOperations, string[] astrPrivateKeys)
 		{
             try
             {
+				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #1", debugOnly: true);
 				JObject oDGP = get_dynamic_global_properties();
+				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #2", debugOnly: true);
 				CTransaction oTransaction = new()
                 {
 					ref_block_num = Convert.ToUInt16((uint)oDGP["head_block_number"] & 0xFFFF),
@@ -74,6 +86,7 @@ namespace HiveAPI.CS
 					expiration = Convert.ToDateTime(oDGP["time"]).AddSeconds(30),
 					operations = aOperations
 				};
+				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #3", debugOnly: true);
 				return SignTransaction(oTransaction, astrPrivateKeys);
 			}
             catch (Exception ex)
@@ -85,7 +98,7 @@ namespace HiveAPI.CS
                 else
                 {
 					Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Error at creating blockchain transaction: "
-						+ Environment.NewLine + ex.Message, Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.CriticalError);
+						+ Environment.NewLine + ex.Message + Environment.NewLine + ex.ToString(), Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.CriticalError);
 				}
             }
 			return null;
