@@ -54,6 +54,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool RunProcessWithResult(string file, string args)
         {
+            Log.WriteToLog("PowerTransferDebug: Run Process: " + file);
+            Log.WriteToLog("PowerTransferDebug: Args: " + args);
             System.Diagnostics.Process process = new();
             process.StartInfo.FileName = file;
             process.StartInfo.Arguments = args;

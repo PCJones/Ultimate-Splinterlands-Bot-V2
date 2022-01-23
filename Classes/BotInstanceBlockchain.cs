@@ -753,6 +753,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             var receivingAccount = accountsECRSorted[i];
                             if (!Settings.PlannedPowerTransfers.ContainsKey(receivingAccount.Username))
                             {
+                                Log.WriteToLog($"{Username}: PowerTransferDebug: Planned transfer: {accountsECRSorted[i].Username}", debugOnly: true);
                                 availableForAnyAccount = false;
                                 Settings.PlannedPowerTransfers.Add(receivingAccount.Username, this);
 
@@ -1214,33 +1215,33 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 return 1;
             }
-            if ((RatingCached is >= 400 and <= 699) && (PowerCached is >= 1000))
+            if ((RatingCached is >= 400 and <= 699) && (PowerCached is >= 1000 and < 5000))
             {
                 return 2;
             }
-            if ((RatingCached is >= 700 and <= 999) && (PowerCached is >= 5000))
+            if ((RatingCached is >= 700 and <= 999) && (PowerCached is >= 5000 and < 15000))
             {
                 return 3;
             }
             // silver
-            if ((RatingCached is >= 1000 and <= 1299) && (PowerCached is >= 15000))
+            if ((RatingCached is >= 1000 and <= 1299) && (PowerCached is >= 15000 and < 40000))
             {
                 return 4;
             }
-            if ((RatingCached is >= 1300 and <= 1599) && (PowerCached is >= 40000))
+            if ((RatingCached is >= 1300 and <= 1599) && (PowerCached is >= 40000 and < 70000))
             {
                 return 5;
             }
-            if ((RatingCached is >= 1600 and <= 1899) && (PowerCached is >= 70000))
+            if ((RatingCached is >= 1600 and <= 1899) && (PowerCached is >= 70000 and < 100000))
             {
                 return 6;
             }
             // gold
-            if ((RatingCached is >= 1900 and <= 2199) && (PowerCached is >= 100000))
+            if ((RatingCached is >= 1900 and <= 2199) && (PowerCached is >= 100000 and < 150000))
             {
                 return 7;
             }
-            if ((RatingCached is >= 2200 and <= 2499) && (PowerCached is >= 150000))
+            if ((RatingCached is >= 2200 and <= 2499) && (PowerCached is >= 150000 and < 200000))
             {
                 return 8;
             }
