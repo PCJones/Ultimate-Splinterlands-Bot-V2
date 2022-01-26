@@ -815,11 +815,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         string n = Helper.GenerateRandomString(10);
                         string json = "{\"type\":\"league_season\",\"season\":\"" + season + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                        string tx = SubmitCustomJsonToHiveNode("sm_claim_reward", json);
 
-                        COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_claim_reward", json);
-
-                        CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
-                        string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
                         for (int i = 0; i < 10; i++)
                         {
                             await Task.Delay(15000);
@@ -827,13 +824,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             if (rewardsRaw.Contains(" not found"))
                             {
                                 continue;
-                            } else if (rewardsRaw.Contains("as already claimed their rewards from the specified season"))
+                            }
+                            else if (rewardsRaw.Contains("as already claimed their rewards from the specified season"))
                             {
                                 Log.WriteToLog($"{Username}: Rewards already claimed!", Log.LogType.Error);
                                 return;
                             }
                             var rewards = JToken.Parse(rewardsRaw)["trx_info"]["result"];
-                           
+
 
                             if (!((string)rewards).Contains("success\":true"))
                             {
@@ -841,7 +839,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                                 return;
                             }
                             else if (((string)rewards).Contains("success\":true"))
-                            { 
+                            {
                                 Log.WriteToLog($"{Username}: Successfully claimed season rewards!", Log.LogType.Success);
                                 return;
                             }
@@ -857,6 +855,22 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 Log.WriteToLog($"{Username}: Error at claiming season reward: {ex}", Log.LogType.Error);
             }
+        }
+
+        private string SubmitCustomJsonToHiveNode(string command, string json, bool postingKey = true, bool activeKey = false)
+        {
+            try
+            {
+                COperations.custom_json custom_Json = CreateCustomJson(activeKey, postingKey, command, json);
+
+                string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { postingKey ? PostingKey : ActiveKey });
+                return tx;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"{Username}: Error at broadcasting transaction to blockchain: {ex}", Log.LogType.Error);
+            }
+            return "";
         }
 
         private async Task<JToken> GetTeamAsync(JToken matchDetails, bool ignorePrivateAPI = false)
@@ -1075,10 +1089,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         string n = Helper.GenerateRandomString(10);
                         string json = "{\"type\":\"quest\",\"quest_id\":\"" + (string)QuestCached.Quest["id"] +"\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
-                        COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_claim_reward", json);
-
-                        CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
-                        string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                        //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
+                        string tx = SubmitCustomJsonToHiveNode("sm_claim_reward", json);
                         //var postData = GetStringForSplinterlandsAPI(oTransaction);
                         //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
@@ -1145,9 +1157,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"notify\":\"false\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
-                    COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_advance_league", json);
-                    CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
-                    string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    string tx = SubmitCustomJsonToHiveNode("sm_advance_league", json);
                     //var postData = GetStringForSplinterlandsAPI(oTransaction);
                     //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
@@ -1184,9 +1195,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
-                    COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_refresh_quest", json);
-
-                    string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    string tx = SubmitCustomJsonToHiveNode("sm_refresh_quest", json);
                     Log.WriteToLog($"{Username}: Requesting new quest because of bad quest: {tx}");
                     APICounter = 100; // set api counter to 100 to reload quest
                 } else if (QuestCached.Quest == null || (QuestCached.Quest["claim_trx_id"].Type != JTokenType.Null
@@ -1195,9 +1204,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
-                    COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_start_quest", json);
-
-                    string tx = Settings.oHived.broadcast_transaction(new object[] { custom_Json }, new string[] { PostingKey });
+                    string tx = SubmitCustomJsonToHiveNode("sm_start_quest", json);
                     Log.WriteToLog($"{Username}: Requesting new quest because 23 hours passed: {tx}");
                     APICounter = 100; // set api counter to 100 to reload quest
                 }

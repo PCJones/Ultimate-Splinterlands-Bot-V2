@@ -72,15 +72,15 @@ namespace HiveAPI.CS
 			return null;
 		}
 
-		public CtransactionData CreateTransaction(object[] aOperations, string[] astrPrivateKeys)
+		public CtransactionData CreateTransaction(object[] aOperations, string[] astrPrivateKeys, int errorCount = 0)
 		{
-            try
-            {
+			try
+			{
 				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #1", debugOnly: true);
 				JObject oDGP = get_dynamic_global_properties();
 				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #2", debugOnly: true);
 				CTransaction oTransaction = new()
-                {
+				{
 					ref_block_num = Convert.ToUInt16((uint)oDGP["head_block_number"] & 0xFFFF),
 					ref_block_prefix = BitConverter.ToUInt32(Hex.HexToBytes(oDGP["head_block_id"].ToString()), 4),
 					expiration = Convert.ToDateTime(oDGP["time"]).AddSeconds(30),
@@ -89,19 +89,26 @@ namespace HiveAPI.CS
 				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #3", debugOnly: true);
 				return SignTransaction(oTransaction, astrPrivateKeys);
 			}
-            catch (Exception ex)
-            {
-                if (ex.Message.Contains("Internal Error"))
-                {
-					return CreateTransaction(aOperations, astrPrivateKeys);
+			catch (Exception ex)
+			{
+				if (errorCount > 5)
+				{
+					Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Creating blockchain transaction failed too often, please check your internet connection and ask the developer for help.", Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.Error);
+					return null;
 				}
-                else
-                {
+				else if (ex.Message.Contains("Internal Error"))
+				{
+					return CreateTransaction(aOperations, astrPrivateKeys, errorCount++);
+				}
+				else
+				{
 					Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Error at creating blockchain transaction: "
-						+ Environment.NewLine + ex.Message + Environment.NewLine + ex.ToString(), Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.CriticalError);
+						+ Environment.NewLine + ex.ToString(), Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.CriticalError);
+					Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Trying again in 10 seconds...");
+					System.Threading.Thread.Sleep(10 * 1000);
+					return CreateTransaction(aOperations, astrPrivateKeys, errorCount++);
 				}
-            }
-			return null;
+			}
 		}
 		#endregion
 

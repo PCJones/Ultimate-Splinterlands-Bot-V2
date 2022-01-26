@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -96,30 +97,55 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Log.WriteToLog("Automatic update check is not possible because the version.usb file is missing from config folder!", Log.LogType.Error);
                     return;
                 }
-                WebClient webClient = new();
+                
                 string gitHubUrl = $"https://api.github.com/repos/{Settings.BOT_GITHUB_REPO}/releases";
                 string releasesRaw = DownloadPageAsync(gitHubUrl).Result;
                 JToken newestRelease = JArray.Parse(releasesRaw)[0];
                 string[] localVersion = File.ReadAllLines(versionFilePath);
-                DateTime currentVersionPublishDate = DateTime.Parse(localVersion[1]);
-                DateTime releasePublishDate = (DateTime)newestRelease["published_at"];
+                DateTime currentVersionPublishDate = DateTime.Parse(localVersion[0].Trim()).AddMinutes(25);
+                DateTime releasePublishDate = ((DateTime)newestRelease["published_at"]);
                 if (releasePublishDate > currentVersionPublishDate)
                 {
+                    bool autoUpdate = Settings.AutoUpdate;
+
                     if (Settings.AutoUpdate)
                     {
-                        Log.WriteToLog("New bot update available!");
-                        Log.WriteToLog("New bot update available!");
-                        Log.WriteToLog("New bot update available!");
-                        Log.WriteToLog("Press any key to start the update...");
-                        Console.ReadKey();
-                        UpdateViaArchive(gitHubUrl);
-                        string fileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ultimate Splinterlands Bot V2.exe" : "Ultimate Splinterlands Bot V2";
-                        string tempFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "tempUltimate Splinterlands Bot V2.exe" : "tempUltimate Splinterlands Bot V2";
-                        string tempFileName2 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "temp2Ultimate Splinterlands Bot V2.exe" : "temp2Ultimate Splinterlands Bot V2";
-                        RunProcess(Settings.StartupPath + "/" + fileName, "update " + fileName + " " + tempFileName + " " + tempFileName2);
-                        Environment.Exit(0);
+                        var asset = newestRelease["assets"].Where(x => (string)x["name"] == localVersion[1].Trim() + ".zip").FirstOrDefault();
+                        if (asset == null)
+                        {
+                            autoUpdate = false;
+                        }
+                        else
+                        {
+                            Log.WriteToLog("New bot update available!", Log.LogType.Warning);
+                            Log.WriteToLog("New bot update available!", Log.LogType.Warning);
+                            Log.WriteToLog("New bot update available!", Log.LogType.Warning);
+                            Log.WriteToLog("Press any key to start the update...");
+                            Console.ReadKey();
+                            string url = (string)asset["browser_download_url"];
+
+                            // create temp folder
+                            DirectoryInfo d = new DirectoryInfo(Settings.StartupPath);
+                            string tmpFolderPath = Settings.StartupPath + "/tmp/";
+                            Directory.CreateDirectory(tmpFolderPath);
+                            string fileNameExe = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ultimate Splinterlands Bot V2.exe" : "Ultimate Splinterlands Bot V2";
+                            foreach (var file in d.GetFiles("*.*"))
+                            {
+                                File.Copy(file.FullName, tmpFolderPath + "/" + file.Name);
+                            }
+
+                            string tmpApplicationPath = tmpFolderPath + "/" + fileNameExe;
+                            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                            {
+                                LinuxExec("chmod -R 775 " + tmpApplicationPath.Replace(" ", "\\ "));
+                            }
+                            RunProcess(tmpApplicationPath, "update \"" + Settings.StartupPath + "/" + fileNameExe + "\" \"" + url + "\" \"" + Settings.StartupPath 
+                                + "\" \"" + localVersion[1].Trim() + "\" \"" + releasePublishDate.ToUniversalTime().ToString("u") + "\"");
+                            Environment.Exit(0);
+                        }
                     }
-                    else
+
+                    if(!autoUpdate)
                     {
                         Log.WriteToLog("New bot update available! Please download at https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases", Log.LogType.Warning);
                         Log.WriteToLog("New bot update available! Please download at https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases", Log.LogType.Warning);
@@ -133,23 +159,49 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
+        public static void LinuxExec(string cmd)
+        {
+            var escapedArgs = cmd.Replace("\"", "\\\"");
+
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{escapedArgs}\""
+                }
+            };
+
+            process.Start();
+            process.WaitForExit();
+        }
+
         public static void KillInstances()
         {
             foreach (var process in System.Diagnostics.Process.GetProcessesByName("Ultimate Splinterlands Bot V2"))
             {
                 try
                 {
+                    if (process.Id == System.Diagnostics.Process.GetCurrentProcess().Id)
+                    {
+                        continue;
+                    }
                     System.Threading.Thread.Sleep(2000);
                     Console.WriteLine("Killing running bot process...");
-                }
-                catch (Exception)
-                {
                     process.Kill();
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteToLog(ex.Message, Log.LogType.Error);
                 }
             }
         }
 
-        public static void UpdateViaArchive(string downloadUrl)
+        public static void UpdateViaArchive(string downloadUrl, string extractTarget)
         {
             Console.WriteLine("Beginning update.");
             Console.WriteLine("Downloading archive...");
@@ -158,39 +210,32 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             downloadifier.DownloadFile(downloadUrl, downloadDestination);
             Console.WriteLine("Downloading finished.");
             Console.Write("Extracting archive... ");
-            string extractTarget = Settings.StartupPath;
 
             ZipArchive archive = ZipFile.Open(downloadDestination, ZipArchiveMode.Read);
             foreach (ZipArchiveEntry file in archive.Entries)
             {
-                string completeFileName;
-                if (file.FullName.StartsWith("Ultimate Splinterlands Bot V2"))
-                {
-                    completeFileName = Path.Combine(extractTarget, "temp2" + file.FullName);
-                    file.ExtractToFile(completeFileName, true);
-                    completeFileName = Path.Combine(extractTarget, "temp" + file.FullName);
-                }
-                else
-                {
-                    completeFileName = Path.Combine(extractTarget, file.FullName);
-                }
+                string completeFileName = Path.Combine(extractTarget, file.FullName);
+
                 if (!Directory.Exists(Path.GetDirectoryName(completeFileName)))
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(completeFileName));
                 }
 
-                file.ExtractToFile(completeFileName, true);
+                if (completeFileName[^1..] != "/")
+                {
+                    try
+                    {
+                        file.ExtractToFile(completeFileName, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteToLog(ex.Message, Log.LogType.CriticalError);
+                        Console.ReadLine();
+                    }
+                }
             }
+
             Console.WriteLine("done.");
-
-            using (FileStream fs = new FileStream(Path.GetTempFileName(),
-               FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None,
-               4096, FileOptions.RandomAccess | FileOptions.DeleteOnClose))
-            {
-                // temp file exists
-            }
-
-            
         }
     }
 }

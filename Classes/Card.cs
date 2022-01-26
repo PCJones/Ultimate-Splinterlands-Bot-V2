@@ -34,9 +34,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             Card otherCard = obj as Card;
             if (otherCard != null)
             {
-                int ownCardDetailId = this.card_detail_id == "" ? 99999999 : Convert.ToInt32(this.card_detail_id);
-                int otherCardDetailId = otherCard.card_detail_id == "" ? 99999999 : Convert.ToInt32(otherCard.card_detail_id);
-                if (ownCardDetailId == otherCardDetailId)
+                int ownCardLevel = Convert.ToInt32(this.level);
+                int otherCardLevel = Convert.ToInt32(otherCard.level);
+                if (ownCardLevel == otherCardLevel)
                 {
                     if (this.gold == otherCard.gold)
                     {
@@ -51,7 +51,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         return -1;
                     }
                 }
-                else if (ownCardDetailId > otherCardDetailId)
+                else if (ownCardLevel > otherCardLevel)
                 {
                     return 1;
                 }

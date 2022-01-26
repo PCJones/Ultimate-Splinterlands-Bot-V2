@@ -19,21 +19,22 @@ namespace Ultimate_Splinterlands_Bot_V2
         static void Main(string[] args)
         {
             SetStartupPath();
-            if (args.Length > 0)
+
+            if (args.Length > 0 && args[0] == "update")
             {
-                if (args[0] == "deletetemp")
-                {
-                    File.Delete(args[2]);
-                    File.Delete(args[3]);
-                    Environment.Exit(0);
-                }
-                else if (args[0] == "update")
-                {
-                    Helper.KillInstances();
-                    File.Move(args[3], args[1]);
-                    Helper.RunProcess(Settings.StartupPath + "/" + args[3], "deletetemp " + args[2]+ " " + args[3]);
-                    Environment.Exit(0);
-                }
+                Helper.KillInstances();
+                Helper.UpdateViaArchive(args[2], args[3]);
+
+                string versionText = args[5] + Environment.NewLine + args[4];
+                File.WriteAllText(args[3] + "/config/version.usb", versionText);
+
+                Helper.RunProcess(args[1], "");
+                Environment.Exit(0);
+            }
+            else if (Directory.Exists(Settings.StartupPath + "/tmp/"))
+            {
+                Thread.Sleep(2000);
+                Directory.Delete(Settings.StartupPath + "/tmp/", true);
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -61,10 +62,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Environment.Exit(0);
             }
 
-            if (Settings.AutoUpdate)
-            {
-                Helper.CheckForUpdate();
-            }
+            Helper.CheckForUpdate();
 
             if (Settings.LightningMode && Settings.ClaimSeasonReward)
             {
