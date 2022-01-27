@@ -29,7 +29,7 @@ USE_LIGHTNING_MODE=true
 THREADS=1
 
 ##Disable this if you want a cleaner log or you have problems with too many
-##requests to the splinterlands API (unlikely unless you run a lot of threads)
+##requests to the splinterlands API. Disabling will also make battles 10-25 seconds faster.
 SHOW_BATTLE_RESULTS=true
 ##################Lightning Mode Settings##################
 
@@ -47,6 +47,7 @@ POWER_TRANSFER_BOT=false
 #######################API Settings########################
 
 #####################Advanced Settings#####################
+AUTO_UPDATE=true
 SHOW_API_RESPONSE=true
 DEBUG=false
 WRITE_LOG_TO_FILE=false
@@ -65,6 +66,12 @@ CHROME_NO_SANDBOX=false
 #power. Don't enable this unless you actively manage your power.
 WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM=false
 #####################Advanced Settings#####################
+
+
+
+
+
+
 
 
 ###################Browser Mode Settings###################
