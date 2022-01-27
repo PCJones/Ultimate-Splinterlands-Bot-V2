@@ -10,9 +10,10 @@ using System.Text;
 
 namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
-    class Log
+    internal class Log
     {
         private static readonly object _ConsoleLock = new();
+
         public enum LogType
         {
             Success,
@@ -43,21 +44,26 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 case LogType.Success:
                     textColor = Color.Green;
                     break;
+
                 case LogType.Information:
                     textColor = Color.LightGray;
                     break;
+
                 case LogType.Error:
                     textColor = Color.Red;
                     messagePrefix += "Error: ".Pastel(textColor);
                     break;
+
                 case LogType.CriticalError:
                     textColor = Color.Magenta;
                     messagePrefix += "Critical Error: ".Pastel(textColor);
                     break;
+
                 case LogType.Warning:
                     textColor = Color.Yellow;
                     messagePrefix += "Warning: ".Pastel(textColor);
                     break;
+
                 default:
                     textColor = Color.LightGray;
                     break;
@@ -116,6 +122,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 .Replace("Gray", "Neutral").Replace("Gold", "Dragon"));
             }
 
+            lock (_ConsoleLock)
+            {
+                t.Print();
+            }
+        }
+
+        public static void LogInstanceSummaryToTable()
+        {
+            var t = new TablePrinter("Win", "Draw", "Lose", "Win Rate");
+            t.AddRow(Settings.InstanceWin, Settings.InstanceDraw, Settings.InstanceLose, (Settings.InstanceWin / Settings.InstanceLose));
             lock (_ConsoleLock)
             {
                 t.Print();
