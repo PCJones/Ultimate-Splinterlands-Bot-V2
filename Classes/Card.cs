@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ultimate_Splinterlands_Bot_V2.Classes
 {
-    public record Card
+    public record Card : IComparable
     {
         public string card_detail_id { get; init; }
         public string level { get; init; }
@@ -24,9 +24,44 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             gold = _gold;
         }
 
-        public int SortValue()
+        public int CompareTo(object obj)
         {
-            return gold ? Convert.ToInt32(level + 1) : Convert.ToInt32(level);
+            if (obj == null)
+            {
+                return 1;
+            }
+
+            Card otherCard = obj as Card;
+            if (otherCard != null)
+            {
+                int ownCardLevel = Convert.ToInt32(this.level);
+                int otherCardLevel = Convert.ToInt32(otherCard.level);
+                if (ownCardLevel == otherCardLevel)
+                {
+                    if (this.gold == otherCard.gold)
+                    {
+                        return 0;
+                    }
+                    else if (this.gold)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if (ownCardLevel > otherCardLevel)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            else
+                throw new ArgumentException("Object is not a Card");
         }
     }
 }

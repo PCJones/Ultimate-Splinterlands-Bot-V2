@@ -218,7 +218,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     return currentUser == username && !cardOnCooldown && !forSale;
                 })
                 .Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"]))
-                .Distinct().OrderByDescending(x => x.SortValue()).ToArray());
+                .Distinct().ToArray());
+
+                cards.Sort();
+                cards.Reverse();
 
                 //// lets hope nobody ever needs to touch this mess again
                 //List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(x =>

@@ -18,6 +18,25 @@ namespace Ultimate_Splinterlands_Bot_V2
         private static object _SleepInfoLock = new();
         static void Main(string[] args)
         {
+            SetStartupPath();
+
+            if (args.Length > 0 && args[0] == "update")
+            {
+                Helper.KillInstances();
+                Helper.UpdateViaArchive(args[2], args[3]);
+
+                string versionText = args[5] + Environment.NewLine + args[4];
+                File.WriteAllText(args[3] + "/config/version.usb", versionText);
+
+                Helper.RunProcess(args[1], "");
+                Environment.Exit(0);
+            }
+            else if (Directory.Exists(Settings.StartupPath + "/tmp/"))
+            {
+                Thread.Sleep(2000);
+                Directory.Delete(Settings.StartupPath + "/tmp/", true);
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 handler = new ConsoleEventDelegate(ConsoleEventCallback);
@@ -31,10 +50,10 @@ namespace Ultimate_Splinterlands_Bot_V2
             }
 
             Log.WriteStartupInfoToLog();
-            SetStartupPath();
 
             // We have to configure the http client early because it might be used in account constructor
             Settings._httpClient.Timeout = new TimeSpan(0, 2, 15);
+            Settings._httpClient.DefaultRequestHeaders.Add("User-Agent", "USB");
 
             if (!ReadConfig() || (Settings.BrowserMode && !CheckForChromeDriver()) || !ReadAccounts())
             {
@@ -42,6 +61,8 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Console.ReadKey();
                 Environment.Exit(0);
             }
+
+            Helper.CheckForUpdate();
 
             if (Settings.LightningMode && Settings.ClaimSeasonReward)
             {
@@ -335,6 +356,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "WRITE_LOG_TO_FILE":
                         Settings.WriteLogToFile = bool.Parse(temp[1]);
                         break;
+                    case "AUTO_UPDATE":
+                        Settings.AutoUpdate = bool.Parse(temp[1]);
+                        break;
                     case "DISABLE_CONSOLE_COLORS":
                         if (bool.Parse(temp[1]))
                         {
@@ -409,6 +433,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             Log.WriteToLog($"Config parameters:{Environment.NewLine}" +
                 $"MODE: {(Settings.LightningMode ? "LIGHTNING (blockchain)" : "BROWSER")}{Environment.NewLine}" +
                 $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
+                $"AUTO_UPDATE: {Settings.AutoUpdate}{Environment.NewLine}" +
                 $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
                 $"SHOW_API_RESPONSE: {Settings.ShowAPIResponse}{Environment.NewLine}" +
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
@@ -627,6 +652,10 @@ namespace Ultimate_Splinterlands_Bot_V2
             // Setup startup path
             string path = Assembly.GetExecutingAssembly().Location;
             string directory = Path.GetDirectoryName(path);
+            if (directory.Length == 0)
+            {
+                directory = AppDomain.CurrentDomain.BaseDirectory;
+            }
             Settings.StartupPath = directory;
         }
         static bool CheckForChromeDriver()
