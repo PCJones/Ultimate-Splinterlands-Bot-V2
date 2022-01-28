@@ -68,6 +68,7 @@ namespace HiveAPI.CS
 			{
 				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Error at signing blockchain transaction: "
 										+ Environment.NewLine + ex.Message + Environment.NewLine + ex.ToString(), Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.CriticalError);
+				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Debug data:" + Environment.NewLine + ((COperations.custom_json)oTransaction.operations[0]).json);
 			}
 			return null;
 		}
@@ -87,7 +88,8 @@ namespace HiveAPI.CS
 					operations = aOperations
 				};
 				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #3", debugOnly: true);
-				return SignTransaction(oTransaction, astrPrivateKeys);
+				var response = SignTransaction(oTransaction, astrPrivateKeys);
+				return response;
 			}
 			catch (Exception ex)
 			{
