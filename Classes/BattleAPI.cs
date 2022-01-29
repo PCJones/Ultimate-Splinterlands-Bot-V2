@@ -29,7 +29,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private static async Task<JToken> GetTeamFromPublicAPIAsync(int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, bool secondTry = false)
         {
             string APIResponse = "";
-            Log.WriteToLog($"{username}: Requesting team from public API...");
+            Log.WriteToLog($"{username}: Requesting team from API...");
             try
             {
                 JObject matchDetails = new JObject(
@@ -184,7 +184,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             _ = Helper.DownloadPageAsync($"{ Settings.PublicAPIUrl }report_loss/{enemy}/{username}");
         }
 
-        private async static Task<string> PostJSONToApi(object json, string url, string username)
+        private static async Task<string> PostJSONToApi(object json, string url, string username)
         {
             using (var content = new StringContent(JsonConvert.SerializeObject(json), Encoding.UTF8, "application/json"))
             {
@@ -230,7 +230,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{username}: Failed to update cards for private API: +  " + response, Log.LogType.Error);
             }
         }
-        public async static Task CheckRateLimitLoopAsync(string username, string apiUrl)
+
+        public static async Task CheckRateLimitLoopAsync(string username, string apiUrl)
         {
             bool alreadyChecking = false;
             lock (Settings.RateLimitedLock)
