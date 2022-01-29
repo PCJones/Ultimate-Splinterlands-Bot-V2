@@ -1,7 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -100,10 +102,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 
                 string gitHubUrl = $"https://api.github.com/repos/{Settings.BOT_GITHUB_REPO}/releases";
                 string releasesRaw = DownloadPageAsync(gitHubUrl).Result;
-                JToken newestRelease = JArray.Parse(releasesRaw)[0];
                 string[] localVersion = File.ReadAllLines(versionFilePath);
-                DateTime currentVersionPublishDate = DateTime.Parse(localVersion[0].Trim()).AddMinutes(25);
-                DateTime releasePublishDate = ((DateTime)newestRelease["published_at"]);
+                DateTime currentVersionPublishDate = DateTime.ParseExact(localVersion[0].Trim(), "yyyy-MM-dd' 'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                string publishDateRaw = "";
+                JToken newestRelease;
+                using (JsonReader reader = new JsonTextReader(new StringReader(releasesRaw)))
+                {
+                    reader.DateParseHandling = DateParseHandling.None;
+                    newestRelease = JArray.Load(reader)[0];
+                    publishDateRaw = (string)newestRelease["published_at"];
+                }
+                DateTime releasePublishDate = DateTime.ParseExact(publishDateRaw, "yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
                 if (releasePublishDate > currentVersionPublishDate)
                 {
                     bool autoUpdate = Settings.AutoUpdate;
