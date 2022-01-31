@@ -103,7 +103,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 string gitHubUrl = $"https://api.github.com/repos/{Settings.BOT_GITHUB_REPO}/releases";
                 string releasesRaw = DownloadPageAsync(gitHubUrl).Result;
                 string[] localVersion = File.ReadAllLines(versionFilePath);
-                DateTime currentVersionPublishDate = DateTime.ParseExact(localVersion[0].Trim(), "yyyy-MM-dd' 'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                DateTime currentVersionPublishDate = DateTime.ParseExact(localVersion[0].Trim(), "yyyy-MM-dd' 'HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
                 string publishDateRaw = "";
                 JToken newestRelease;
                 using (JsonReader reader = new JsonTextReader(new StringReader(releasesRaw)))
