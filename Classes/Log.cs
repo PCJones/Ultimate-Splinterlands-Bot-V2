@@ -140,7 +140,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
                 else
                 {
-                    t.AddRow(Settings.InstanceWin, Settings.InstanceDraw, Settings.InstanceLose, Math.Round((Settings.InstanceWin / InstanceBattles), 2));
+                    t.AddRow(Settings.InstanceWin, Settings.InstanceDraw, Settings.InstanceLose, Math.Round(((Settings.InstanceWin / InstanceBattles) * 100), 2));
                 }
                 t.Print();
             }
