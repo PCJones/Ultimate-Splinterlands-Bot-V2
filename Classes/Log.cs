@@ -131,9 +131,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static void LogInstanceSummaryToTable()
         {
             var t = new TablePrinter("Win", "Draw", "Lose", "Win Rate");
-            t.AddRow(Settings.InstanceWin, Settings.InstanceDraw, Settings.InstanceLose, (Settings.InstanceWin / Settings.InstanceLose));
+            double InstanceBattles = Settings.InstanceWin + Settings.InstanceDraw + Settings.InstanceLose;
             lock (_ConsoleLock)
             {
+                if (InstanceBattles == 0)
+                {
+                    t.AddRow(0, 0, 0, 0);
+                }
+                else
+                {
+                    t.AddRow(Settings.InstanceWin, Settings.InstanceDraw, Settings.InstanceLose, Math.Round((Settings.InstanceWin / InstanceBattles), 2));
+                }
                 t.Print();
             }
         }

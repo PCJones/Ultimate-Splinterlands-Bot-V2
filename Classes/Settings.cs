@@ -57,9 +57,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static Queue<BotInstanceBlockchain> AvailablePowerTransfers;
         public static object PowerTransferBotLock = new();
 
-        public static int InstanceWin = 0;
-        public static int InstanceDraw = 0;
-        public static int InstanceLose = 0;
+        public static double InstanceWin = 0;
+        public static double InstanceDraw = 0;
+        public static double InstanceLose = 0;
 
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
