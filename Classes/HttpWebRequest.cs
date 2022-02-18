@@ -18,10 +18,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             string websiteResponse = "";
 
+            System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(Url);
             try
             {
-                System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(Url);
-
                 if (proxy.Length > 2 && proxy.Contains(":"))
                 {
                     string proxyIP = proxy.Split(':')[0].Trim();
@@ -57,11 +56,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 streamReader.Dispose();
                 webResponse.Close();
 
+                Log.WriteToLog("Get: Okay");
+                Log.WriteToLog(websiteResponse);
+
                 return websiteResponse;
             }
             catch (Exception ex)
             {
                 Log.WriteToLog("Error at WebRequest: " + ex.ToString());
+                Log.WriteToLog(webRequest.ToString());
+                Log.WriteToLog(webRequest.RequestUri.ToString());
                 return websiteResponse;
             }
         }
@@ -108,6 +112,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 streamReader.Dispose();
                 webResponse.Close();
 
+                Log.WriteToLog("Get: Okay");
+                Log.WriteToLog(websiteResponse);
                 return websiteResponse;
             }
             catch (Exception ex)
