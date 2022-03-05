@@ -32,9 +32,9 @@ A completely new, rewritten version of this bot: https://github.com/PCJones/ulti
 - Download the linux-x64.zip from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
 - Create config.txt and accounts.txt in config folder - see config-example.txt and accounts-example.txt
 - Open terminal in the bot folder and execute the following command
-  - `chmod +x linux-x64/Ultimate\ Splinterlands\ Bot\ V2`
+  - `chmod +x ./Ultimate\ Splinterlands\ Bot\ V2`
 - To start the bot open terminal in the bot folder and execute the following command:
-  - `chmod +x linux-x64/Ultimate\ Splinterlands\ Bot\ V2`
+  - `chmod +x ./Ultimate\ Splinterlands\ Bot\ V2`
 - If you need help feel free to ask for instructions on discord or Telegram
 
 [Discord](https://discord.gg/hwSr7KNGs9)
