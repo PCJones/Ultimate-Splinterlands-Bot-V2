@@ -34,7 +34,7 @@ A completely new, rewritten version of this bot: https://github.com/PCJones/ulti
 - Open terminal in the bot folder and execute the following command
   - `chmod +x ./Ultimate\ Splinterlands\ Bot\ V2`
 - To start the bot open terminal in the bot folder and execute the following command:
-  - `chmod +x ./Ultimate\ Splinterlands\ Bot\ V2`
+  - `./Ultimate\ Splinterlands\ Bot\ V2`
 - If you need help feel free to ask for instructions on discord or Telegram
 
 [Discord](https://discord.gg/hwSr7KNGs9)
