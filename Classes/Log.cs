@@ -134,9 +134,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             double InstanceBattles = Settings.InstanceWin + Settings.InstanceDraw + Settings.InstanceLose;
             lock (_ConsoleLock)
             {
-                if (InstanceBattles == 0)
+                if (Settings.InstanceWin == 0)
                 {
-                    t.AddRow(0, 0, 0, 0);
+                    t.AddRow(Settings.InstanceWin, Settings.InstanceDraw, Settings.InstanceLose, 0);
                 }
                 else
                 {
