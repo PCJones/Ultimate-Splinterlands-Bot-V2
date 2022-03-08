@@ -520,18 +520,25 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
                 if (ECRCached < Settings.StopBattleBelowECR)
                 {
-                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
-                    if (Settings.StartBattleAboveECR >= 10)
+                    if (Settings.IgnoreEcrForQuest && QuestCached.Quest != null && (int)QuestCached.Quest["completed_items"] < (int)QuestCached.Quest["total_items"])
                     {
-                        SetSleepUntilStartEcrReached();
-                        TransferPowerIfNeeded();
+                        Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - keep playing because quest is not yet finished!", Log.LogType.Warning);
                     }
                     else
                     {
-                        SleepUntil = DateTime.Now.AddMinutes(5);
+                        Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
+                        if (Settings.StartBattleAboveECR >= 10)
+                        {
+                            SetSleepUntilStartEcrReached();
+                            TransferPowerIfNeeded();
+                        }
+                        else
+                        {
+                            SleepUntil = DateTime.Now.AddMinutes(5);
+                        }
+                        await Task.Delay(1500); // Short delay to not spam splinterlands api
+                        return SleepUntil;
                     }
-                    await Task.Delay(1500); // Short delay to not spam splinterlands api
-                    return SleepUntil;
                 }
 
                 if (PowerCached < Settings.MinimumBattlePower)

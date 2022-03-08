@@ -280,10 +280,13 @@ namespace Ultimate_Splinterlands_Bot_V2
                     continue;
                 }
 
-                switch (temp[0])
+                switch (temp[0].Trim().ToUpper())
                 {
                     case "PRIORITIZE_QUEST":
                         Settings.PrioritizeQuest = bool.Parse(temp[1]);
+                        break;          
+                    case "IGNORE_ECR_FOR_QUEST":
+                        Settings.IgnoreEcrForQuest = bool.Parse(temp[1]);
                         break;
                     case "SLEEP_BETWEEN_BATTLES":
                         Settings.SleepBetweenBattles = Convert.ToInt32(temp[1]);
@@ -437,6 +440,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
                 $"SHOW_API_RESPONSE: {Settings.ShowAPIResponse}{Environment.NewLine}" +
                 $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
+                $"IGNORE_ECR_FOR_QUEST: {Settings.IgnoreEcrForQuest}{Environment.NewLine}" +
                 $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                 $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
                 $"REQUEST_NEW_QUEST: {string.Join(",", Settings.BadQuests)}{Environment.NewLine}" +

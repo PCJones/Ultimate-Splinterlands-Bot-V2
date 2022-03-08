@@ -62,6 +62,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static double InstanceLose = 0;
 
         public static bool PrioritizeQuest = true;
+        public static bool IgnoreEcrForQuest = false;
         public static bool ClaimQuestReward = false;
         public static bool ClaimSeasonReward = false;
         public static bool DontClaimQuestNearHigherLeague = false;
