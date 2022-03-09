@@ -31,6 +31,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private int LeagueCached { get; set; }
         private int RatingCached { get; set; }
         private double ECRCached { get; set; }
+        private int LossesTotal { get; set; }
+        private double DrawsTotal { get; set; }
+        private double WinsTotal { get; set; }
         private (JToken Quest, JToken QuestLessDetails) QuestCached { get; set; }
         private Card[] CardsCached { get; set; }
         private Dictionary<GameState, JToken> GameStates { get; set; }
@@ -412,6 +415,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             _activeLock = new object();
             APICounter = 99999;
             GameStates = new Dictionary<GameState, JToken>();
+            DrawsTotal = 0;
+            WinsTotal = 0;
+            LossesTotal = 0;
         }
 
         public async Task<DateTime> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance)
@@ -822,7 +828,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         string n = Helper.GenerateRandomString(10);
                         string json = "{\"type\":\"league_season\",\"season\":\"" + season + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
-                        string tx = SubmitCustomJsonToHiveNode("sm_claim_reward", json);
+                        string tx = BroadcastCustomJsonToHiveNode("sm_claim_reward", json);
 
                         for (int i = 0; i < 10; i++)
                         {
@@ -864,7 +870,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private string SubmitCustomJsonToHiveNode(string command, string json, bool postingKey = true, bool activeKey = false)
+        private string BroadcastCustomJsonToHiveNode(string command, string json, bool postingKey = true, bool activeKey = false)
         {
             try
             {
@@ -966,15 +972,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 case 2:
                     logTextBattleResult = "DRAW";
+                    DrawsTotal++;
                     Log.WriteToLog($"{Username}: { logTextBattleResult}");
                     Log.WriteToLog($"{Username}: Rating has not changed ({ battleResult.newRating })");
                     break;
                 case 1:
+                    WinsTotal++;
                     logTextBattleResult = $"You won! Reward: { battleResult.decReward } DEC";
                     Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
                     Log.WriteToLog($"{Username}: New rating is { battleResult.newRating } ({ ("+" + battleResult.ratingChange.ToString()).Pastel(Color.Green) })");
                     break;
                 case 0:
+                    LossesTotal++;
                     logTextBattleResult = $"You lost :(";
                     Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
                     Log.WriteToLog($"{Username}: New rating is { battleResult.newRating } ({ battleResult.ratingChange.ToString().Pastel(Color.Red) })");
@@ -1033,16 +1042,19 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 switch (battleResult)
                 {
                     case 2:
+                        DrawsTotal++;
                         logTextBattleResult = "DRAW";
                         Log.WriteToLog($"{Username}: { logTextBattleResult}");
                         Log.WriteToLog($"{Username}: Rating has not changed ({ newRating })");
                         break;
                     case 1:
+                        WinsTotal++;
                         logTextBattleResult = $"You won! Reward: { decReward } DEC";
                         Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
                         Log.WriteToLog($"{Username}: New rating is { newRating } ({ ("+" + ratingChange.ToString()).Pastel(Color.Green) })");
                         break;
                     case 0:
+                        LossesTotal++;
                         logTextBattleResult = $"You lost :(";
                         Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
                         Log.WriteToLog($"{Username}: New rating is { newRating } ({ ratingChange.ToString().Pastel(Color.Red) })");
@@ -1097,7 +1109,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         string json = "{\"type\":\"quest\",\"quest_id\":\"" + (string)QuestCached.Quest["id"] +"\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                         //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
-                        string tx = SubmitCustomJsonToHiveNode("sm_claim_reward", json);
+                        string tx = BroadcastCustomJsonToHiveNode("sm_claim_reward", json);
                         //var postData = GetStringForSplinterlandsAPI(oTransaction);
                         //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
@@ -1165,7 +1177,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     string json = "{\"notify\":\"false\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                     //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
-                    string tx = SubmitCustomJsonToHiveNode("sm_advance_league", json);
+                    string tx = BroadcastCustomJsonToHiveNode("sm_advance_league", json);
                     //var postData = GetStringForSplinterlandsAPI(oTransaction);
                     //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
@@ -1202,7 +1214,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
-                    string tx = SubmitCustomJsonToHiveNode("sm_refresh_quest", json);
+                    string tx = BroadcastCustomJsonToHiveNode("sm_refresh_quest", json);
                     Log.WriteToLog($"{Username}: Requesting new quest because of bad quest: {tx}");
                     APICounter = 100; // set api counter to 100 to reload quest
                 } else if (QuestCached.Quest == null || (QuestCached.Quest["claim_trx_id"].Type != JTokenType.Null
@@ -1211,7 +1223,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
-                    string tx = SubmitCustomJsonToHiveNode("sm_start_quest", json);
+                    string tx = BroadcastCustomJsonToHiveNode("sm_start_quest", json);
                     Log.WriteToLog($"{Username}: Requesting new quest because 23 hours passed: {tx}");
                     APICounter = 100; // set api counter to 100 to reload quest
                 }
@@ -1225,46 +1237,59 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         private int GetMaxLeagueByRankAndPower()
         {
             // bronze
+            int league = 0;
             if ((RatingCached is >= 100 and <= 399) && (PowerCached is >= 0))
             {
-                return 1;
+                league = 1;
             }
-            if ((RatingCached is >= 400 and <= 699) && (PowerCached is >= 1000 and < 5000))
+            if ((RatingCached is >= 400) && (PowerCached is >= 1000))
             {
-                return 2;
+                league = 2;
             }
-            if ((RatingCached is >= 700 and <= 999) && (PowerCached is >= 5000 and < 15000))
+            if ((RatingCached is >= 700) && (PowerCached is >= 5000))
             {
-                return 3;
+                league = 3;
             }
             // silver
-            if ((RatingCached is >= 1000 and <= 1299) && (PowerCached is >= 15000 and < 40000))
+            if ((RatingCached is >= 1000) && (PowerCached is >= 15000))
             {
-                return 4;
+                league = 4;
             }
-            if ((RatingCached is >= 1300 and <= 1599) && (PowerCached is >= 40000 and < 70000))
+            if ((RatingCached is >= 1300) && (PowerCached is >= 40000))
             {
-                return 5;
+                league = 5;
             }
-            if ((RatingCached is >= 1600 and <= 1899) && (PowerCached is >= 70000 and < 100000))
+            if ((RatingCached is >= 1600) && (PowerCached is >= 70000))
             {
-                return 6;
+                league = 6;
             }
             // gold
-            if ((RatingCached is >= 1900 and <= 2199) && (PowerCached is >= 100000 and < 150000))
+            if ((RatingCached is >= 1900) && (PowerCached is >= 100000))
             {
-                return 7;
+                league = 7;
             }
-            if ((RatingCached is >= 2200 and <= 2499) && (PowerCached is >= 150000 and < 200000))
+            if ((RatingCached is >= 2200) && (PowerCached is >= 150000))
             {
-                return 8;
+                league = 8;
             }
-            if ((RatingCached is >= 2500 and <= 2799) && (PowerCached is >= 200000))
+            if ((RatingCached is >= 2500) && (PowerCached is >= 200000))
             {
-                return 9;
+                league = 9;
             }
-
-            return 0;
+            // diamond
+            if ((RatingCached is >= 2800) && (PowerCached is >= 250000))
+            {
+                league = 10;
+            }
+            if ((RatingCached is >= 3100) && (PowerCached is >= 325000))
+            {
+                league = 11;
+            }
+            if ((RatingCached is >= 3400) && (PowerCached is >= 400000))
+            {
+                league = 12;
+            }
+            return league;
         }
     }
 }
