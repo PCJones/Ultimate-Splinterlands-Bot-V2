@@ -33,6 +33,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static bool WriteLogToFile = false;
         public static bool ShowAPIResponse = true;
 
+        public static CardSettings CardSettings;
+
         public static bool LightningMode = false;
         public static bool ShowBattleResults = true;
         public static int Threads = 1;

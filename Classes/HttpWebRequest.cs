@@ -56,9 +56,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 streamReader.Dispose();
                 webResponse.Close();
 
-                Log.WriteToLog("Get: Okay");
-                Log.WriteToLog(websiteResponse);
-
                 return websiteResponse;
             }
             catch (Exception ex)
@@ -112,8 +109,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 streamReader.Dispose();
                 webResponse.Close();
 
-                Log.WriteToLog("Get: Okay");
-                Log.WriteToLog(websiteResponse);
                 return websiteResponse;
             }
             catch (Exception ex)

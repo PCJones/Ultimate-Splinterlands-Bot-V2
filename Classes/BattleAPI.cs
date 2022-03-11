@@ -120,7 +120,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         new JProperty("splinters", splinters),
                         new JProperty("quest", Settings.PrioritizeQuest && quest != null
                         && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
-                        questLessDetails : "")
+                        questLessDetails : ""),
+                        new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
                 string urlGetTeam = $"{Settings.PrivateAPIUrl}get_team_private/{username}/";

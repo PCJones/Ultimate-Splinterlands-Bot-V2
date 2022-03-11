@@ -264,15 +264,25 @@ namespace Ultimate_Splinterlands_Bot_V2
 
         static bool ReadConfig()
         {
-            string filePath = Settings.StartupPath + @"/config/config.txt";
-            if (!File.Exists(filePath))
+            string folder = Settings.StartupPath + @"/config/";
+            string filePathConfig = folder + "config.txt";
+            string filePathCardSettings = folder + "card_settings.txt";
+
+            if (!File.Exists(filePathConfig))
             {
                 Log.WriteToLog("No config.txt in config folder - see config-example.txt!", Log.LogType.CriticalError);
                 return false;
             }
+            if (!File.Exists(filePathCardSettings))
+            {
+                Log.WriteToLog("No card_settings.txt in config folder!", Log.LogType.CriticalError);
+                return false;
+            }
+
+            Settings.CardSettings = new CardSettings(File.ReadAllText(filePathCardSettings));
 
             Log.WriteToLog("Reading config...");
-            foreach (string setting in File.ReadAllLines(filePath))
+            foreach (string setting in File.ReadAllLines(filePathConfig))
             {
                 string[] temp = setting.Split('=');
                 if (temp.Length != 2 || setting[0] == '#')
@@ -452,7 +462,8 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"STOP_BATTLE_BELOW_ECR: {Settings.StopBattleBelowECR}{Environment.NewLine}" +
                 $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
                 $"USE_PRIVATE_API: {Settings.UsePrivateAPI}{ Environment.NewLine}" +
-                $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot}");
+                $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot} {Environment.NewLine}" + 
+                $"{Settings.CardSettings}");
                 
             if (Settings.LightningMode)
             {
@@ -557,11 +568,11 @@ namespace Ultimate_Splinterlands_Bot_V2
         {
             if (Settings.BrowserMode && Settings.MaxBrowserInstances > Settings.BotInstancesBrowser.Count)
             {
-                Log.WriteToLog($"MAX_BROWSER_INSTANCES is larger than total number of accounts, reducing it to {Settings.BotInstancesBrowser.Count.ToString().Pastel(Color.Red)}", Log.LogType.Warning);
+                Log.WriteToLog($"MAX_BROWSER_INSTANCES is larger than total number of accounts, lowering it to {Settings.BotInstancesBrowser.Count.ToString().Pastel(Color.Red)}", Log.LogType.Warning);
                 Settings.MaxBrowserInstances = Settings.BotInstancesBrowser.Count;
             } else if (Settings.LightningMode && Settings.Threads > Settings.BotInstancesBlockchain.Count)
             {
-                Log.WriteToLog($"THREADS is larger than total number of accounts, reducing it to {Settings.BotInstancesBlockchain.Count.ToString().Pastel(Color.Red)}", Log.LogType.Warning);
+                Log.WriteToLog($"THREADS is larger than total number of accounts, lowering it to {Settings.BotInstancesBlockchain.Count.ToString().Pastel(Color.Red)}", Log.LogType.Warning);
                 Settings.Threads = Settings.BotInstancesBlockchain.Count;
             }
 
