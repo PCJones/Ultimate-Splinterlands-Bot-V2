@@ -81,7 +81,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             Log.WriteToLog($"{Username}: Message received: {message.Text}", debugOnly: true);
         }
 
-        private async Task<bool> WaitForGameState(GameState state, int secondsToWait = 0)
+        private async Task<bool> WaitForGameStateAsync(GameState state, int secondsToWait = 0)
         {
             int maxI = secondsToWait > 0 ? secondsToWait : 1;
             for (int i = 0; i < maxI; i++)
@@ -98,7 +98,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return false;
         }
             
-        private async Task<bool> WaitForTransactionSuccess(string tx, int secondsToWait)
+        private async Task<bool> WaitForTransactionSuccessAsync(string tx, int secondsToWait)
         {
             if (tx.Length == 0)
             {
@@ -128,7 +128,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return false;
         }
 
-        private async Task WebsocketPingLoop(IWebsocketClient wsClient)
+        private async Task WebsocketPingLoopAsync(IWebsocketClient wsClient)
         {
             try
             {
@@ -214,7 +214,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return "";
         }
 
-        private async Task<bool> WaitForEnemyPick(string tx, Stopwatch stopwatch)
+        private async Task<bool> WaitForEnemyPickAsync(string tx, Stopwatch stopwatch)
         {
             int counter = 0;
             do
@@ -334,7 +334,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private async Task<JToken> WaitForMatchDetails(string trxId)
+        private async Task<JToken> WaitForMatchDetailsAsync(string trxId)
         {
             for (int i = 0; i < 9; i++) // 9 * 20 = 180, so 3mins
             {
@@ -434,7 +434,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
             if (Settings.ClaimSeasonReward)
             {
-                await ClaimSeasonReward();
+                await ClaimSeasonRewardAsync();
                 return SleepUntil.AddMinutes(30);
             }
 
@@ -463,7 +463,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     await wsClient.Start();
                     wsClient.ReconnectionHappened.Subscribe(info =>
                         Log.WriteToLog($"{Username}: Reconnection happened, type: {info.Type}"));
-                    _ = WebsocketPingLoop(wsClient).ConfigureAwait(false);
+                    _ = WebsocketPingLoopAsync(wsClient).ConfigureAwait(false);
                     WebsocketAuthenticate(wsClient);
                 }
 
@@ -517,9 +517,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(QuestCached.QuestLessDetails).Pastel(Color.Yellow)}");
                 }
 
-                await AdvanceLeague();
+                await AdvanceLeagueAsync();
                 RequestNewQuestViaAPI();
-                await ClaimQuestReward();
+                await ClaimQuestRewardAsync();
 
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
                 if (ECRCached < Settings.StopBattleBelowECR)
@@ -609,7 +609,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 bool submitTeam = true;
                 JToken matchDetails = null;
 
-                if (jsonResponsePlain == "" || !jsonResponsePlain.Contains("success") || !await WaitForTransactionSuccess(tx, 30))
+                if (jsonResponsePlain == "" || !jsonResponsePlain.Contains("success") || !await WaitForTransactionSuccessAsync(tx, 30))
                 {
                     var outstandingGame = await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/players/outstanding_match?username=" + Username);
                     if (outstandingGame != "null")
@@ -647,7 +647,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         if (Settings.LegacyWindowsMode)
                         {
-                            matchDetails = await WaitForMatchDetails(tx);
+                            matchDetails = await WaitForMatchDetailsAsync(tx);
                             if (matchDetails == null)
                             {
                                 Log.WriteToLog($"{Username}: Banned from ranked? Sleeping for 10 minutes!", Log.LogType.Warning);
@@ -657,7 +657,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         }
                         else
                         {
-                            if (!await WaitForGameState(GameState.match_found, 185))
+                            if (!await WaitForGameStateAsync(GameState.match_found, 185))
                             {
                                 Log.WriteToLog($"{Username}: Banned from ranked? Sleeping for 10 minutes!", Log.LogType.Warning);
                                 SleepUntil = DateTime.Now.AddMinutes(10);
@@ -678,7 +678,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                     await Task.Delay(Settings._Random.Next(4500, 8000));
                     var submittedTeam = await SubmitTeamAsync(tx, matchDetails, team);
-                    if (!await WaitForTransactionSuccess(submittedTeam.tx, 10))
+                    if (!await WaitForTransactionSuccessAsync(submittedTeam.tx, 10))
                     {
                         SleepUntil = DateTime.Now.AddMinutes(5);
                         return SleepUntil;
@@ -689,17 +689,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     {
                         if (Settings.LegacyWindowsMode)
                         {
-                            surrender = await WaitForEnemyPick(tx, stopwatch);
+                            surrender = await WaitForEnemyPickAsync(tx, stopwatch);
                             break;
                         }
                         else
                         {
-                            if (await WaitForGameState(GameState.opponent_submit_team, 4))
+                            if (await WaitForGameStateAsync(GameState.opponent_submit_team, 4))
                             {
                                 break;
                             }
                             // if there already is a battle result now it's because the enemy surrendered or the game vanished
-                            if (await WaitForGameState(GameState.battle_result) || await WaitForGameState(GameState.battle_cancelled))
+                            if (await WaitForGameStateAsync(GameState.battle_result) || await WaitForGameStateAsync(GameState.battle_cancelled))
                             {
                                 surrender = true;
                                 break;
@@ -798,7 +798,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             APICounter = 999;
         }
 
-        private async Task ClaimSeasonReward()
+        private async Task ClaimSeasonRewardAsync()
         {
             try
             {
@@ -1002,24 +1002,24 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 await ShowBattleResultLegacyAsync(tx);
                 return;
             }
-            if(!await WaitForGameState(GameState.battle_result, 210))
+            if(!await WaitForGameStateAsync(GameState.battle_result, 210))
             {
                 Log.WriteToLog($"{Username}: Could not get battle result", Log.LogType.Error);
             }
             else
             {
-                decimal decReward = await WaitForGameState(GameState.balance_update, 10) ?
+                decimal decReward = await WaitForGameStateAsync(GameState.balance_update, 10) ?
                     (decimal)GameStates[GameState.balance_update]["amount"] : 0;
 
-                int newRating = await WaitForGameState(GameState.rating_update) ?
+                int newRating = await WaitForGameStateAsync(GameState.rating_update) ?
                     (int)GameStates[GameState.rating_update]["new_rating"] : RatingCached;
 
-                LeagueCached = await WaitForGameState(GameState.rating_update) ?
+                LeagueCached = await WaitForGameStateAsync(GameState.rating_update) ?
                     (int)GameStates[GameState.rating_update]["new_league"] : LeagueCached;
 
                 int ratingChange = newRating - RatingCached;
 
-                if (await WaitForGameState(GameState.quest_progress))
+                if (await WaitForGameStateAsync(GameState.quest_progress))
                 {
                     // this is a lazy way until quest is implemented as a class and we can update the quest object here
                     QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
@@ -1068,7 +1068,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
         }
 
-        private async Task ClaimQuestReward()
+        private async Task ClaimQuestRewardAsync()
         {
             try
             {
@@ -1113,7 +1113,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
                         //string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
-                        if (await WaitForTransactionSuccess(tx, 45))
+                        if (await WaitForTransactionSuccessAsync(tx, 45))
                         {
                             Log.WriteToLog($"{Username}: { "Claimed quest reward:".Pastel(Color.Green) } {tx}");
                             APICounter = 100; // set api counter to 100 to reload quest
@@ -1158,7 +1158,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             return Math.Min(ecr, 10000) / 100;
         }
 
-        private async Task AdvanceLeague()
+        private async Task AdvanceLeagueAsync()
         {
             try
             {
@@ -1181,7 +1181,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     //string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.SPLINTERLANDS_BROADCAST_URL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
 
                     //string tx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
-                    if (await WaitForTransactionSuccess(tx, 45))
+                    if (await WaitForTransactionSuccessAsync(tx, 45))
                     {
                         Log.WriteToLog($"{Username}: { "Advanced league: ".Pastel(Color.Green) } {tx}");
                         APICounter = 100; // set api counter to 100 to reload details
