@@ -376,7 +376,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"STOP_BATTLE_BELOW_ECR: {Settings.StopBattleBelowECR}{Environment.NewLine}" +
                 $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
                 $"USE_PRIVATE_API: {Settings.UsePrivateAPI}{ Environment.NewLine}" +
-                $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot} {Environment.NewLine}");
+                $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot} {Environment.NewLine}" +
                 $"{Settings.CardSettings}");
                 
                 Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
