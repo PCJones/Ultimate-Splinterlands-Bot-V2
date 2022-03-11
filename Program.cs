@@ -210,13 +210,14 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Log.WriteToLog("No config.txt in config folder - see config-example.txt!", Log.LogType.CriticalError);
                 return false;
             }
-            if (!File.Exists(filePathCardSettings))
-            {
-                Log.WriteToLog("No card_settings.txt in config folder!", Log.LogType.CriticalError);
-                return false;
-            }
+            //if (!File.Exists(filePathCardSettings))
+            //{
+            //    Log.WriteToLog("No card_settings.txt in config folder!", Log.LogType.CriticalError);
+            //    return false;
+            //}
 
-            Settings.CardSettings = new CardSettings(File.ReadAllText(filePathCardSettings));
+            //Settings.CardSettings = new CardSettings(File.ReadAllText(filePathCardSettings));
+            Settings.CardSettings = new("USE_CARD_SETTINGS=false");
 
             Log.WriteToLog("Reading config...");
             foreach (string setting in File.ReadAllLines(filePathConfig))
@@ -375,7 +376,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"STOP_BATTLE_BELOW_ECR: {Settings.StopBattleBelowECR}{Environment.NewLine}" +
                 $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
                 $"USE_PRIVATE_API: {Settings.UsePrivateAPI}{ Environment.NewLine}" +
-                $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot} {Environment.NewLine}" + 
+                $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot} {Environment.NewLine}");
                 $"{Settings.CardSettings}");
                 
                 Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
