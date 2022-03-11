@@ -81,7 +81,7 @@ In case you want to donate to me for creating this bot, I would be very happy!
 
 - `THREADS=1` Number of threads (= number of accounts fighting in parallel).
 
-- `SHOW_BATTLE_RESULTS=true` Disable/enable showing battle results in console.
+- `SHOW_BATTLE_RESULTS=true` Disable/enable showing battle results in console. Disabling will also make battles 10-25 seconds faster.
 
 ## Advanced Settings
 - `SHOW_API_RESPONSE=true` Disable/Enable showing the team picked by the battle API in console.
