@@ -124,8 +124,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         new JProperty("quest", Settings.PrioritizeQuest && quest != null
                         && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
                         questLessDetails : ""),
-                        new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
-                    );
+                        new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : ""),
+                        new JProperty("battle_tx", battleTx)
+                    ) ;
 
                 string urlGetTeam = $"{Settings.PrivateAPIUrl}get_team_private/{username}/";
                 string APIResponse = await PostJSONToApi(matchDetails, urlGetTeam, username);

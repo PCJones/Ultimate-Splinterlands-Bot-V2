@@ -710,12 +710,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     stopwatch.Stop();
                     if (surrender)
                     {
-                        Log.WriteToLog($"{Username}: Looks like enemy surrendered - don't reveal the team", Log.LogType.Warning);
+                        Log.WriteToLog($"{Username}: Looks like enemy surrendered!", Log.LogType.Warning);
                     }
-                    else
-                    {
-                        RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
-                    }
+
+                    // Reveal the team even when the enemy surrendered, just to be sure
+                    RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
                 }
 
                 Log.WriteToLog($"{Username}: Battle finished!");
