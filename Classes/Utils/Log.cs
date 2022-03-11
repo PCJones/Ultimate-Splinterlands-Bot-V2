@@ -95,8 +95,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Utils
 
         public static void LogTeamToTable(JToken team, int mana, string rulesets)
         {
-            var t = new TablePrinter("Mana", "Rulesets", "Quest Prio", "Win %", "Team Rank");
-            t.AddRow(mana, rulesets, team["play_for_quest"], (Convert.ToDouble(((string)team["summoner_wins"]).Replace(",", "."), CultureInfo.InvariantCulture) * 100).ToString("N2"), team["teamRank"]);
+            bool avoidedDraw = team["avoided_draw"] != null;
+            var t = new TablePrinter("Mana", "Rulesets", "Quest Prio", "Win %", "Team Rank", "Draw Avoided");
+            if (avoidedDraw)
+            {
+                t.AddRow(mana, rulesets, team["play_for_quest"], (Convert.ToDouble(((string)team["summoner_wins"]).Replace(",", "."), CultureInfo.InvariantCulture) * 100).ToString("N2"), team["teamRank"], "Yes");
+            }
+            else
+            {
+                t.AddRow(mana, rulesets, team["play_for_quest"], (Convert.ToDouble(((string)team["summoner_wins"]).Replace(",", "."), CultureInfo.InvariantCulture) * 100).ToString("N2"), team["teamRank"], "No");
+            }
             lock (_ConsoleLock)
             {
                 t.Print();

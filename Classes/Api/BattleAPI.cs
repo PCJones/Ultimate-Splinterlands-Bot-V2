@@ -128,11 +128,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
                         new JProperty("quest", Settings.PrioritizeQuest && quest != null
                         && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
                         questLessDetails : ""),
-                        new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : ""),
-                        new JProperty("battle_tx", gameIdHash)
+                        new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     ) ;
 
-                string urlGetTeam = $"{Settings.PrivateAPIUrl}get_team_private/{username}/";
+                string urlGetTeam = $"{Settings.PrivateAPIUrl}get_team_private/{username}/{gameIdHash}";
                 string APIResponse = await PostJSONToApi(matchDetails, urlGetTeam, username);
                 Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }", debugOnly: true);
 
