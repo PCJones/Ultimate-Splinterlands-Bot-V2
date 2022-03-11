@@ -536,16 +536,5 @@ namespace Ultimate_Splinterlands_Bot_V2
             }
             Settings.StartupPath = directory;
         }
-        static bool CheckForChromeDriver()
-        {
-            var chromeDriverFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "chromedriver.exe" : "chromedriver";
-            if (!File.Exists(Settings.StartupPath + @"/" + chromeDriverFileName))
-            {
-                Log.WriteToLog("No ChromeDriver installed - please download from https://chromedriver.chromium.org/ and insert .exe into bot folder or use lightning mode", Log.LogType.CriticalError);
-                return false;
-            }
-
-            return true;
-        }
     }
 }
