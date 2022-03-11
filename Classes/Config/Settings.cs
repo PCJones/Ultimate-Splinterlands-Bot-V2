@@ -1,6 +1,5 @@
 ﻿using HiveAPI.CS;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +9,9 @@ using System.Reflection;
 using System.Runtime.Remoting;
 using System.Text;
 using System.Threading.Tasks;
+using Ultimate_Splinterlands_Bot_V2.Classes.Bot;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
 {
     public static class Settings
     {
@@ -35,16 +35,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static CardSettings CardSettings;
 
-        public static bool LightningMode = false;
         public static bool ShowBattleResults = true;
         public static int Threads = 1;
-
-        public static bool BrowserMode = false;
-        public static bool ChromeNoSandbox = false;
-        public static bool Headless = false;
-        public static string ChromeBinaryPath = "";
-        public static string ChromeDriverPath = "";
-        public static int MaxBrowserInstances = 2;
 
         public static bool UseAPI = true;
         public static string PublicAPIUrl = "";
@@ -54,8 +46,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         public static string PrivateAPIUsername= "";
         public static string PrivateAPIPassword= "";
         public static bool PowerTransferBot = false;
-        public static Dictionary<string, BotInstanceBlockchain> PlannedPowerTransfers = new();
-        public static Queue<BotInstanceBlockchain> AvailablePowerTransfers;
+        public static Dictionary<string, BotInstance> PlannedPowerTransfers = new();
+        public static Queue<BotInstance> AvailablePowerTransfers;
         public static object PowerTransferBotLock = new();
 
         public static bool PrioritizeQuest = true;
@@ -83,9 +75,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         public static bool RateLimited = false;
         public static object RateLimitedLock = new();
-        public static List<BotInstanceBrowser> BotInstancesBrowser { get; set; }
-        public static List<BotInstanceBlockchain> BotInstancesBlockchain { get; set; }
-        public static List<(IWebDriver driver, bool isAvailable)> SeleniumInstances { get; set; }
+        public static List<BotInstance> BotInstances { get; set; }
         public static List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)> LogSummaryList { get; set; }
 
         public readonly static HttpClient _httpClient = new();

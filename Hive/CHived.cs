@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Reflection;
 using Cryptography.ECDSA;
 using Newtonsoft.Json.Linq;
+using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
 
 namespace HiveAPI.CS
 {
@@ -66,9 +67,9 @@ namespace HiveAPI.CS
 			}
 			catch (Exception ex)
 			{
-				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Error at signing blockchain transaction: "
-										+ Environment.NewLine + ex.Message + Environment.NewLine + ex.ToString(), Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.CriticalError);
-				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Debug data:" + Environment.NewLine + ((COperations.custom_json)oTransaction.operations[0]).json);
+				Log.WriteToLog("Error at signing blockchain transaction: "
+										+ Environment.NewLine + ex.Message + Environment.NewLine + ex.ToString(), Log.LogType.CriticalError);
+				Log.WriteToLog("Debug data:" + Environment.NewLine + ((COperations.custom_json)oTransaction.operations[0]).json);
 			}
 			return null;
 		}
@@ -77,9 +78,9 @@ namespace HiveAPI.CS
 		{
 			try
 			{
-				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #1", debugOnly: true);
+				Log.WriteToLog("CreateTransactionDebug #1", debugOnly: true);
 				JObject oDGP = get_dynamic_global_properties();
-				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #2", debugOnly: true);
+				Log.WriteToLog("CreateTransactionDebug #2", debugOnly: true);
 				CTransaction oTransaction = new()
 				{
 					ref_block_num = Convert.ToUInt16((uint)oDGP["head_block_number"] & 0xFFFF),
@@ -87,7 +88,7 @@ namespace HiveAPI.CS
 					expiration = Convert.ToDateTime(oDGP["time"]).AddSeconds(30),
 					operations = aOperations
 				};
-				Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("CreateTransactionDebug #3", debugOnly: true);
+				Log.WriteToLog("CreateTransactionDebug #3", debugOnly: true);
 				var response = SignTransaction(oTransaction, astrPrivateKeys);
 				return response;
 			}
@@ -95,7 +96,7 @@ namespace HiveAPI.CS
 			{
 				if (errorCount > 5)
 				{
-					Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Creating blockchain transaction failed too often, please check your internet connection and ask the developer for help.", Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.Error);
+					Log.WriteToLog("Creating blockchain transaction failed too often, please check your internet connection and ask the developer for help.", Log.LogType.Error);
 					return null;
 				}
 				else if (ex.Message.Contains("Internal Error"))
@@ -104,9 +105,9 @@ namespace HiveAPI.CS
 				}
 				else
 				{
-					Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Error at creating blockchain transaction: "
-						+ Environment.NewLine + ex.ToString(), Ultimate_Splinterlands_Bot_V2.Classes.Log.LogType.CriticalError);
-					Ultimate_Splinterlands_Bot_V2.Classes.Log.WriteToLog("Trying again in 10 seconds...");
+					Log.WriteToLog("Error at creating blockchain transaction: "
+						+ Environment.NewLine + ex.ToString(), Log.LogType.CriticalError);
+					Log.WriteToLog("Trying again in 10 seconds...");
 					System.Threading.Thread.Sleep(10 * 1000);
 					return CreateTransaction(aOperations, astrPrivateKeys, errorCount++);
 				}

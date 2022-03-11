@@ -2,7 +2,6 @@
 using HiveAPI.CS;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium;
 using Pastel;
 using System;
 using System.Collections.Generic;
@@ -17,10 +16,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
 using static HiveAPI.CS.CHived;
+using Ultimate_Splinterlands_Bot_V2.Classes.Model;
+using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
+using Ultimate_Splinterlands_Bot_V2.Classes.Api;
+using Ultimate_Splinterlands_Bot_V2.Classes.Http;
+using Ultimate_Splinterlands_Bot_V2.Classes.Config;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
 {
-    public class BotInstanceBlockchain
+    public class BotInstance
     {
         public string Username { get; private set; }
         private string PostingKey { get; init; }
@@ -65,10 +69,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
                 if (state == GameState.ecr_update)
                 {
-                    ECRCached = ((double)GameStates[GameState.ecr_update]["capture_rate"]) / 100;
+                    ECRCached = (double)GameStates[GameState.ecr_update]["capture_rate"] / 100;
                 }
             }
-            else if(json["data"]["trx_info"] != null 
+            else if (json["data"]["trx_info"] != null
                 && !(bool)json["data"]["trx_info"]["success"])
             {
                 Log.WriteToLog($"{Username}: Transaction error: " + message.Text, Log.LogType.Warning);
@@ -77,7 +81,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 Log.WriteToLog($"{Username}: UNKNOWN Message received: {message.Text}", Log.LogType.Warning);
             }
-            
+
             Log.WriteToLog($"{Username}: Message received: {message.Text}", debugOnly: true);
         }
 
@@ -97,13 +101,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             }
             return false;
         }
-            
+
         private async Task<bool> WaitForTransactionSuccessAsync(string tx, int secondsToWait)
         {
             if (tx.Length == 0)
             {
                 return false;
-            } else if(Settings.LegacyWindowsMode)
+            }
+            else if (Settings.LegacyWindowsMode)
             {
                 return true;
             }
@@ -111,7 +116,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             for (int i = 0; i < secondsToWait * 2; i++)
             {
                 await Task.Delay(500);
-                if (GameStates.ContainsKey(GameState.transaction_complete) 
+                if (GameStates.ContainsKey(GameState.transaction_complete)
                     && (string)GameStates[GameState.transaction_complete]["trx_info"]["id"] == tx)
                 {
                     if ((bool)GameStates[GameState.transaction_complete]["trx_info"]["success"])
@@ -197,7 +202,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             string n = Helper.GenerateRandomString(10);
             string json = "{\"match_type\":\"Ranked\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
-            
+
             COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_find_match", json);
 
             try
@@ -247,10 +252,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             Log.WriteToLog($"{Username}: Requesting team from public API - private API needs card update!", Log.LogType.Warning);
                             CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
                             team = await GetTeamAsync(matchDetails, ignorePrivateAPI: true);
-                            if (Settings.UsePrivateAPI)
-                            {
-                                BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
-                            }
+                            BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
                             return await SubmitTeamAsync(tx, matchDetails, team, secondTry: true);
                         }
                         else
@@ -289,7 +291,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             {
                 Log.WriteToLog($"{Username}: Error at submitting team: " + ex.ToString(), Log.LogType.Error);
                 // update cards for private API
-                APICounter = 100; 
+                APICounter = 100;
             }
             return ("", "", null);
         }
@@ -396,7 +398,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 return "";
             }
         }
-        public BotInstanceBlockchain(string username, string password, string accessToken, int index, string activeKey = "")
+        public BotInstance(string username, string password, string accessToken, int index, string activeKey = "")
         {
             Username = username;
             PostingKey = password;
@@ -420,7 +422,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
             LossesTotal = 0;
         }
 
-        public async Task<DateTime> DoBattleAsync(int browserInstance, bool logoutNeeded, int botInstance)
+        public async Task<DateTime> DoBattleAsync()
         {
             lock (_activeLock)
             {
@@ -440,7 +442,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
             GameStates.Clear();
             var wsClient = Settings.LegacyWindowsMode ? null : new WebsocketClient(new Uri(Settings.SPLINTERLANDS_WEBSOCKET_URL));
-            if (!Settings.LegacyWindowsMode) wsClient.ReconnectTimeout = new TimeSpan(0, 5, 0);         
+            if (!Settings.LegacyWindowsMode) wsClient.ReconnectTimeout = new TimeSpan(0, 5, 0);
 
             try
             {
@@ -486,7 +488,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 }
 
                 APICounter++;
-                if ((Settings.LegacyWindowsMode && APICounter >= 5) || APICounter >= 10 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 50)
+                if (Settings.LegacyWindowsMode && APICounter >= 5 || APICounter >= 10 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 50)
                 {
                     LastCacheUpdate = DateTime.Now;
                     (PowerCached, RatingCached, LeagueCached) = await SplinterlandsAPI.GetPlayerDetailsAsync(Username);
@@ -550,15 +552,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     bool transferPower = false;
                     if (Settings.PowerTransferBot)
                     {
-                        BotInstanceBlockchain account = null;
+                        BotInstance account = null;
                         lock (Settings.PowerTransferBotLock)
                         {
-                            if (Settings.PlannedPowerTransfers.ContainsKey(this.Username))
+                            if (Settings.PlannedPowerTransfers.ContainsKey(Username))
                             {
                                 account = Settings.PlannedPowerTransfers[Username];
                                 Settings.PlannedPowerTransfers.Remove(Username);
                                 transferPower = true;
-                            } else if (Settings.AvailablePowerTransfers.Any())
+                            }
+                            else if (Settings.AvailablePowerTransfers.Any())
                             {
                                 account = Settings.AvailablePowerTransfers.Dequeue();
                                 transferPower = true;
@@ -577,19 +580,19 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         if (transferPower)
                         {
                             var sessionID = Settings.CookieContainer.GetCookies(new Uri(Settings.PrivateAPIShop)).FirstOrDefault();
-                            var args = $"{account.Username} {this.Username} {account.ActiveKey} {Settings.PrivateAPIUsername} " +
+                            var args = $"{account.Username} {Username} {account.ActiveKey} {Settings.PrivateAPIUsername} " +
                                 $"{Settings.PrivateAPIPassword} {sessionID.Name} {sessionID.Value} {Settings.DebugMode}";
                             var fileName = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) ?
                                  "Power Transfer Bot.exe" : "Power Transfer Bot";
 
                             if (Helper.RunProcessWithResult(Settings.StartupPath + "/PowerTransferBot/" + fileName, args))
                             {
-                                Log.WriteToLog($"{Username}: Successfully transfered power from {account.Username} to {this.Username}", Log.LogType.Success);
+                                Log.WriteToLog($"{Username}: Successfully transfered power from {account.Username} to {Username}", Log.LogType.Success);
                                 SleepUntil = DateTime.Now.AddSeconds(30);
                             }
                             else
                             {
-                                Log.WriteToLog($"{Username}: Error at transfering power from {account.Username} to {this.Username}", Log.LogType.Error);
+                                Log.WriteToLog($"{Username}: Error at transfering power from {account.Username} to {Username}", Log.LogType.Error);
                             }
                         }
                     }
@@ -745,17 +748,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
 
         private void TransferPowerIfNeeded()
         {
-            Log.WriteToLog($"{Username}: PowerTransferDebug: PowerCached: {this.PowerCached}", debugOnly: true);
+            Log.WriteToLog($"{Username}: PowerTransferDebug: PowerCached: {PowerCached}", debugOnly: true);
             if (Settings.PowerTransferBot && PowerCached >= Settings.MinimumBattlePower)
             {
                 lock (Settings.PowerTransferBotLock)
                 {
-                    var query = Settings.BotInstancesBlockchain.Where(x =>
+                    var query = Settings.BotInstances.Where(x =>
                         x.ECRCached >= Settings.StartBattleAboveECR && x.PowerCached < Settings.MinimumBattlePower)
                         .OrderByDescending(y => y.ECRCached);
 
                     bool availableForAnyAccount = true;
-                    BotInstanceBlockchain[] accountsECRSorted = query.ToArray();
+                    BotInstance[] accountsECRSorted = query.ToArray();
 
                     if (accountsECRSorted.Any())
                     {
@@ -775,7 +778,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             }
                         }
                     }
-                    
+
                     if (availableForAnyAccount)
                     {
                         // Show this as available to any account
@@ -892,7 +895,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 int mana = (int)matchDetails["mana_cap"];
                 string rulesets = (string)matchDetails["ruleset"];
                 string[] inactive = ((string)matchDetails["inactive"]).Split(',');
-                
+                string gameIdPlayer = (string)matchDetails["id"];
+                string gameIdOpponent = (string)matchDetails["opponent"];
+                string gameIdHash = Helper.GenerateMD5Hash(gameIdPlayer + gameIdOpponent);
+
                 List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };
                 foreach (string inactiveSplinter in inactive)
                 {
@@ -925,7 +931,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     }
                 }
 
-                JToken team = await BattleAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username, true, ignorePrivateAPI);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username, gameIdHash, true, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
@@ -1002,7 +1008,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 await ShowBattleResultLegacyAsync(tx);
                 return;
             }
-            if(!await WaitForGameStateAsync(GameState.battle_result, 210))
+            if (!await WaitForGameStateAsync(GameState.battle_result, 210))
             {
                 Log.WriteToLog($"{Username}: Could not get battle result", Log.LogType.Error);
             }
@@ -1035,7 +1041,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 {
                     battleResult = 2;
                 }
-                
+
                 string logTextBattleResult = "";
 
                 switch (battleResult)
@@ -1090,12 +1096,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             }
 
                             int rating = RatingCached;
-                            bool waitForHigherLeague = (rating is >= 300 and < 400) && (PowerCached is >= 1000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.1 * 1000))) || // bronze 2
-                                (rating is >= 600 and < 700) && (PowerCached is >= 5000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.2 * 5000))) || // bronze 1 
-                                (rating is >= 840 and < 1000) && (PowerCached is >= 15000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.5 * 15000))) || // silver 3
-                                (rating is >= 1200 and < 1300) && (PowerCached is >= 40000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.8 * 40000))) || // silver 2
-                                (rating is >= 1500 and < 1600) && (PowerCached is >= 70000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.85 * 70000))) || // silver 1
-                                (rating is >= 1800 and < 1900) && (PowerCached is >= 100000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.9 * 100000))); // gold 
+                            bool waitForHigherLeague = rating is >= 300 and < 400 && (PowerCached is >= 1000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.1 * 1000) || // bronze 2
+                                rating is >= 600 and < 700 && (PowerCached is >= 5000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.2 * 5000) || // bronze 1 
+                                rating is >= 840 and < 1000 && (PowerCached is >= 15000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.5 * 15000) || // silver 3
+                                rating is >= 1200 and < 1300 && (PowerCached is >= 40000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.8 * 40000) || // silver 2
+                                rating is >= 1500 and < 1600 && (PowerCached is >= 70000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.85 * 70000) || // silver 1
+                                rating is >= 1800 and < 1900 && (PowerCached is >= 100000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.9 * 100000); // gold 
 
                             if (waitForHigherLeague)
                             {
@@ -1105,7 +1111,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                         }
 
                         string n = Helper.GenerateRandomString(10);
-                        string json = "{\"type\":\"quest\",\"quest_id\":\"" + (string)QuestCached.Quest["id"] +"\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                        string json = "{\"type\":\"quest\",\"quest_id\":\"" + (string)QuestCached.Quest["id"] + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                         //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                         string tx = BroadcastCustomJsonToHiveNode("sm_claim_reward", json);
@@ -1162,7 +1168,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
         {
             try
             {
-                if (!Settings.AdvanceLeague || RatingCached == -1|| RatingCached < 1000)
+                if (!Settings.AdvanceLeague || RatingCached == -1 || RatingCached < 1000)
                 {
                     return;
                 }
@@ -1216,8 +1222,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                     string tx = BroadcastCustomJsonToHiveNode("sm_refresh_quest", json);
                     Log.WriteToLog($"{Username}: Requesting new quest because of bad quest: {tx}");
                     APICounter = 100; // set api counter to 100 to reload quest
-                } else if (QuestCached.Quest == null || (QuestCached.Quest["claim_trx_id"].Type != JTokenType.Null
-                    && (DateTime.Now - ((DateTime)QuestCached.Quest["created_date"]).ToLocalTime()).TotalHours > 23))
+                }
+                else if (QuestCached.Quest == null || QuestCached.Quest["claim_trx_id"].Type != JTokenType.Null
+                  && (DateTime.Now - ((DateTime)QuestCached.Quest["created_date"]).ToLocalTime()).TotalHours > 23)
                 {
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
@@ -1232,59 +1239,59 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 Log.WriteToLog($"{Username}: Error at changing quest: {ex}", Log.LogType.Error);
             }
         }
-      
+
         private int GetMaxLeagueByRankAndPower()
         {
             // bronze
             int league = 0;
-            if ((RatingCached is >= 100 and <= 399) && (PowerCached is >= 0))
+            if (RatingCached is >= 100 and <= 399 && PowerCached is >= 0)
             {
                 league = 1;
             }
-            if ((RatingCached is >= 400) && (PowerCached is >= 1000))
+            if (RatingCached is >= 400 && PowerCached is >= 1000)
             {
                 league = 2;
             }
-            if ((RatingCached is >= 700) && (PowerCached is >= 5000))
+            if (RatingCached is >= 700 && PowerCached is >= 5000)
             {
                 league = 3;
             }
             // silver
-            if ((RatingCached is >= 1000) && (PowerCached is >= 15000))
+            if (RatingCached is >= 1000 && PowerCached is >= 15000)
             {
                 league = 4;
             }
-            if ((RatingCached is >= 1300) && (PowerCached is >= 40000))
+            if (RatingCached is >= 1300 && PowerCached is >= 40000)
             {
                 league = 5;
             }
-            if ((RatingCached is >= 1600) && (PowerCached is >= 70000))
+            if (RatingCached is >= 1600 && PowerCached is >= 70000)
             {
                 league = 6;
             }
             // gold
-            if ((RatingCached is >= 1900) && (PowerCached is >= 100000))
+            if (RatingCached is >= 1900 && PowerCached is >= 100000)
             {
                 league = 7;
             }
-            if ((RatingCached is >= 2200) && (PowerCached is >= 150000))
+            if (RatingCached is >= 2200 && PowerCached is >= 150000)
             {
                 league = 8;
             }
-            if ((RatingCached is >= 2500) && (PowerCached is >= 200000))
+            if (RatingCached is >= 2500 && PowerCached is >= 200000)
             {
                 league = 9;
             }
             // diamond
-            if ((RatingCached is >= 2800) && (PowerCached is >= 250000))
+            if (RatingCached is >= 2800 && PowerCached is >= 250000)
             {
                 league = 10;
             }
-            if ((RatingCached is >= 3100) && (PowerCached is >= 325000))
+            if (RatingCached is >= 3100 && PowerCached is >= 325000)
             {
                 league = 11;
             }
-            if ((RatingCached is >= 3400) && (PowerCached is >= 400000))
+            if (RatingCached is >= 3400 && PowerCached is >= 400000)
             {
                 league = 12;
             }
