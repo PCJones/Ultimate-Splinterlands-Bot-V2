@@ -232,7 +232,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 {
                     case "PRIORITIZE_QUEST":
                         Settings.PrioritizeQuest = bool.Parse(temp[1]);
-                        break;          
+                        break;
                     case "IGNORE_ECR_FOR_QUEST":
                         Settings.IgnoreEcrForQuest = bool.Parse(temp[1]);
                         break;
@@ -378,9 +378,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                 $"USE_PRIVATE_API: {Settings.UsePrivateAPI}{ Environment.NewLine}" +
                 $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot} {Environment.NewLine}" +
                 $"{Settings.CardSettings}");
-                
-                Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
-                Console.Write($"THREADS: {Settings.Threads}{Environment.NewLine}");
+
+            Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
+            Console.Write($"THREADS: {Settings.Threads}{Environment.NewLine}");
             return true;
         }
 
