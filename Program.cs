@@ -311,15 +311,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                     case "SHOW_API_RESPONSE":
                         Settings.ShowAPIResponse = bool.Parse(temp[1]);
                         break;
-                    case "RENTAL_BOT_DLL_PATH":
-                        Settings.RentalBotDllPath = temp[1];
-                        break;
-                    case "RENTAL_BOT":
-                        if (bool.Parse(temp[1]))
-                        {
-                            SetupRentalBot();
-                        }
-                        break;
                     case "USE_PRIVATE_API":
                         Settings.UsePrivateAPI = bool.Parse(temp[1]);
                         if (Settings.UsePrivateAPI)
@@ -341,15 +332,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                         {
                             Settings.AvailablePowerTransfers = new();
                         }
-                        break;
-                    case "RENT_DAYS":
-                        Settings.DaysToRent = Convert.ToInt32(temp[1]);
-                        break;
-                    case "RENT_POWER":
-                        Settings.DesiredRentalPower = Convert.ToInt32(temp[1]);
-                        break;
-                    case "RENT_MAX_PRICE_PER_500":
-                        Settings.MaxRentalPricePer500 = Convert.ToDecimal(temp[1], System.Globalization.CultureInfo.InvariantCulture);
                         break;
                     default:
                         break;
@@ -384,18 +366,6 @@ namespace Ultimate_Splinterlands_Bot_V2
             return true;
         }
 
-        static void SetupRentalBot()
-        {
-            var moduleInstance = Activator.CreateInstanceFrom(Settings.RentalBotDllPath, "Splinterlands_Rental_Bot.RentalBot");
-            Settings.RentalBot = moduleInstance;
-            MethodInfo mi = moduleInstance.Unwrap().GetType().GetMethod("Setup");
-            
-            mi.Invoke(moduleInstance.Unwrap(), new object[] { Settings._httpClient, false });
-            Settings.RentalBotMethodCheckRentals = moduleInstance.Unwrap().GetType().GetMethod("CheckRentals");
-            Settings.RentalBotMethodIsAvailable = moduleInstance.Unwrap().GetType().GetMethod("IsAvailable");
-            Settings.RentalBotMethodSetActive = moduleInstance.Unwrap().GetType().GetMethod("SetActive");
-            Settings.RentalBotActivated = true;
-        }
         static bool ReadAccounts()
         {
             Log.WriteToLog("Reading accounts.txt...");

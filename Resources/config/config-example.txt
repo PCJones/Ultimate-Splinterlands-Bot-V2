@@ -32,7 +32,6 @@ SHOW_BATTLE_RESULTS=true
 ##################Lightning Mode Settings##################
 
 #######################API Settings########################
-
 USE_API=true
 API_URL=http://splinterlandsapi.pcjones.de:8080/
 
@@ -51,10 +50,6 @@ WRITE_LOG_TO_FILE=false
 
 ##Enable this if you get weird characters in your console that makes it hard to read
 DISABLE_CONSOLE_COLORS=false
-
-##Linux / VPS Variables - ignore if bot works
-#CHROME_BINARY_PATH=path/to/chrome/binary
-CHROME_NO_SANDBOX=false
 
 ##Advanced bot logic
 

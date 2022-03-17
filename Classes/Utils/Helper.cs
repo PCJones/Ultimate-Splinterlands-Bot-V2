@@ -40,8 +40,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Utils
             char[] buf = new char[n];
             for (int i = 0; i < buf.Length; i++)
             {
-                int index = Settings._Random.Next(Settings.Subset.Length);
-                buf[i] = Settings.Subset[index];
+                int index = Settings._Random.Next(Settings.CharSubset.Length);
+                buf[i] = Settings.CharSubset[index];
             }
 
             return new string(buf);

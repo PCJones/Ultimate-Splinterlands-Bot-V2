@@ -469,24 +469,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                     WebsocketAuthenticate(wsClient);
                 }
 
-                if (Settings.RentalBotActivated && Convert.ToBoolean(Settings.RentalBotMethodIsAvailable.Invoke(Settings.RentalBot.Unwrap(), Array.Empty<object>())))
-                {
-                    Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { true });
-                    try
-                    {
-                        Log.WriteToLog($"{Username}: Starting rental bot!");
-                        Settings.RentalBotMethodCheckRentals.Invoke(Settings.RentalBot.Unwrap(), new object[] { null, Settings.MaxRentalPricePer500, Settings.DesiredRentalPower, Settings.DaysToRent, Username, ActiveKey });
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.WriteToLog($"{Username}: Error at rental bot: {ex}", Log.LogType.CriticalError);
-                    }
-                    finally
-                    {
-                        Settings.RentalBotMethodSetActive.Invoke(Settings.RentalBot.Unwrap(), new object[] { false });
-                    }
-                }
-
                 APICounter++;
                 if (Settings.LegacyWindowsMode && APICounter >= 5 || APICounter >= 10 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 50)
                 {
