@@ -69,19 +69,19 @@ In case you want to donate to me for creating this bot, I would be very happy!
 
 - `CLAIM_QUEST_REWARD=false` Disable/Enable quest reward claiming.
 
+- `IGNORE_ECR_FOR_QUEST=false` If the quest is not finished the bot will continue fighting even if STOP ECR is reached
+
 - `DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE=true` Example: If you are almost bronze 1 and have enough power for it, the bot won't claim the quest reward until you are bronze 1.
 
 - `ADVANCE_LEAGUE=true` Disable/Enable the bot advancing to silver and above.
 
 - `REQUEST_NEW_QUEST=earth` Quests the bot isn't good at and where you want it to request a new one. Seperate by comma, possible options are: fire,water,earth,life,death,dragon
 
-## Lightning Mode Settings
-
-- `USE_LIGHTNING_MODE=true` Disable/Enable lightning mode. Lightning mode has 90% less API requests to the splinterlands API which means you can run a lot of accounts in parallel without getting IP banned. It's also super fast and barely takes any CPU and RAM resources.
+## Technical Settings
 
 - `THREADS=1` Number of threads (= number of accounts fighting in parallel).
 
-- `SHOW_BATTLE_RESULTS=true` Disable/enable showing battle results in console.
+- `SHOW_BATTLE_RESULTS=true` Disable/enable showing battle results in console. Disabling will also make battles 10-25 seconds faster.
 
 ## Advanced Settings
 - `SHOW_API_RESPONSE=true` Disable/Enable showing the team picked by the battle API in console.
