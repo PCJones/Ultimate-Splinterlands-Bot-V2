@@ -1,0 +1,18 @@
+##Set it to true to to activate card settings
+USE_CARD_SETTINGS=false
+
+##If the api only finds teams with a winrate smaller than this it will ignore the card settings
+#(0-100)
+WINRATE_TRESHOLD=45
+
+##The minimum amount of historic games the api should have for a team to consider it
+MINIMUM_GAMES=10
+
+##Possible options: dragon,death,fire,earth,water,life
+PREFERRED_SUMMONER_ELEMENT=
+
+##Only play cards with this level or higher
+CARD_MIN_LEVEL=1
+
+##Always add 0 mana cards like Furious Chicken if the account has it
+ADD_ZERO_MANA_CARDS=true
