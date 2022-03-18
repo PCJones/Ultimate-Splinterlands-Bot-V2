@@ -29,7 +29,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
                     Log.WriteToLog($"Error with splinterlands API for settings, trying fallback api...", Log.LogType.Warning);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/settings");
                 }
-                return (bool)JToken.Parse(data)["maintenance_mode"];
+              return (bool)JToken.Parse(data)["maintenance_mode"];
             }
             catch (Exception ex)
             {
@@ -216,7 +216,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
                             && DateTime.Parse(JsonConvert.SerializeObject(card["last_used_date"]).Replace("\"", "").Trim()) > oneDayAgo && (
                              currentUser != (string)card["last_used_player"]);
                     }
-                    bool listedOnMarket = (string)card["market_listing_type"] == "RENT" && currentUser != username ? false : card["market_listing_type"].Type
+                    bool listedOnMarket = (string)card["market_listing_type"] == "RENT" && (string)card["player"] != username ? false : card["market_listing_type"].Type
                         != JTokenType.Null ? true : false;
                     
                     return currentUser == username && !cardOnCooldown && !listedOnMarket;
@@ -255,6 +255,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
 
                 // only use highest level/gold cards
                 Card[] cardsFiltered = cards.Select(x => cards.Where(y => x.card_detail_id == y.card_detail_id).First()).Distinct().ToArray();
+                cardsFiltered = Settings.CardSettings.FilterByCardSettings(cardsFiltered);
                 return cardsFiltered;
             }
             catch (Exception ex)

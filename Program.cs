@@ -213,14 +213,14 @@ namespace Ultimate_Splinterlands_Bot_V2
                     Log.WriteToLog("No config.txt in config folder - see config-example.txt!", Log.LogType.CriticalError);
                     return false;
                 }
-                //if (!File.Exists(filePathCardSettings))
-                //{
-                //    Log.WriteToLog("No card_settings.txt in config folder!", Log.LogType.CriticalError);
-                //    return false;
-                //}
+                if (!File.Exists(filePathCardSettings))
+                {
+                    Log.WriteToLog("No card_settings.txt in config folder!", Log.LogType.CriticalError);
+                    return false;
+                }
 
-                //Settings.CardSettings = new CardSettings(File.ReadAllText(filePathCardSettings));
-                Settings.CardSettings = new("USE_CARD_SETTINGS=false");
+                Settings.CardSettings = new CardSettings(File.ReadAllText(filePathCardSettings));
+                //Settings.CardSettings = new("USE_CARD_SETTINGS=false");
 
                 Log.WriteToLog("Reading config...");
                 foreach (string setting in File.ReadAllLines(filePathConfig))
@@ -267,6 +267,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                             break;
                         case "DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE":
                             Settings.DontClaimQuestNearHigherLeague = bool.Parse(temp[1]);
+                            break;
+                        case "MINIMUM_LEAGUE_FOR_QUEST_CLAIM":
+                            Settings.MinimumLeagueForQuestClaim = Convert.ToInt32(temp[1]);
                             break;
                         case "WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM":
                             Settings.WaitForMissingCPAtQuestClaim = bool.Parse(temp[1]);
@@ -362,10 +365,10 @@ namespace Ultimate_Splinterlands_Bot_V2
                     $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
                     $"USE_PRIVATE_API: {Settings.UsePrivateAPI}{ Environment.NewLine}" +
                     $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot} {Environment.NewLine}" +
+                    $"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults} {Environment.NewLine}" +
+                    $"THREADS: {Settings.Threads} {Environment.NewLine}" +
                     $"{Settings.CardSettings}");
 
-                Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
-                Console.Write($"THREADS: {Settings.Threads}{Environment.NewLine}");
                 return true;
             }
             catch (Exception ex)
