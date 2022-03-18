@@ -1,7 +1,8 @@
 ﻿using System.Text;
 using System;
+using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Http
 {
     class HttpWebRequest
     {
@@ -56,9 +57,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 streamReader.Dispose();
                 webResponse.Close();
 
-                Log.WriteToLog("Get: Okay");
-                Log.WriteToLog(websiteResponse);
-
                 return websiteResponse;
             }
             catch (Exception ex)
@@ -112,8 +110,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                 streamReader.Dispose();
                 webResponse.Close();
 
-                Log.WriteToLog("Get: Okay");
-                Log.WriteToLog(websiteResponse);
                 return websiteResponse;
             }
             catch (Exception ex)

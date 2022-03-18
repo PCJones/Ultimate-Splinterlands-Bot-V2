@@ -9,8 +9,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Classes.Model;
+using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes
+namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
 {
     public static class SplinterlandsAPI
     {
@@ -213,9 +216,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes
                             && DateTime.Parse(JsonConvert.SerializeObject(card["last_used_date"]).Replace("\"", "").Trim()) > oneDayAgo && (
                              currentUser != (string)card["last_used_player"]);
                     }
-                    bool forSale = (string)card["market_listing_type"] == "RENT" ? false : card["market_listing_type"].Type != JTokenType.Null ? true : false;
-
-                    return currentUser == username && !cardOnCooldown && !forSale;
+                    bool listedOnMarket = (string)card["market_listing_type"] == "RENT" && currentUser != username ? false : card["market_listing_type"].Type
+                        != JTokenType.Null ? true : false;
+                    
+                    return currentUser == username && !cardOnCooldown && !listedOnMarket;
                 })
                 .Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"]))
                 .Distinct().ToArray());
