@@ -398,7 +398,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                 return "";
             }
         }
-        public BotInstanceBlockchain(string username, string password, string accessToken, int index, string activeKey = "")
+
+        public BotInstance(string username, string password, string accessToken, int index, string activeKey = "")
         {
             Username = username;
             PostingKey = password;
@@ -875,7 +876,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                 int mana = (int)matchDetails["mana_cap"];
                 string rulesets = (string)matchDetails["ruleset"];
                 string[] inactive = ((string)matchDetails["inactive"]).Split(',');
-                
+                string gameIdPlayer = (string)matchDetails["id"];
+                string gameIdOpponent = (string)matchDetails["opponent"];
+                string gameIdHash = Helper.GenerateMD5Hash(gameIdPlayer) + "/" + Helper.GenerateMD5Hash(gameIdOpponent);
+
                 List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };
                 foreach (string inactiveSplinter in inactive)
                 {
@@ -999,7 +1003,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                 await ShowBattleResultLegacyAsync(tx);
                 return;
             }
-            if(!await WaitForGameState(GameState.battle_result, 210))
+            if (!await WaitForGameStateAsync(GameState.battle_result, 210))
             {
                 Log.WriteToLog($"{Username}: Could not get battle result", Log.LogType.Error);
             }
@@ -1095,11 +1099,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
 
                             int rating = RatingCached;
                             bool waitForHigherLeague = (rating is >= 300 and < 400) && (PowerCached is >= 1000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.1 * 1000))) || // bronze 2
-                                (rating is >= 600 and < 700) && (PowerCached is >= 5000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.2 * 5000))) || // bronze 1 
+                                (rating is >= 600 and < 700) && (PowerCached is >= 5000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.2 * 5000))) || // bronze 1
                                 (rating is >= 840 and < 1000) && (PowerCached is >= 15000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.5 * 15000))) || // silver 3
                                 (rating is >= 1200 and < 1300) && (PowerCached is >= 40000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.8 * 40000))) || // silver 2
                                 (rating is >= 1500 and < 1600) && (PowerCached is >= 70000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.85 * 70000))) || // silver 1
-                                (rating is >= 1800 and < 1900) && (PowerCached is >= 100000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.9 * 100000))); // gold 
+                                (rating is >= 1800 and < 1900) && (PowerCached is >= 100000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.9 * 100000))); // gold
 
                             if (waitForHigherLeague)
                             {
@@ -1220,8 +1224,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                     string tx = BroadcastCustomJsonToHiveNode("sm_refresh_quest", json);
                     Log.WriteToLog($"{Username}: Requesting new quest because of bad quest: {tx}");
                     APICounter = 100; // set api counter to 100 to reload quest
-                } else if (QuestCached.Quest == null || (QuestCached.Quest["claim_trx_id"].Type != JTokenType.Null
-                    && (DateTime.Now - ((DateTime)QuestCached.Quest["created_date"]).ToLocalTime()).TotalHours > 23))
+                }
+                else if (QuestCached.Quest == null || (QuestCached.Quest["claim_trx_id"].Type != JTokenType.Null
+                  && (DateTime.Now - ((DateTime)QuestCached.Quest["created_date"]).ToLocalTime()).TotalHours > 23))
                 {
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";

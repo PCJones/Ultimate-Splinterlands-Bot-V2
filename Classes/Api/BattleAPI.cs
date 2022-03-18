@@ -126,7 +126,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
                         && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
                         questLessDetails : ""),
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
-                    ) ;
+                    );
 
                 string urlGetTeam = $"{Settings.PrivateAPIUrl}get_team_private/{username}/{gameIdHash}";
                 string APIResponse = await PostJSONToApi(matchDetails, urlGetTeam, username);
@@ -152,7 +152,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
                     Log.WriteToLog($"{username}: Private API doesn't seem to have card data yet - using free API", Log.LogType.Warning);
                     System.Threading.Thread.Sleep(25000);
                     return await GetTeamFromAPIAsync(mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, false, true);
-
                 }
                 else if (APIResponse.Contains("Account not allowed"))
                 {
