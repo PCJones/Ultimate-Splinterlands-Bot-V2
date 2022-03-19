@@ -16,11 +16,12 @@ using Ultimate_Splinterlands_Bot_V2.Classes.Bot;
 
 namespace Ultimate_Splinterlands_Bot_V2
 {
-    class Program
+    internal class Program
     {
         private static object _TaskLock = new();
         private static object _SleepInfoLock = new();
-        static void Main(string[] args)
+
+        private static void Main(string[] args)
         {
             SetStartupPath();
 
@@ -99,7 +100,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             }
         }
 
-        static async Task BotLoopAsync(CancellationToken token)
+        private static async Task BotLoopAsync(CancellationToken token)
         {
             var instances = new HashSet<Task>();
             int nextBotInstance = -1;
@@ -200,7 +201,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             Log.WriteToLog("Bot stopped!");
         }
 
-        static bool ReadConfig()
+        private static bool ReadConfig()
         {
             try
             {
@@ -409,7 +410,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             }
         }
 
-        static bool ReadAccounts()
+        private static bool ReadAccounts()
         {
             Log.WriteToLog("Reading accounts.txt...");
             string filePathAccounts = Settings.StartupPath + @"/config/accounts.txt";
@@ -461,7 +462,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             }
         }
 
-        static void Initialize()
+        private static void Initialize()
         {
             if (Settings.Threads > Settings.BotInstances.Count)
             {
@@ -539,7 +540,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             Settings.oHived = new HiveAPI.CS.CHived(Settings._httpClient, "https://api.deathwing.me");
         }
 
-        static void SetStartupPath()
+        private static void SetStartupPath()
         {
             // Setup startup path
             string path = Assembly.GetExecutingAssembly().Location;
