@@ -92,10 +92,11 @@ namespace Ultimate_Splinterlands_Bot_V2
                         Log.WriteToLog("Stopping bot...", Log.LogType.Warning);
                         cancellationTokenSource.Cancel();
                         break;
+
                     default:
                         break;
                 }
-            }   
+            }
         }
 
         static async Task BotLoopAsync(CancellationToken token)
@@ -201,172 +202,211 @@ namespace Ultimate_Splinterlands_Bot_V2
 
         static bool ReadConfig()
         {
-            string folder = Settings.StartupPath + @"/config/";
-            string filePathConfig = folder + "config.txt";
-            string filePathCardSettings = folder + "card_settings.txt";
-
-            if (!File.Exists(filePathConfig))
+            try
             {
-                Log.WriteToLog("No config.txt in config folder - see config-example.txt!", Log.LogType.CriticalError);
+                string folder = Settings.StartupPath + @"/config/";
+                string filePathConfig = folder + "config.txt";
+                string filePathCardSettings = folder + "card_settings.txt";
+
+                if (!File.Exists(filePathConfig))
+                {
+                    Log.WriteToLog("No config.txt in config folder - see config-example.txt!", Log.LogType.CriticalError);
+                    return false;
+                }
+                if (!File.Exists(filePathCardSettings))
+                {
+                    Log.WriteToLog("No card_settings.txt in config folder!", Log.LogType.CriticalError);
+                    return false;
+                }
+
+                Settings.CardSettings = new CardSettings(File.ReadAllText(filePathCardSettings));
+                //Settings.CardSettings = new("USE_CARD_SETTINGS=false");
+
+                Log.WriteToLog("Reading config...");
+                foreach (string setting in File.ReadAllLines(filePathConfig))
+                {
+                    string[] temp = setting.Split('=');
+                    if (temp.Length != 2 || setting[0] == '#')
+                    {
+                        continue;
+                    }
+
+                    switch (temp[0].Trim().ToUpper())
+                    {
+                        case "PRIORITIZE_QUEST":
+                            Settings.PrioritizeQuest = bool.Parse(temp[1]);
+                            break;
+
+                        case "IGNORE_ECR_FOR_QUEST":
+                            Settings.IgnoreEcrForQuest = bool.Parse(temp[1]);
+                            break;
+
+                        case "SLEEP_BETWEEN_BATTLES":
+                            Settings.SleepBetweenBattles = Convert.ToInt32(temp[1]);
+                            break;
+                        // legacy
+                        case "ECR_THRESHOLD":
+                            Settings.StopBattleBelowECR = Convert.ToInt32(temp[1]);
+                            break;
+                        // legacy:
+                        case "ERC_THRESHOLD":
+                            Settings.StopBattleBelowECR = Convert.ToInt32(temp[1]);
+                            break;
+
+                        case "STOP_BATTLE_BELOW_ECR":
+                            Settings.StopBattleBelowECR = Convert.ToInt32(temp[1]);
+                            break;
+
+                        case "START_BATTLE_ABOVE_ECR":
+                            Settings.StartBattleAboveECR = Convert.ToInt32(temp[1]);
+                            break;
+
+                        case "MINIMUM_BATTLE_POWER":
+                            Settings.MinimumBattlePower = Convert.ToInt32(temp[1]);
+                            break;
+
+                        case "CLAIM_SEASON_REWARD":
+                            Settings.ClaimSeasonReward = bool.Parse(temp[1]);
+                            break;
+
+                        case "CLAIM_QUEST_REWARD":
+                            Settings.ClaimQuestReward = bool.Parse(temp[1]);
+                            break;
+
+                        case "DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE":
+                            Settings.DontClaimQuestNearHigherLeague = bool.Parse(temp[1]);
+                            break;
+
+                        case "MINIMUM_LEAGUE_FOR_QUEST_CLAIM":
+                            Settings.MinimumLeagueForQuestClaim = Convert.ToInt32(temp[1]);
+                            break;
+
+                        case "WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM":
+                            Settings.WaitForMissingCPAtQuestClaim = bool.Parse(temp[1]);
+                            break;
+
+                        case "ADVANCE_LEAGUE":
+                            Settings.AdvanceLeague = bool.Parse(temp[1]);
+                            break;
+
+                        case "REQUEST_NEW_QUEST":
+                            Settings.BadQuests = temp[1].Split(',');
+                            break;
+
+                        case "SHOW_BATTLE_RESULTS":
+                            Settings.ShowBattleResults = bool.Parse(temp[1]);
+                            break;
+
+                        case "THREADS":
+                            Settings.Threads = Convert.ToInt32(temp[1]);
+                            break;
+
+                        case "USE_BROWSER_MODE":
+                            if (bool.Parse(temp[1]))
+                            {
+                                Log.WriteToLog("Browser mode is no longer supported - will use lightning mode!", Log.LogType.Warning);
+                            }
+                            break;
+
+                        case "USE_API":
+                            Settings.UseAPI = bool.Parse(temp[1]);
+                            break;
+
+                        case "API_URL":
+                            Settings.PublicAPIUrl = temp[1];
+                            break;
+
+                        case "FALLBACK_API_URL":
+                            Settings.FallBackPublicAPIUrl = temp[1];
+                            break;
+
+                        case "DEBUG":
+                            Settings.DebugMode = bool.Parse(temp[1]);
+                            break;
+
+                        case "WRITE_LOG_TO_FILE":
+                            Settings.WriteLogToFile = bool.Parse(temp[1]);
+                            break;
+
+                        case "AUTO_UPDATE":
+                            Settings.AutoUpdate = bool.Parse(temp[1]);
+                            break;
+
+                        case "DISABLE_CONSOLE_COLORS":
+                            if (bool.Parse(temp[1]))
+                            {
+                                Log.WriteToLog("Console colors disabled!");
+                                ConsoleExtensions.Disable();
+                            }
+                            break;
+
+                        case "SHOW_API_RESPONSE":
+                            Settings.ShowAPIResponse = bool.Parse(temp[1]);
+                            break;
+
+                        case "USE_PRIVATE_API":
+                            Settings.UsePrivateAPI = bool.Parse(temp[1]);
+                            if (Settings.UsePrivateAPI)
+                            {
+                                string[] loginData = File.ReadAllText(Settings.StartupPath + @"/config/login.txt").Split(':');
+                                Settings.PrivateAPIUsername = loginData[0];
+                                Settings.PrivateAPIPassword = loginData[1];
+                            }
+                            break;
+
+                        case "PRIVATE_API_SHOP":
+                            Settings.PrivateAPIShop = temp[1];
+                            break;
+
+                        case "PRIVATE_API_URL":
+                            Settings.PrivateAPIUrl = temp[1];
+                            break;
+
+                        case "POWER_TRANSFER_BOT":
+                            Settings.PowerTransferBot = bool.Parse(temp[1]);
+                            if (Settings.PowerTransferBot)
+                            {
+                                Settings.AvailablePowerTransfers = new();
+                            }
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+
+                Log.WriteToLog("Config loaded!", Log.LogType.Success);
+                Log.WriteToLog($"Config parameters:{Environment.NewLine}" +
+                    $"MODE: {"LIGHTNING (blockchain)"}{Environment.NewLine}" +
+                    $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
+                    $"AUTO_UPDATE: {Settings.AutoUpdate}{Environment.NewLine}" +
+                    $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
+                    $"SHOW_API_RESPONSE: {Settings.ShowAPIResponse}{Environment.NewLine}" +
+                    $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
+                    $"IGNORE_ECR_FOR_QUEST: {Settings.IgnoreEcrForQuest}{Environment.NewLine}" +
+                    $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
+                    $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
+                    $"REQUEST_NEW_QUEST: {string.Join(",", Settings.BadQuests)}{Environment.NewLine}" +
+                    $"DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE: {Settings.DontClaimQuestNearHigherLeague}{Environment.NewLine}" +
+                    $"WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM: {Settings.WaitForMissingCPAtQuestClaim}{Environment.NewLine}" +
+                    $"ADVANCE_LEAGUE: {Settings.AdvanceLeague}{Environment.NewLine}" +
+                    $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
+                    $"START_BATTLE_ABOVE_ECR: {Settings.StartBattleAboveECR}{Environment.NewLine}" +
+                    $"STOP_BATTLE_BELOW_ECR: {Settings.StopBattleBelowECR}{Environment.NewLine}" +
+                    $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
+                    $"USE_PRIVATE_API: {Settings.UsePrivateAPI}{ Environment.NewLine}" +
+                    $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot} {Environment.NewLine}" +
+                    $"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults} {Environment.NewLine}" +
+                    $"THREADS: {Settings.Threads} {Environment.NewLine}" +
+                    $"{Settings.CardSettings}");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog("Error at loading config: " + ex.Message);
                 return false;
             }
-            //if (!File.Exists(filePathCardSettings))
-            //{
-            //    Log.WriteToLog("No card_settings.txt in config folder!", Log.LogType.CriticalError);
-            //    return false;
-            //}
-
-            //Settings.CardSettings = new CardSettings(File.ReadAllText(filePathCardSettings));
-            Settings.CardSettings = new("USE_CARD_SETTINGS=false");
-
-            Log.WriteToLog("Reading config...");
-            foreach (string setting in File.ReadAllLines(filePathConfig))
-            {
-                string[] temp = setting.Split('=');
-                if (temp.Length != 2 || setting[0] == '#')
-                {
-                    continue;
-                }
-
-                switch (temp[0].Trim().ToUpper())
-                {
-                    case "PRIORITIZE_QUEST":
-                        Settings.PrioritizeQuest = bool.Parse(temp[1]);
-                        break;
-                    case "IGNORE_ECR_FOR_QUEST":
-                        Settings.IgnoreEcrForQuest = bool.Parse(temp[1]);
-                        break;
-                    case "SLEEP_BETWEEN_BATTLES":
-                        Settings.SleepBetweenBattles = Convert.ToInt32(temp[1]);
-                        break;
-                    // legacy
-                    case "ECR_THRESHOLD":
-                        Settings.StopBattleBelowECR = Convert.ToInt32(temp[1]);
-                        break;
-                    // legacy:
-                    case "ERC_THRESHOLD":
-                        Settings.StopBattleBelowECR = Convert.ToInt32(temp[1]);
-                        break;
-                    case "STOP_BATTLE_BELOW_ECR":
-                        Settings.StopBattleBelowECR = Convert.ToInt32(temp[1]);
-                        break;
-                    case "START_BATTLE_ABOVE_ECR":
-                        Settings.StartBattleAboveECR = Convert.ToInt32(temp[1]);
-                        break;
-                    case "MINIMUM_BATTLE_POWER":
-                        Settings.MinimumBattlePower = Convert.ToInt32(temp[1]);
-                        break;
-                    case "CLAIM_SEASON_REWARD":
-                        Settings.ClaimSeasonReward = bool.Parse(temp[1]);
-                        break;
-                    case "CLAIM_QUEST_REWARD":
-                        Settings.ClaimQuestReward = bool.Parse(temp[1]);
-                        break;
-                    case "DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE":
-                        Settings.DontClaimQuestNearHigherLeague = bool.Parse(temp[1]);
-                        break;
-                    case "WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM":
-                        Settings.WaitForMissingCPAtQuestClaim = bool.Parse(temp[1]);
-                        break;
-                    case "ADVANCE_LEAGUE":
-                        Settings.AdvanceLeague = bool.Parse(temp[1]);
-                        break;
-                    case "REQUEST_NEW_QUEST":
-                        Settings.BadQuests = temp[1].Split(',');
-                        break;
-                    case "SHOW_BATTLE_RESULTS":
-                        Settings.ShowBattleResults = bool.Parse(temp[1]);
-                        break;
-                    case "THREADS":
-                        Settings.Threads = Convert.ToInt32(temp[1]);
-                        break;
-                    case "USE_BROWSER_MODE":
-                        if (bool.Parse(temp[1]))
-                        {
-                            Log.WriteToLog("Browser mode is no longer supported - will use lightning mode!", Log.LogType.Warning);
-                        }
-                        break;
-                    case "USE_API":
-                        Settings.UseAPI = bool.Parse(temp[1]);
-                        break;
-                    case "API_URL":
-                        Settings.PublicAPIUrl = temp[1];
-                        break;
-                    case "FALLBACK_API_URL":
-                        Settings.FallBackPublicAPIUrl = temp[1];
-                        break;
-                    case "DEBUG":
-                        Settings.DebugMode = bool.Parse(temp[1]);
-                        break;
-                    case "WRITE_LOG_TO_FILE":
-                        Settings.WriteLogToFile = bool.Parse(temp[1]);
-                        break;
-                    case "AUTO_UPDATE":
-                        Settings.AutoUpdate = bool.Parse(temp[1]);
-                        break;
-                    case "DISABLE_CONSOLE_COLORS":
-                        if (bool.Parse(temp[1]))
-                        {
-                            Log.WriteToLog("Console colors disabled!");
-                            ConsoleExtensions.Disable();
-                        }
-                        break;
-                    case "SHOW_API_RESPONSE":
-                        Settings.ShowAPIResponse = bool.Parse(temp[1]);
-                        break;
-                    case "USE_PRIVATE_API":
-                        Settings.UsePrivateAPI = bool.Parse(temp[1]);
-                        if (Settings.UsePrivateAPI)
-                        {
-                            string[] loginData = File.ReadAllText(Settings.StartupPath + @"/config/login.txt").Split(':');
-                            Settings.PrivateAPIUsername = loginData[0];
-                            Settings.PrivateAPIPassword = loginData[1];
-                        }
-                        break;
-                    case "PRIVATE_API_SHOP":
-                        Settings.PrivateAPIShop = temp[1];
-                        break;
-                    case "PRIVATE_API_URL":
-                        Settings.PrivateAPIUrl = temp[1];
-                        break;
-                    case "POWER_TRANSFER_BOT":
-                        Settings.PowerTransferBot = bool.Parse(temp[1]);
-                        if (Settings.PowerTransferBot)
-                        {
-                            Settings.AvailablePowerTransfers = new();
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            Log.WriteToLog("Config loaded!", Log.LogType.Success);
-            Log.WriteToLog($"Config parameters:{Environment.NewLine}" +
-                $"MODE: {"LIGHTNING (blockchain)"}{Environment.NewLine}" +
-                $"DEBUG: {Settings.DebugMode}{Environment.NewLine}" +
-                $"AUTO_UPDATE: {Settings.AutoUpdate}{Environment.NewLine}" +
-                $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
-                $"SHOW_API_RESPONSE: {Settings.ShowAPIResponse}{Environment.NewLine}" +
-                $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
-                $"IGNORE_ECR_FOR_QUEST: {Settings.IgnoreEcrForQuest}{Environment.NewLine}" +
-                $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
-                $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
-                $"REQUEST_NEW_QUEST: {string.Join(",", Settings.BadQuests)}{Environment.NewLine}" +
-                $"DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE: {Settings.DontClaimQuestNearHigherLeague}{Environment.NewLine}" +
-                $"WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM: {Settings.WaitForMissingCPAtQuestClaim}{Environment.NewLine}" +
-                $"ADVANCE_LEAGUE: {Settings.AdvanceLeague}{Environment.NewLine}" +
-                $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
-                $"START_BATTLE_ABOVE_ECR: {Settings.StartBattleAboveECR}{Environment.NewLine}" +
-                $"STOP_BATTLE_BELOW_ECR: {Settings.StopBattleBelowECR}{Environment.NewLine}" +
-                $"USE_API: {Settings.UseAPI}{Environment.NewLine}" +
-                $"USE_PRIVATE_API: {Settings.UsePrivateAPI}{ Environment.NewLine}" +
-                $"POWER_TRANSFER_BOT: {Settings.PowerTransferBot} {Environment.NewLine}" +
-                $"{Settings.CardSettings}");
-
-            Console.Write($"SHOW_BATTLE_RESULTS: {Settings.ShowBattleResults}{Environment.NewLine}");
-            Console.Write($"THREADS: {Settings.Threads}{Environment.NewLine}");
-            return true;
         }
 
         static bool ReadAccounts()
@@ -397,7 +437,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 }
                 string[] temp = loginData.Split(':');
                 var query = accessTokens.Where(x => x.Split(':')[0] == temp[0]);
-                string accessToken = query.Any()? query.First().Split(':')[1] : "";
+                string accessToken = query.Any() ? query.First().Split(':')[1] : "";
 
                 if (temp.Length == 2)
                 {

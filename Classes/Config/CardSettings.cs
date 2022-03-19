@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Ultimate_Splinterlands_Bot_V2.Classes.Model;
 using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
 
 namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
@@ -12,10 +13,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
     public record CardSettings
     {
         [JsonIgnore]
-        public bool USE_CARD_SETTINGS { get; init; }
-        public string PREFERRED_SUMMONER_ELEMENT { get; init; }
-        public int CARD_MIN_LEVEL { get; init; }
+        public bool USE_CARD_SETTINGS { get; init; } = false;
+        public string PREFERRED_SUMMONER_ELEMENT { get; init; } = null;
+        public int CARD_MIN_LEVEL { get; init; } = 1;
+        public int WINRATE_TRESHOLD { get; init; } = 45;
+        public int MINIMUM_GAMES { get; init; } = 10;
+        public bool ADD_ZERO_MANA_CARDS { get; init; } = true;
 
+        public CardSettings()
+        {
+
+        }
         public CardSettings(string config)
         {
             foreach (var setting in config.Split(Environment.NewLine))
@@ -37,7 +45,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
                     Console.WriteLine($"could not find setting for: '{parts[0]}'");
                     return;
                 }
-                
+
                 if (property.PropertyType == typeof(bool))
                 {
                     property.SetValue(this, Boolean.Parse(value));
@@ -56,7 +64,25 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
                     Console.WriteLine("Field Type: {0}", property.PropertyType);
                     Log.WriteToLog($"UNKOWN type '{property.PropertyType}'");
                 }
-                
+            }
+        }
+
+        public Card[] FilterByCardSettings(Card[] unfilteredCards)
+        {
+            try
+            {
+                if (!USE_CARD_SETTINGS)
+                {
+                    return unfilteredCards;
+                }
+
+                var filteredCards = unfilteredCards.Where(x => Convert.ToInt32(x.level) >= CARD_MIN_LEVEL);
+                return filteredCards.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"Error at applying card settings: { ex.Message }", Log.LogType.Error);
+                return unfilteredCards;
             }
         }
     }

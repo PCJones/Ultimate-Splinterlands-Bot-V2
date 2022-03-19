@@ -60,6 +60,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
         public static bool ClaimQuestReward = false;
         public static bool ClaimSeasonReward = false;
         public static bool DontClaimQuestNearHigherLeague = false;
+        public static int MinimumLeagueForQuestClaim = 1;
         public static bool WaitForMissingCPAtQuestClaim = false;
         public static bool AdvanceLeague = false;
         public static int SleepBetweenBattles = 30;

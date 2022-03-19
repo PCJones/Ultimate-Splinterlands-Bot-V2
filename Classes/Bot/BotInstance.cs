@@ -38,7 +38,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
         private int LossesTotal { get; set; }
         private double DrawsTotal { get; set; }
         private double WinsTotal { get; set; }
-        private (JToken Quest, JToken QuestLessDetails) QuestCached { get; set; }
+        private (JToken Quest, JToken QuestLessDetails) QuestCached { get; set; } // This really should get it's own quest class...
         private Card[] CardsCached { get; set; }
         private Dictionary<GameState, JToken> GameStates { get; set; }
         public bool CurrentlyActive { get; private set; }
@@ -64,7 +64,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                 }
                 else
                 {
-                    GameStates.Add(state, json["data"]);
+                    GameStates.TryAdd(state, json["data"]);
                 }
 
                 if (state == GameState.ecr_update)
@@ -1090,6 +1090,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                     logText = "Quest reward available!";
                     if (Settings.ClaimQuestReward)
                     {
+                        bool waitForHigherLeague = false;
                         if (Settings.DontClaimQuestNearHigherLeague)
                         {
                             if (RatingCached == -1)
@@ -1098,18 +1099,23 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                             }
 
                             int rating = RatingCached;
-                            bool waitForHigherLeague = (rating is >= 300 and < 400) && (PowerCached is >= 1000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.1 * 1000))) || // bronze 2
-                                (rating is >= 600 and < 700) && (PowerCached is >= 5000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.2 * 5000))) || // bronze 1
-                                (rating is >= 840 and < 1000) && (PowerCached is >= 15000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.5 * 15000))) || // silver 3
-                                (rating is >= 1200 and < 1300) && (PowerCached is >= 40000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.8 * 40000))) || // silver 2
-                                (rating is >= 1500 and < 1600) && (PowerCached is >= 70000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.85 * 70000))) || // silver 1
-                                (rating is >= 1800 and < 1900) && (PowerCached is >= 100000 || (Settings.WaitForMissingCPAtQuestClaim && PowerCached >= (0.9 * 100000))); // gold
+                            waitForHigherLeague = rating is >= 300 and < 400 && (PowerCached is >= 1000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.1 * 1000) || // bronze 2
+                                rating is >= 600 and < 700 && (PowerCached is >= 5000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.2 * 5000) || // bronze 1 
+                                rating is >= 840 and < 1000 && (PowerCached is >= 15000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.5 * 15000) || // silver 3
+                                rating is >= 1200 and < 1300 && (PowerCached is >= 40000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.8 * 40000) || // silver 2
+                                rating is >= 1500 and < 1600 && (PowerCached is >= 70000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.85 * 70000) || // silver 1
+                                rating is >= 1800 and < 1900 && (PowerCached is >= 100000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.9 * 100000); // gold                         }
+                        }
 
-                            if (waitForHigherLeague)
-                            {
-                                Log.WriteToLog($"{Username}: Don't claim quest - wait for higher league");
-                                return;
-                            }
+                        if (LeagueCached < Settings.MinimumLeagueForQuestClaim)
+                        {
+                            waitForHigherLeague = true;
+                        }
+
+                        if (waitForHigherLeague)
+                        {
+                            Log.WriteToLog($"{Username}: Don't claim quest - wait for higher league");
+                            return;
                         }
 
                         string n = Helper.GenerateRandomString(10);
