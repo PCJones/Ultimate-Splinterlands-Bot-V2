@@ -208,6 +208,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 string folder = Settings.StartupPath + @"/config/";
                 string filePathConfig = folder + "config.txt";
                 string filePathCardSettings = folder + "card_settings.txt";
+                string filePathTeamSettings = folder + "team_settings.txt";
 
                 if (!File.Exists(filePathConfig))
                 {
@@ -219,8 +220,14 @@ namespace Ultimate_Splinterlands_Bot_V2
                     Log.WriteToLog("No card_settings.txt in config folder!", Log.LogType.CriticalError);
                     return false;
                 }
+                if (!File.Exists(filePathTeamSettings))
+                {
+                    Log.WriteToLog("No team_settings.txt in config folder!", Log.LogType.CriticalError);
+                    return false;
+                }
 
                 Settings.CardSettings = new CardSettings(File.ReadAllText(filePathCardSettings));
+                Settings.TeamSettings = new TeamSettings(File.ReadAllText(filePathTeamSettings));
                 //Settings.CardSettings = new("USE_CARD_SETTINGS=false");
 
                 Log.WriteToLog("Reading config...");

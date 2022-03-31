@@ -34,6 +34,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
         public static bool ShowAPIResponse = true;
 
         public static CardSettings CardSettings;
+        public static TeamSettings TeamSettings;
 
         public static double InstanceWin = 0;
         public static double InstanceDraw = 0;
