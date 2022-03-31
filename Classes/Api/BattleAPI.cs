@@ -75,7 +75,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
                     return null;
                 }
 
-                if (APIResponse.Contains("api limit reached") || APIResponse.Contains("Rate limit exceeded") || APIResponse.Contains("Not Authorized") || APIResponse.Contains("InternalServerError"))
+                if (APIResponse.Contains("api limit reached") || APIResponse.Contains("Rate limit exceeded") || APIResponse.Contains("Not Authorized") || APIResponse.Contains("InternalServerError") || APIResponse == "")
                 {
                     Log.WriteToLog($"{username}: API Rate Limit reached! Trying FallBack API", Log.LogType.Warning);
                     APIResponse = await PostJSONToApi(matchDetails, urlGetTeamFallBack, username);
