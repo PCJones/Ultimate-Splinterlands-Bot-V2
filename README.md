@@ -20,7 +20,7 @@ A completely new, rewritten version of this bot: https://github.com/PCJones/ulti
 - Option to enable/disable automatic quest reward chest opening
 - And much more, see [Bot configuration](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2#bot-configuration)
 - Any suggestions?
-
+------------------------------------
 ## New Features
 - Added Fallback API Option
 - Team Settings
@@ -49,7 +49,7 @@ PREFERRED_MONSTER_6_ID=0
 CARD_MIN_LEVEL=1
 ```
 
-##How to run on Termux(Android):
+## How to run on Termux(Android):
 
 Install Kali Linux Distro on Termux:
 ```
@@ -66,7 +66,7 @@ wget https://github.com/Sir-Void/Ultimate-Splinterlands-Bot-V2/releases/download
 
 And now we can run the bot with:
 ```./Ultimate\ Splinterlands\ Bot\ V2```
-
+--------------------------
 ## How to install (Windows)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
 - Download the windows.zip from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
