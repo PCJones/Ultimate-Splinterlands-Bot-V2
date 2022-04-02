@@ -66,7 +66,9 @@ wget https://github.com/Sir-Void/Ultimate-Splinterlands-Bot-V2/releases/download
 
 And now we can run the bot with:
 ```./Ultimate\ Splinterlands\ Bot\ V2```
+
 --------------------------
+
 ## How to install (Windows)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
 - Download the windows.zip from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
