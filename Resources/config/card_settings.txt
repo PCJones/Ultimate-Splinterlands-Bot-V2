@@ -3,7 +3,7 @@ USE_CARD_SETTINGS=false
 
 ##If the api only finds teams with a winrate smaller than this it will ignore the card settings
 #(0-100)
-WINRATE_TRESHOLD=45
+WINRATE_THRESHOLD=45
 
 ##The minimum amount of historic games the api should have for a team to consider it
 MINIMUM_GAMES=10
