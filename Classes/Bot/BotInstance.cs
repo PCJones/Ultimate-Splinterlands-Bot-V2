@@ -565,6 +565,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                             var sessionID = Settings.CookieContainer.GetCookies(new Uri(Settings.PrivateAPIShop)).FirstOrDefault();
                             var args = $"{account.Username} {Username} {account.ActiveKey} {Settings.PrivateAPIUsername} " +
                                 $"{Settings.PrivateAPIPassword} {sessionID.Name} {sessionID.Value} {Settings.DebugMode}";
+
+                            if (Settings.PublicAPIUrl == "http://lostvoid.xyz/private/v2/" || !Settings.UsePrivateAPI)
+                            {
+                                args = $"{account.Username} {Username} {account.ActiveKey}";
+                            }
+
                             var fileName = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) ?
                                  "Power Transfer Bot.exe" : "Power Transfer Bot";
 
@@ -1100,7 +1106,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
 
                             int rating = RatingCached;
                             waitForHigherLeague = rating is >= 300 and < 400 && (PowerCached is >= 1000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.1 * 1000) || // bronze 2
-                                rating is >= 600 and < 700 && (PowerCached is >= 5000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.2 * 5000) || // bronze 1 
+                                rating is >= 600 and < 700 && (PowerCached is >= 5000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.2 * 5000) || // bronze 1
                                 rating is >= 840 and < 1000 && (PowerCached is >= 15000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.5 * 15000) || // silver 3
                                 rating is >= 1200 and < 1300 && (PowerCached is >= 40000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.8 * 40000) || // silver 2
                                 rating is >= 1500 and < 1600 && (PowerCached is >= 70000 || Settings.WaitForMissingCPAtQuestClaim && PowerCached >= 0.85 * 70000) || // silver 1
