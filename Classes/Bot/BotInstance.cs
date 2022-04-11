@@ -562,13 +562,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
 
                         if (transferPower)
                         {
-                            var sessionID = Settings.CookieContainer.GetCookies(new Uri(Settings.PrivateAPIShop)).FirstOrDefault();
-                            var args = $"{account.Username} {Username} {account.ActiveKey} {Settings.PrivateAPIUsername} " +
-                                $"{Settings.PrivateAPIPassword} {sessionID.Name} {sessionID.Value} {Settings.DebugMode}";
-
+                            var args = "";
                             if (Settings.PublicAPIUrl == "http://lostvoid.xyz/private/v2/" || !Settings.UsePrivateAPI)
                             {
                                 args = $"{account.Username} {Username} {account.ActiveKey}";
+                            }
+                            else
+                            {
+                                var sessionID = Settings.CookieContainer.GetCookies(new Uri(Settings.PrivateAPIShop)).FirstOrDefault();
+                                args = $"{account.Username} {Username} {account.ActiveKey} {Settings.PrivateAPIUsername} " +
+                                    $"{Settings.PrivateAPIPassword} {sessionID.Name} {sessionID.Value} {Settings.DebugMode}";
                             }
 
                             var fileName = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows) ?
