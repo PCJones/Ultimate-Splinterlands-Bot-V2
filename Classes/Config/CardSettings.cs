@@ -16,7 +16,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
         public bool USE_CARD_SETTINGS { get; init; } = false;
         public string PREFERRED_SUMMONER_ELEMENT { get; init; } = null;
         public int CARD_MIN_LEVEL { get; init; } = 1;
-        public int WINRATE_TRESHOLD { get; init; } = 45;
+        public int WINRATE_THRESHOLD { get; set; } = 45;
+        public int WINRATE_TRESHOLD { set { WINRATE_THRESHOLD = value; } } // _someone_ definitely not named jones needs to learn how to spell this word...
         public int MINIMUM_GAMES { get; init; } = 10;
         public bool ADD_ZERO_MANA_CARDS { get; init; } = true;
 

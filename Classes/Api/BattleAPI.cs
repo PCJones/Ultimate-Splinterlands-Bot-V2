@@ -45,7 +45,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
                         new JProperty("quest", Settings.PrioritizeQuest && quest != null
                         && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
                         questLessDetails : ""),
-                        new JProperty("team_settings", Settings.TeamSettings.USE_TEAM_SETTINGS ? JsonConvert.SerializeObject(Settings.TeamSettings) : "")
+                        new JProperty("team_settings", Settings.TeamSettings.USE_TEAM_SETTINGS ? JsonConvert.SerializeObject(Settings.TeamSettings) : ""),
+                        new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
                 string urlGetTeam = $"{Settings.PublicAPIUrl}get_team/";

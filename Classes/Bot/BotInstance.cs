@@ -886,8 +886,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                 string rulesets = (string)matchDetails["ruleset"];
                 string[] inactive = ((string)matchDetails["inactive"]).Split(',');
                 string gameIdPlayer = (string)matchDetails["id"];
-                string gameIdOpponent = (string)matchDetails["opponent"];
-                string gameIdHash = Helper.GenerateMD5Hash(gameIdPlayer) + "/" + Helper.GenerateMD5Hash(gameIdOpponent);
+                //string gameIdOpponent = (string)matchDetails["opponent"]";
+                string opponentLookupName = (string)matchDetails["opponent"]["lookup_name"];
+                string gameIdHash = Helper.GenerateMD5Hash(gameIdPlayer) + "/" + Helper.GenerateMD5Hash(opponentLookupName);
 
                 List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };
                 foreach (string inactiveSplinter in inactive)
