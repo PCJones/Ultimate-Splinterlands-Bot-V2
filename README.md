@@ -20,9 +20,54 @@ A completely new, rewritten version of this bot: https://github.com/PCJones/ulti
 - Option to enable/disable automatic quest reward chest opening
 - And much more, see [Bot configuration](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2#bot-configuration)
 - Any suggestions?
-
+------------------------------------
 ## New Features
 - Added Fallback API Option
+- Team Settings
+
+```
+# Set to true to enable.
+USE_TEAM_SETTINGS=true
+
+# Minimum Battles for API to select the Team.
+MIN_BATTLES=1
+
+# What teams you want the bot to play.
+# You can put multiple cards per MONSTER POSITION.
+# You can also leave it to 0 | If left to 0 it will choose based on all the cards you have.
+# Example: PREFERRED_SUMMONER_ID=16,438,437,224
+PREFERRED_SUMMONER_ID=0
+PREFERRED_MONSTER_1_ID=0
+PREFERRED_MONSTER_2_ID=0
+PREFERRED_MONSTER_3_ID=0
+PREFERRED_MONSTER_4_ID=0
+PREFERRED_MONSTER_5_ID=0
+PREFERRED_MONSTER_6_ID=0
+
+# Select Cards Equal and Higher than this Level.
+# It's best to leave this to 1 if you don't have a team that is higher than Level 1.
+CARD_MIN_LEVEL=1
+```
+
+## How to run on Termux(Android):
+
+Install Kali Linux Distro on Termux:
+```
+pkg install wget openssl-tool proot -y && hash -r && wget https://raw.githubusercontent.com/EXALAB/AnLinux-Resources/master/Scripts/Installer/Kali/kali.sh && bash kali.sh
+```
+
+After Kali installation is done, we need to run Kali, update it and install needed apps:
+```./start-kali.sh ; apt update && apt install nano unzip libicu-dev -y```
+
+After updating Kali and installing needed apps we need to Install the bot:
+```
+wget https://github.com/Sir-Void/Ultimate-Splinterlands-Bot-V2/releases/download/v2.11.2/linux-arm64.zip ; unzip linux-arm64.zip ; cd linux-arm64 ; chmod u+x Ultimate\ Splinterlands\ Bot\ V2
+```
+
+And now we can run the bot with:
+```./Ultimate\ Splinterlands\ Bot\ V2```
+
+--------------------------
 
 ## How to install (Windows)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
