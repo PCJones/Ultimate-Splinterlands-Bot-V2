@@ -9,9 +9,9 @@ using System.Reflection;
 using System.Runtime.Remoting;
 using System.Text;
 using System.Threading.Tasks;
-using Ultimate_Splinterlands_Bot_V2.Classes.Bot;
+using Ultimate_Splinterlands_Bot_V2.Bot;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
+namespace Ultimate_Splinterlands_Bot_V2.Config
 {
     public static class Settings
     {

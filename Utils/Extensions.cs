@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes.Utils
+namespace Ultimate_Splinterlands_Bot_V2.Utils
 {
     public static class JsonReaderExtensions
     {

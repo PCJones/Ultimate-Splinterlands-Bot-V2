@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes.Utils
+namespace Ultimate_Splinterlands_Bot_V2.Utils
 {
     // from https://stackoverflow.com/a/54943087
     public class TablePrinter

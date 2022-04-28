@@ -5,10 +5,10 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Ultimate_Splinterlands_Bot_V2.Classes.Model;
-using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
+using Ultimate_Splinterlands_Bot_V2.Model;
+using Ultimate_Splinterlands_Bot_V2.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes.Config
+namespace Ultimate_Splinterlands_Bot_V2.Config
 {
     public record CardSettings
     {

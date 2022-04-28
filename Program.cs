@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Ultimate_Splinterlands_Bot_V2.Classes;
+using Ultimate_Splinterlands_Bot_V2;
 using System.Threading;
 using Pastel;
 using System.Drawing;
 using System.Reflection;
-using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
-using Ultimate_Splinterlands_Bot_V2.Classes.Config;
-using Ultimate_Splinterlands_Bot_V2.Classes.Api;
-using Ultimate_Splinterlands_Bot_V2.Classes.Bot;
+using Ultimate_Splinterlands_Bot_V2.Utils;
+using Ultimate_Splinterlands_Bot_V2.Config;
+using Ultimate_Splinterlands_Bot_V2.Api;
+using Ultimate_Splinterlands_Bot_V2.Bot;
 
 namespace Ultimate_Splinterlands_Bot_V2
 {

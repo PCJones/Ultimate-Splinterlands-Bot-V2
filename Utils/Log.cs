@@ -7,9 +7,9 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Config;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes.Utils
+namespace Ultimate_Splinterlands_Bot_V2.Utils
 {
     class Log
     {

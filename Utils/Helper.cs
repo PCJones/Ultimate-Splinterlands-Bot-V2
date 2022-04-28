@@ -12,9 +12,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Config;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes.Utils
+namespace Ultimate_Splinterlands_Bot_V2.Utils
 {
     public static class Helper
     {
