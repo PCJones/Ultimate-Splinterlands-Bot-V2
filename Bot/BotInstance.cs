@@ -16,13 +16,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Websocket.Client;
 using static HiveAPI.CS.CHived;
-using Ultimate_Splinterlands_Bot_V2.Classes.Model;
-using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
-using Ultimate_Splinterlands_Bot_V2.Classes.Api;
-using Ultimate_Splinterlands_Bot_V2.Classes.Http;
-using Ultimate_Splinterlands_Bot_V2.Classes.Config;
+using Ultimate_Splinterlands_Bot_V2.Model;
+using Ultimate_Splinterlands_Bot_V2.Utils;
+using Ultimate_Splinterlands_Bot_V2.Api;
+using Ultimate_Splinterlands_Bot_V2.Http;
+using Ultimate_Splinterlands_Bot_V2.Config;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
+namespace Ultimate_Splinterlands_Bot_V2.Bot
 {
     public class BotInstance
     {
@@ -887,7 +887,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Classes.Bot
                 string[] inactive = ((string)matchDetails["inactive"]).Split(',');
                 string gameIdPlayer = (string)matchDetails["id"];
                 //string gameIdOpponent = (string)matchDetails["opponent"]";
-                string opponentLookupName = (string)matchDetails["opponent"]["lookup_name"];
+                string opponentLookupName = Settings.LegacyWindowsMode ? (string)matchDetails["opponent"] : (string)matchDetails["opponent"]["lookup_name"];
                 string gameIdHash = Helper.GenerateMD5Hash(gameIdPlayer) + "/" + Helper.GenerateMD5Hash(opponentLookupName);
 
                 List<string> allowedSplinters = new() { "fire", "water", "earth", "life", "death", "dragon" };

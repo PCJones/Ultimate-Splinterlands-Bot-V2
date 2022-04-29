@@ -9,12 +9,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Ultimate_Splinterlands_Bot_V2.Classes.Config;
-using Ultimate_Splinterlands_Bot_V2.Classes.Http;
-using Ultimate_Splinterlands_Bot_V2.Classes.Model;
-using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
+using Ultimate_Splinterlands_Bot_V2.Config;
+using Ultimate_Splinterlands_Bot_V2.Http;
+using Ultimate_Splinterlands_Bot_V2.Model;
+using Ultimate_Splinterlands_Bot_V2.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes.Api
+namespace Ultimate_Splinterlands_Bot_V2.Api
 {
     public static class BattleAPI
     {

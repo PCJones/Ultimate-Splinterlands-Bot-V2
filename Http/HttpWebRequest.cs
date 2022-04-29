@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using System;
-using Ultimate_Splinterlands_Bot_V2.Classes.Utils;
+using Ultimate_Splinterlands_Bot_V2.Utils;
 
-namespace Ultimate_Splinterlands_Bot_V2.Classes.Http
+namespace Ultimate_Splinterlands_Bot_V2.Http
 {
     class HttpWebRequest
     {
