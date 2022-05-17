@@ -410,6 +410,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 // Sleep 20 seconds to not spam retries
                 Thread.Sleep(20000);
                 Log.WriteToLog($"{Username}: Could not get Access Token for this account - trying again", Log.LogType.Error);
+                Log.WriteToLog($"{Username}: Make sure to use your correct username and posting key", Log.LogType.Error);
                 AccessToken = GetAccessTokenAsync().Result;
             }
             LastCacheUpdate = DateTime.MinValue;
@@ -796,6 +797,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 var signature = Hex.ToString(sig);
                 var response = await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/players/login?name=" + Username + "&ref=&browser_id=" + bid + "&session_id=" + sid + "&sig=" + signature + "&ts=" + ts);
 
+                if (response.Contains("maintenance mode") || response.Contains("Too many request"))
+                {
+                    Log.WriteToLog($"{Username}: Error at claiming season rewards: Maintenance mode or IP soft ban - wait 5 minutes!", Log.LogType.Warning);
+                    await Task.Delay(5 * 60 * 1000);
+                    ts = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds().ToString();
+                    hash = Sha256Manager.GetHash(Encoding.ASCII.GetBytes(Username + ts));
+                    sig = Secp256K1Manager.SignCompressedCompact(hash, CBase58.DecodePrivateWif(PostingKey));
+                    signature = Hex.ToString(sig);
+                    response = await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/players/login?name=" + Username + "&ref=&browser_id=" + bid + "&session_id=" + sid + "&sig=" + signature + "&ts=" + ts);
+                }
+
                 var seasonReward = Helper.DoQuickRegex("\"season_reward\":(.*?)},\"", response);
                 if (seasonReward == "{\"reward_packs\":0")
                 {
@@ -975,7 +987,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     logTextBattleResult = $"You lost :(";
                     Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
                     Log.WriteToLog($"{Username}: New rating is { battleResult.newRating } ({ battleResult.ratingChange.ToString().Pastel(Color.Red) })");
-                    //API.ReportLoss(winner, Username); disabled for now
+                    //BattleAPI.ReportLoss(winner, Username); disabled for now
                     break;
                 default:
                     break;
