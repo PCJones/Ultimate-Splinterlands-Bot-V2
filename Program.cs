@@ -112,13 +112,13 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             while (!token.IsCancellationRequested)
             {
-                while (instances.Count < (Settings.Threads) && !token.IsCancellationRequested)
+                while (instances.Count < Settings.Threads && !token.IsCancellationRequested)
                 {
                     try
                     {
                         lock (_TaskLock)
                         {
-                            if (++nextBotInstance >= (Settings.BotInstances.Count))
+                            if (++nextBotInstance >= Settings.BotInstances.Count)
                             {
                                 firstRuntrough = false;
                                 Log.LogBattleSummaryToTable();
@@ -180,7 +180,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 var result = await Settings.BotInstances[botInstance].DoBattleAsync();
                                 lock (_SleepInfoLock)
                                 {
-                                    sleepInfo[nextBotInstance] = result;
+                                    sleepInfo[botInstance] = result;
                                 }
                             }, cancellationToken));
                         }

@@ -22,7 +22,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public const string SPLINTERLANDS_WEBSOCKET_URL = "wss://ws2.splinterlands.com/";
         public const string SPLINTERLANDS_APP = "splinterlands/0.7.139";
         public const string BOT_GITHUB_REPO = "PCJones/Ultimate-Splinterlands-Bot-V2";
-        public static char[] CharSubset = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
+        public static char[] CharSubset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
         public static Random _Random = new();
         public static CookieContainer CookieContainer = new();
         public static string StartupPath = "";

@@ -139,9 +139,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             {
                 while (CurrentlyActive)
                 {
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < 12; i++)
                     {
-                        await Task.Delay(20 * 1000);
+                        await Task.Delay(5 * 1000);
                         if (!CurrentlyActive)
                         {
                             return;
@@ -234,7 +234,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             } while (stopwatch.Elapsed.TotalSeconds < 179);
             return false;
         }
-
+        
         private async Task<(string secret, string tx, JToken team)> SubmitTeamAsync(string tx, JToken matchDetails, JToken team, bool secondTry = false)
         {
             try
@@ -276,6 +276,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 string teamHash = Helper.GenerateMD5Hash(summoner + "," + monsterClean + "," + secret);
 
+                /*string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"summoner\":\"" + summoner 
+                    + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" 
+                    + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                */
                 string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                 COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_submit_team", json);
@@ -286,7 +290,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 var response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
                 string responseTx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
                 return (secret, responseTx, team);
-            }
+            }   
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at submitting team: " + ex.ToString(), Log.LogType.Error);
@@ -663,6 +667,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
 
                     await Task.Delay(Settings._Random.Next(4500, 8000));
+                    
                     var submittedTeam = await SubmitTeamAsync(tx, matchDetails, team);
                     if (!await WaitForTransactionSuccessAsync(submittedTeam.tx, 10))
                     {
@@ -699,7 +704,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         Log.WriteToLog($"{Username}: Looks like enemy surrendered!", Log.LogType.Warning);
                     }
 
-                    // Reveal the team even when the enemy surrendered, just to be sure
+                    //// Reveal the team even when the enemy surrendered, just to be sure
                     RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
                 }
 
@@ -926,7 +931,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
 
-                JToken team = await BattleAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username, gameIdHash, true, ignorePrivateAPI);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username, gameIdHash, true, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
