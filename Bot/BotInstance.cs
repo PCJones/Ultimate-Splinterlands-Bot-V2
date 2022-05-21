@@ -1162,7 +1162,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private async Task<double> GetECRFromAPIAsync()
         {
             var balanceInfo = ((JArray)await SplinterlandsAPI.GetPlayerBalancesAsync(Username)).Where(x => (string)x["token"] == "ECR").First();
-            if (balanceInfo["balance"].Type == JTokenType.Null) return 100;
+            if (balanceInfo["last_reward_time"].Type == JTokenType.Null) return 100;
             var captureRate = (int)balanceInfo["balance"];
             DateTime lastRewardTime = (DateTime)balanceInfo["last_reward_time"];
             double ecrRegen = 0.0868;
