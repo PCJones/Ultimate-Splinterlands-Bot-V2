@@ -225,7 +225,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 .Distinct().ToArray());
 
                 // add basic cards
-                if (Settings.CardSettings.USE_CARD_SETTINGS && Settings.CardSettings.PLAY_STARTER_CARDS)
+                if (Settings.CardSettings.USE_CARD_SETTINGS && !Settings.CardSettings.PLAY_STARTER_CARDS)
+                {
+                    // add empty card
+                    cards.Add(new Card("", "starter-" + "" + "-" + Helper.GenerateRandomString(5), "1", false, true));
+                }
+                else
                 {
                     foreach (string cardId in Settings.PhantomCards)
                     {
