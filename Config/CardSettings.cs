@@ -14,12 +14,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
     {
         [JsonIgnore]
         public bool USE_CARD_SETTINGS { get; init; } = false;
+        public int WINRATE_MODIFIER_OWNED_CARD_PERCENTAGE { get; init; } = 24;
+        public double FLAT_NEGATIVE_MODIFIER_PER_UNOWNED_CARD { get; init; } = 2.5;
         public string PREFERRED_SUMMONER_ELEMENT { get; init; } = null;
         public int CARD_MIN_LEVEL { get; init; } = 1;
-        public int WINRATE_THRESHOLD { get; set; } = 45;
-        public int WINRATE_TRESHOLD { set { WINRATE_THRESHOLD = value; } } // _someone_ definitely not named jones needs to learn how to spell this word...
+        public int WINRATE_TRESHOLD { get; init; } = 45;
         public int MINIMUM_GAMES { get; init; } = 10;
         public bool ADD_ZERO_MANA_CARDS { get; init; } = true;
+        public bool PLAY_STARTER_CARDS { get; init; } = true;
 
         public CardSettings()
         {
@@ -58,6 +60,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
                 else if (property.PropertyType == typeof(Int32))
                 {
                     property.SetValue(this, Convert.ToInt32(value));
+                }
+                else if (property.PropertyType == typeof(double))
+                {
+                    property.SetValue(this, Convert.ToDouble(value));
                 }
                 else
                 {

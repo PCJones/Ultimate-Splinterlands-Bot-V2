@@ -1,18 +1,34 @@
-##Set it to true to to activate card settings
+## Set it to true to to activate card settings
 USE_CARD_SETTINGS=false
 
-##If the api only finds teams with a winrate smaller than this it will ignore the card settings
-#(0-100)
-WINRATE_THRESHOLD=45
+## Example 1: The team has a winrate of 50%, you own 5/5 cards of it. The API will pretend the team has a 74% WR.
+## Example 2: The team has a winrate of 50%, you own 1/4 cards of it. The API will pretend the team has a 50% WR (50 + (1/4 * 24) - (3 * 2)
+## Example 3: The team has a winrate of 50%, you own 0/4 cards of it. The API will pretend the team has a 42% WR.
+WINRATE_MODIFIER_OWNED_CARD_PERCENTAGE=24
+FLAT_NEGATIVE_MODIFIER_PER_UNOWNED_CARD=2.5
 
-##The minimum amount of historic games the api should have for a team to consider it
-MINIMUM_GAMES=10
-
-##Possible options: dragon,death,fire,earth,water,life
-PREFERRED_SUMMONER_ELEMENT=
-
-##Only play cards with this level or higher
+## Only play cards with this level or higher
 CARD_MIN_LEVEL=1
 
-##Always add 0 mana cards like Furious Chicken if the account has it
+## Always add 0 mana cards like Furious Chicken if the account has it
 ADD_ZERO_MANA_CARDS=true
+
+## If set to false the bot will never play any starter cards. Only recommended if you have a ton of cards
+PLAY_STARTER_CARDS=true
+
+## TBD
+#USE_FOCUS_ELEMENT_WINRATE_TRESHOLD=40
+
+
+####################################################################################
+##### DEPRECATED - only working for old API and will probably be removed soon:
+
+## The minimum amount of historic games the api should have for a team to consider it
+MINIMUM_GAMES=10
+
+## Possible options: dragon,death,fire,earth,water,life
+PREFERRED_SUMMONER_ELEMENT=
+
+## If the api only finds teams with a winrate smaller than this it will ignore the card settings
+## (0-100)
+WINRATE_THRESHOLD=40

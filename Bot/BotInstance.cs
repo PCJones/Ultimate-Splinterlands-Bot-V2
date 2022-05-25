@@ -55,6 +55,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             {
                 return;
             }
+
             JToken json = JToken.Parse(message.Text);
             if (Enum.TryParse(json["id"].ToString(), out GameState state))
             {
@@ -675,8 +676,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         return SleepUntil;
                     }
 
+                    //// Reveal the team even when the enemy surrendered, just to be sure
+                    RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
+
                     bool surrender = false;
-                    while (stopwatch.Elapsed.Seconds < 145)
+                    while (stopwatch.Elapsed.Seconds < 130)
                     {
                         if (Settings.LegacyWindowsMode)
                         {
@@ -703,9 +707,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     {
                         Log.WriteToLog($"{Username}: Looks like enemy surrendered!", Log.LogType.Warning);
                     }
-
-                    //// Reveal the team even when the enemy surrendered, just to be sure
-                    RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
                 }
 
                 Log.WriteToLog($"{Username}: Battle finished!");
