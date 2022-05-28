@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -63,7 +64,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
                 }
                 else if (property.PropertyType == typeof(double))
                 {
-                    property.SetValue(this, Convert.ToDouble(value));
+                    property.SetValue(this, Convert.ToDouble(value, CultureInfo.InvariantCulture));
                 }
                 else
                 {
