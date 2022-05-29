@@ -2,8 +2,8 @@
 USE_CARD_SETTINGS=false
 
 ## Example 1: The team has a winrate of 50%, you own 5/5 cards of it. The API will pretend the team has a 74% WR.
-## Example 2: The team has a winrate of 50%, you own 1/4 cards of it. The API will pretend the team has a 50% WR (50 + (1/4 * 24) - (3 * 2)
-## Example 3: The team has a winrate of 50%, you own 0/4 cards of it. The API will pretend the team has a 42% WR.
+## Example 2: The team has a winrate of 50%, you own 1/4 cards of it. The API will pretend the team has a 48.5% WR (50 + (1/4 * 24) - (3 * 2.5)
+## Example 3: The team has a winrate of 50%, you own 0/4 cards of it. The API will pretend the team has a 40% WR.
 WINRATE_MODIFIER_OWNED_CARD_PERCENTAGE=24
 FLAT_NEGATIVE_MODIFIER_PER_UNOWNED_CARD=2.5
 

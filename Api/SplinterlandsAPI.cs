@@ -63,7 +63,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             try
             {
                 string data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/players/outstanding_match?username={ username }");
-                if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
+                if (data == null || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
                     // wait 10 seconds just in case for this method

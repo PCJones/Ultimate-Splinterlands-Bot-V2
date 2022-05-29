@@ -237,7 +237,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 var enemyHasPicked = await SplinterlandsAPI.CheckEnemyHasPickedAsync(Username, tx);
                 if (enemyHasPicked.enemyHasPicked)
                 {
-                    return enemyHasPicked.surrender;
+                    // this is no longer working, but since this is only for old windows versions we don't really care!
+                    //return enemyHasPicked.surrender;
+                    return false;
                 }
                 Log.WriteToLog($"{Username}: Waiting 15 seconds for enemy to pick #{++counter}");
                 await Task.Delay(stopwatch.Elapsed.TotalSeconds > 170 ? 2500 : 15000);
