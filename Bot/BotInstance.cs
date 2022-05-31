@@ -1088,6 +1088,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
         private async Task ClaimQuestRewardAsync()
         {
+            return; // temp
             try
             {
                 string logText;
