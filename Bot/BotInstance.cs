@@ -716,7 +716,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     stopwatch.Stop();
                     if (surrender)
                     {
-                        Log.WriteToLog($"{Username}: Looks like enemy surrendered!", Log.LogType.Warning);
+                        Log.WriteToLog($"{Username}: Looks like the enemy surrendered!", Log.LogType.Warning);
                     }
                 }
 
@@ -733,7 +733,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{Username}: {ex}{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
+                Log.WriteToLog($"{Username}: {ex}{Environment.NewLine}Skipping account", Log.LogType.CriticalError);
             }
             finally
             {

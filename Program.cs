@@ -264,6 +264,13 @@ namespace Ultimate_Splinterlands_Bot_V2
                             break;
                         case "CLAIM_QUEST_REWARD":
                             Settings.ClaimQuestReward = bool.Parse(temp[1]);
+                            if (Settings.ClaimQuestReward)
+                            {
+                                Settings.ClaimQuestReward = false;
+                                Log.WriteToLog("Quest/Focus Chest Claiming is disabled in this version. It will be enabled again in the next bot update.", Log.LogType.Warning);
+                                Log.WriteToLog("Quest/Focus Chest Claiming is disabled in this version. It will be enabled again in the next bot update.", Log.LogType.Warning);
+                                Log.WriteToLog("Quest/Focus Chest Claiming is disabled in this version. It will be enabled again in the next bot update.", Log.LogType.Warning);
+                            }
                             break;
                         case "DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE":
                             Settings.DontClaimQuestNearHigherLeague = bool.Parse(temp[1]);
@@ -448,7 +455,13 @@ namespace Ultimate_Splinterlands_Bot_V2
                 { "Rising Dead", "death" },
                 { "Stubborn Mercenaries", "neutral" },
                 { "Gloridax Revenge", "dragon" },
-                { "Stealth Mission", "sneak" }
+                { "Stealth Mission", "sneak" },
+                {"stir", "Fire"},
+                {"pirate", "Water"},
+                {"lyanna", "Earth"},
+                {"defend", "Life"},
+                {"rising", "Death"},
+                {"gloridax", "Dragon"}
             };
 
             Settings.CardsDetails = Newtonsoft.Json.Linq.JArray.Parse(File.ReadAllText(Settings.StartupPath + @"/data/cardsDetails.json"));
