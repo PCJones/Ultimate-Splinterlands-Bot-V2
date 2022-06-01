@@ -101,7 +101,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
 
         public static void LogTeamToTable(JToken team, int mana, string rulesets)
         {
-            var t = new TablePrinter("Mana", "Rulesets", "Quest Prio", "Win %", "Owned Cards", "Team Rank", "Card Settings");
+            var t = new TablePrinter("Mana", "Rulesets", "Quest Prio", "Win %", "Owned Cards", "Team Rank", "Card Settings", "Team Settings");
 
             string winRate;
             string sortWinRate;
@@ -118,7 +118,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
             }
             string ownedCards = (string)team["owned_cards"] + "/" + (string)team["total_cards"];
 
-            t.AddRow(mana, rulesets, team["play_for_quest"], $"{winRate} ({sortWinRate})", ownedCards, team["teamRank"], team["card_settings"]);
+            t.AddRow(mana, rulesets, team["play_for_quest"], $"{winRate} ({sortWinRate})", ownedCards, team["teamRank"], team["card_settings"], team["team_settings"]);
             lock (_ConsoleLock)
             {
                 t.Print();
