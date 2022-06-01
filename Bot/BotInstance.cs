@@ -29,6 +29,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         public string Username { get; private set; }
         private string PostingKey { get; init; }
         private string ActiveKey { get; init; } // only needed for plugins, not used by normal bot
+        private string APIKey { get; init; } // only need for LostVoid API
         private string AccessToken { get; init; } // used for websocket authentication
         private int APICounter { get; set; }
         private int PowerCached { get; set; }
@@ -246,7 +247,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             } while (stopwatch.Elapsed.TotalSeconds < 179);
             return false;
         }
-        
+
         private async Task<(string secret, string tx, JToken team)> SubmitTeamAsync(string tx, JToken matchDetails, JToken team, bool secondTry = false)
         {
             try
@@ -288,8 +289,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 string teamHash = Helper.GenerateMD5Hash(summoner + "," + monsterClean + "," + secret);
 
-                /*string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"summoner\":\"" + summoner 
-                    + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" 
+                /*string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"summoner\":\"" + summoner
+                    + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\""
                     + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
                 */
                 string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
@@ -302,7 +303,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 var response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
                 string responseTx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
                 return (secret, responseTx, team);
-            }   
+            }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at submitting team: " + ex.ToString(), Log.LogType.Error);
@@ -415,11 +416,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
         }
 
-        public BotInstance(string username, string password, string accessToken, int index, string activeKey = "")
+        public BotInstance(string username, string password, string accessToken, int index, string activeKey = "", string apiKey = "")
         {
             Username = username;
             PostingKey = password;
             ActiveKey = activeKey;
+            APIKey = apiKey;
             AccessToken = accessToken.Length > 0 ? accessToken : GetAccessTokenAsync().Result;
             SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * -1);
             while (AccessToken.Length == 0)
@@ -689,7 +691,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
 
                     await Task.Delay(Settings._Random.Next(4500, 8000));
-                    
+
                     var submittedTeam = await SubmitTeamAsync(tx, matchDetails, team);
                     if (!await WaitForTransactionSuccessAsync(submittedTeam.tx, 10))
                     {
@@ -957,7 +959,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
 
-                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username, gameIdHash, true, ignorePrivateAPI);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username, gameIdHash, APIKey, true, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;

@@ -1,2 +1,2 @@
-username:postingkey
-username:postingkey
+username:postingkey:privatekey:apikey
+username:postingkey:privatekey:apikey

@@ -408,7 +408,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                     $"THREADS: {Settings.Threads} {Environment.NewLine}" +
                     $"{Settings.CardSettings}");
 
-
                 if (Settings.ClaimQuestReward)
                 {
                     Settings.ClaimQuestReward = false;
@@ -459,9 +458,13 @@ namespace Ultimate_Splinterlands_Bot_V2
                 {
                     Settings.BotInstances.Add(new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), accessToken, indexCounter++));
                 }
-                else if (temp.Length >= 3)
+                else if (temp.Length >= 3 && temp[2].Trim() != "privatekey" && temp[3].Trim() != "apikey")
                 {
-                    Settings.BotInstances.Add(new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), accessToken, indexCounter++, activeKey: temp[2].Trim()));
+                    Settings.BotInstances.Add(new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), accessToken, indexCounter++, activeKey: temp[2].Trim(), apiKey: temp[3].Trim()));
+                }
+                else if (temp.Length >= 3 && temp[2].Trim() == "privatekey" && temp[3].Trim() != "apikey")
+                {
+                    Settings.BotInstances.Add(new BotInstance(temp[0].Trim().ToLower(), temp[1].Trim(), accessToken, indexCounter++, "", apiKey: temp[3].Trim()));
                 }
             }
 
