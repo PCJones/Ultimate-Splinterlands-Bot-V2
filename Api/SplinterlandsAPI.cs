@@ -63,7 +63,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             try
             {
                 string data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/players/outstanding_match?username={ username }");
-                if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
+                if (data == null || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
                     // wait 10 seconds just in case for this method
@@ -221,37 +221,25 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     
                     return currentUser == username && !cardOnCooldown && !listedOnMarket;
                 })
-                .Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"]))
+                .Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"], false))
                 .Distinct().ToArray());
+
+                // add basic cards
+                if (Settings.CardSettings.USE_CARD_SETTINGS && !Settings.CardSettings.PLAY_STARTER_CARDS)
+                {
+                    // add empty card
+                    cards.Add(new Card("", "starter-" + "" + "-" + Helper.GenerateRandomString(5), "1", false, true));
+                }
+                else
+                {
+                    foreach (string cardId in Settings.PhantomCards)
+                    {
+                        cards.Add(new Card(cardId, "starter-" + cardId + "-" + Helper.GenerateRandomString(5), "1", false, true));
+                    }
+                }
 
                 cards.Sort();
                 cards.Reverse();
-
-                //// lets hope nobody ever needs to touch this mess again
-                //List<Card> cards = new List<Card>(JToken.Parse(data)["cards"].Where(x =>
-                //((x["delegated_to"].Type == JTokenType.Null && x["market_listing_type"].Type == JTokenType.Null)
-                //|| (string)x["delegated_to"] == username)
-                //&&
-                //    (string)x["market_listing_type"] == "RENT" &&
-                //    (int)x["market_listing_status"] == 3
-                //    ||
-                //    (
-                //        !((string)x["last_used_player"] != username &&
-                //            (
-                //                x["last_used_date"].Type != JTokenType.Null &&
-                //                DateTime.Parse(JsonConvert.SerializeObject(x["last_used_date"]).Replace("\"", "").Trim()) > oneDayAgo
-                //            )
-                //        )
-                //    )
-                //)
-                //.Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"]))
-                //.Distinct().OrderByDescending(x => x.SortValue()).ToArray());
-
-                // add basic cards
-                foreach (string cardId in Settings.PhantomCards)
-                {
-                    cards.Add(new Card(cardId, "starter-" + cardId + "-" + Helper.GenerateRandomString(5), "1", false));
-                }
 
                 // only use highest level/gold cards
                 Card[] cardsFiltered = cards.Select(x => cards.Where(y => x.card_detail_id == y.card_detail_id).First()).Distinct().ToArray();
@@ -262,7 +250,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             {
                 Log.WriteToLog($"{username}: Could not get cards from splinterlands API: {ex}{Environment.NewLine}Bot will play with phantom cards only.", Log.LogType.Error);
             }
-            return Settings.PhantomCards.Select(x => new Card(x, "starter-" + x + "-" + Helper.GenerateRandomString(5), "1", false)).ToArray();
+            return Settings.PhantomCards.Select(x => new Card(x, "starter-" + x + "-" + Helper.GenerateRandomString(5), "1", false, true)).ToArray();
         }
     }
 }

@@ -101,17 +101,24 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
 
         public static void LogTeamToTable(JToken team, int mana, string rulesets)
         {
-            bool avoidedDraw = team["avoided_draw"] != null;
-            var t = new TablePrinter("Mana", "Rulesets", "Quest Prio", "Win %", "Team Rank", "Draw Avoided", "Card Settings", "Team Settings");
-            team["team_settings"] = "False";
-            if (avoidedDraw)
+            var t = new TablePrinter("Mana", "Rulesets", "Quest Prio", "Win %", "Owned Cards", "Team Rank", "Card Settings");
+
+            string winRate;
+            string sortWinRate;
+            if (team["winrate"] == null)
             {
-                t.AddRow(mana, rulesets, team["play_for_quest"], (Convert.ToDouble(((string)team["summoner_wins"]).Replace(",", "."), CultureInfo.InvariantCulture) * 100).ToString("N2"), team["teamRank"], "Yes", team["card_settings"], team["team_settings"]);
+                // v1 api fallback
+                winRate = (Convert.ToDouble(((string)team["summoner_wins"]).Replace(",", "."), CultureInfo.InvariantCulture) * 100).ToString("N2");
+                sortWinRate = "";
             }
             else
             {
-                t.AddRow(mana, rulesets, team["play_for_quest"], (Convert.ToDouble(((string)team["summoner_wins"]).Replace(",", "."), CultureInfo.InvariantCulture) * 100).ToString("N2"), team["teamRank"], "No", team["card_settings"], team["team_settings"]);
+                winRate = (Convert.ToDouble(((string)team["winrate"]).Replace(",", "."), CultureInfo.InvariantCulture) * 100).ToString("N2");
+                sortWinRate = (Convert.ToDouble(((string)team["sort_winrate"]).Replace(",", "."), CultureInfo.InvariantCulture) * 100).ToString("N2");
             }
+            string ownedCards = (string)team["owned_cards"] + "/" + (string)team["total_cards"];
+
+            t.AddRow(mana, rulesets, team["play_for_quest"], $"{winRate} ({sortWinRate})", ownedCards, team["teamRank"], team["card_settings"]);
             lock (_ConsoleLock)
             {
                 t.Print();

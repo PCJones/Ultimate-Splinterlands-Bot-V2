@@ -114,13 +114,13 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             while (!token.IsCancellationRequested)
             {
-                while (instances.Count < (Settings.Threads) && !token.IsCancellationRequested)
+                while (instances.Count < Settings.Threads && !token.IsCancellationRequested)
                 {
                     try
                     {
                         lock (_TaskLock)
                         {
-                            if (++nextBotInstance >= (Settings.BotInstances.Count))
+                            if (++nextBotInstance >= Settings.BotInstances.Count)
                             {
                                 firstRuntrough = false;
                                 Log.LogBattleSummaryToTable();
@@ -182,7 +182,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 var result = await Settings.BotInstances[botInstance].DoBattleAsync();
                                 lock (_SleepInfoLock)
                                 {
-                                    sleepInfo[nextBotInstance] = result;
+                                    sleepInfo[botInstance] = result;
                                 }
                             }, cancellationToken));
                         }
@@ -408,6 +408,14 @@ namespace Ultimate_Splinterlands_Bot_V2
                     $"THREADS: {Settings.Threads} {Environment.NewLine}" +
                     $"{Settings.CardSettings}");
 
+
+                if (Settings.ClaimQuestReward)
+                {
+                    Settings.ClaimQuestReward = false;
+                    Log.WriteToLog("Quest/Focus Chest Claiming is disabled in this version. It will be enabled again in the next bot update.", Log.LogType.Warning);
+                    Log.WriteToLog("Quest/Focus Chest Claiming is disabled in this version. It will be enabled again in the next bot update.", Log.LogType.Warning);
+                    Log.WriteToLog("Quest/Focus Chest Claiming is disabled in this version. It will be enabled again in the next bot update.", Log.LogType.Warning);
+                }
                 return true;
             }
             catch (Exception ex)
@@ -487,7 +495,13 @@ namespace Ultimate_Splinterlands_Bot_V2
                 { "Rising Dead", "death" },
                 { "Stubborn Mercenaries", "neutral" },
                 { "Gloridax Revenge", "dragon" },
-                { "Stealth Mission", "sneak" }
+                { "Stealth Mission", "sneak" },
+                {"stir", "fire"},
+                {"pirate", "water"},
+                {"lyanna", "earth"},
+                {"defend", "life"},
+                {"rising", "death"},
+                {"gloridax", "dragon"}
             };
 
             Settings.CardsDetails = Newtonsoft.Json.Linq.JArray.Parse(File.ReadAllText(Settings.StartupPath + @"/data/cardsDetails.json"));

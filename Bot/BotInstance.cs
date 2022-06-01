@@ -55,6 +55,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             {
                 return;
             }
+
+            // temp
+            if (message.Text.Contains("error") && !message.Text.Contains("error\":null"))
+            {
+                if (!message.Text.Contains("he current player is alr"))
+                {
+                    System.IO.File.AppendAllText("errorlog.txt", message.Text + Environment.NewLine + "-" + Environment.NewLine);
+                }
+            }
+
             JToken json = JToken.Parse(message.Text);
             if (Enum.TryParse(json["id"].ToString(), out GameState state))
             {
@@ -139,9 +149,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             {
                 while (CurrentlyActive)
                 {
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < 12; i++)
                     {
-                        await Task.Delay(20 * 1000);
+                        await Task.Delay(5 * 1000);
                         if (!CurrentlyActive)
                         {
                             return;
@@ -227,14 +237,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 var enemyHasPicked = await SplinterlandsAPI.CheckEnemyHasPickedAsync(Username, tx);
                 if (enemyHasPicked.enemyHasPicked)
                 {
-                    return enemyHasPicked.surrender;
+                    // this is no longer working, but since this is only for old windows versions we don't really care!
+                    //return enemyHasPicked.surrender;
+                    return false;
                 }
                 Log.WriteToLog($"{Username}: Waiting 15 seconds for enemy to pick #{++counter}");
                 await Task.Delay(stopwatch.Elapsed.TotalSeconds > 170 ? 2500 : 15000);
             } while (stopwatch.Elapsed.TotalSeconds < 179);
             return false;
         }
-
+        
         private async Task<(string secret, string tx, JToken team)> SubmitTeamAsync(string tx, JToken matchDetails, JToken team, bool secondTry = false)
         {
             try
@@ -276,6 +288,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 string teamHash = Helper.GenerateMD5Hash(summoner + "," + monsterClean + "," + secret);
 
+                /*string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"summoner\":\"" + summoner 
+                    + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" 
+                    + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                */
                 string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                 COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_submit_team", json);
@@ -286,7 +302,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 var response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, "https://battle.splinterlands.com/battle/battle_tx", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", "https://splinterlands.com/", Encoding.UTF8);
                 string responseTx = Helper.DoQuickRegex("id\":\"(.*?)\"", response);
                 return (secret, responseTx, team);
-            }
+            }   
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at submitting team: " + ex.ToString(), Log.LogType.Error);
@@ -411,6 +427,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 // Sleep 20 seconds to not spam retries
                 Thread.Sleep(20000);
                 Log.WriteToLog($"{Username}: Could not get Access Token for this account - trying again", Log.LogType.Error);
+                Log.WriteToLog($"{Username}: Make sure to use your correct username and posting key", Log.LogType.Error);
                 AccessToken = GetAccessTokenAsync().Result;
             }
             LastCacheUpdate = DateTime.MinValue;
@@ -672,6 +689,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
 
                     await Task.Delay(Settings._Random.Next(4500, 8000));
+                    
                     var submittedTeam = await SubmitTeamAsync(tx, matchDetails, team);
                     if (!await WaitForTransactionSuccessAsync(submittedTeam.tx, 10))
                     {
@@ -679,8 +697,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         return SleepUntil;
                     }
 
+                    //// Reveal the team even when the enemy surrendered, just to be sure
+                    RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
+
                     bool surrender = false;
-                    while (stopwatch.Elapsed.Seconds < 145)
+                    while (stopwatch.Elapsed.Seconds < 130)
                     {
                         if (Settings.LegacyWindowsMode)
                         {
@@ -705,11 +726,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     stopwatch.Stop();
                     if (surrender)
                     {
-                        Log.WriteToLog($"{Username}: Looks like enemy surrendered!", Log.LogType.Warning);
+                        Log.WriteToLog($"{Username}: Looks like the enemy surrendered!", Log.LogType.Warning);
                     }
-
-                    // Reveal the team even when the enemy surrendered, just to be sure
-                    RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
                 }
 
                 Log.WriteToLog($"{Username}: Battle finished!");
@@ -725,7 +743,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{Username}: {ex}{Environment.NewLine}Skipping Account", Log.LogType.CriticalError);
+                Log.WriteToLog($"{Username}: {ex}{Environment.NewLine}Skipping account", Log.LogType.CriticalError);
             }
             finally
             {
@@ -805,6 +823,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 var sig = Secp256K1Manager.SignCompressedCompact(hash, CBase58.DecodePrivateWif(PostingKey));
                 var signature = Hex.ToString(sig);
                 var response = await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/players/login?name=" + Username + "&ref=&browser_id=" + bid + "&session_id=" + sid + "&sig=" + signature + "&ts=" + ts);
+
+                if (response.Contains("maintenance mode") || response.Contains("Too many request"))
+                {
+                    Log.WriteToLog($"{Username}: Error at claiming season rewards: Maintenance mode or IP soft ban - wait 5 minutes!", Log.LogType.Warning);
+                    await Task.Delay(5 * 60 * 1000);
+                    ts = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds().ToString();
+                    hash = Sha256Manager.GetHash(Encoding.ASCII.GetBytes(Username + ts));
+                    sig = Secp256K1Manager.SignCompressedCompact(hash, CBase58.DecodePrivateWif(PostingKey));
+                    signature = Hex.ToString(sig);
+                    response = await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/players/login?name=" + Username + "&ref=&browser_id=" + bid + "&session_id=" + sid + "&sig=" + signature + "&ts=" + ts);
+                }
 
                 var seasonReward = Helper.DoQuickRegex("\"season_reward\":(.*?)},\"", response);
                 if (seasonReward == "{\"reward_packs\":0")
@@ -928,7 +957,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
 
-                JToken team = await BattleAPI.GetTeamFromAPIAsync(mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username, gameIdHash, true, ignorePrivateAPI);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached.Quest, QuestCached.QuestLessDetails, Username, gameIdHash, true, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
@@ -1088,6 +1117,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
         private async Task ClaimQuestRewardAsync()
         {
+            return; // temp
             try
             {
                 string logText;
@@ -1174,7 +1204,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private async Task<double> GetECRFromAPIAsync()
         {
             var balanceInfo = ((JArray)await SplinterlandsAPI.GetPlayerBalancesAsync(Username)).Where(x => (string)x["token"] == "ECR").First();
-            if (balanceInfo["balance"].Type == JTokenType.Null) return 100;
+            if (balanceInfo["last_reward_time"].Type == JTokenType.Null) return 100;
             var captureRate = (int)balanceInfo["balance"];
             DateTime lastRewardTime = (DateTime)balanceInfo["last_reward_time"];
             double ecrRegen = 0.0868;

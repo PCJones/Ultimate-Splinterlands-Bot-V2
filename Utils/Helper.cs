@@ -50,6 +50,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
         {
             // Use static HttpClient to avoid exhausting system resources for network connections.
             var result = await Settings._httpClient.GetAsync(url);
+            if (result.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                int sleepingTime = Settings._Random.Next(60, 300);
+                Log.WriteToLog($"Splinterlands rate limit - sleeping for {sleepingTime} seconds", Log.LogType.Warning);
+                await Task.Delay(sleepingTime * 1000).ConfigureAwait(false);
+                return await DownloadPageAsync(url);
+            }
             var response = await result.Content.ReadAsStringAsync();
             // Write status code.
             return response;
