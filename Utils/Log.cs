@@ -104,7 +104,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
             var t = new TablePrinter("Mana", "Rulesets", "Quest Prio", "Win %", "Owned Cards", "Team Rank", "Card Settings", "Team Settings");
 
             string team_setting;
-            team_setting = team.Value<string?>("USE_TEAM_SETTINGS") ?? "False";
+            team_setting = team.Value<string>("USE_TEAM_SETTINGS") ?? "False";
 
             string winRate;
             string sortWinRate;
