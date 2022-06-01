@@ -78,9 +78,7 @@ namespace HiveAPI.CS
 		{
 			try
 			{
-				Log.WriteToLog("CreateTransactionDebug #1", debugOnly: true);
 				JObject oDGP = get_dynamic_global_properties();
-				Log.WriteToLog("CreateTransactionDebug #2", debugOnly: true);
 				CTransaction oTransaction = new()
 				{
 					ref_block_num = Convert.ToUInt16((uint)oDGP["head_block_number"] & 0xFFFF),
@@ -88,7 +86,7 @@ namespace HiveAPI.CS
 					expiration = Convert.ToDateTime(oDGP["time"]).AddSeconds(30),
 					operations = aOperations
 				};
-				Log.WriteToLog("CreateTransactionDebug #3", debugOnly: true);
+				
 				var response = SignTransaction(oTransaction, astrPrivateKeys);
 				return response;
 			}

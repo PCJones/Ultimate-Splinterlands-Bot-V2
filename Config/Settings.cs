@@ -22,7 +22,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public const string SPLINTERLANDS_WEBSOCKET_URL = "wss://ws2.splinterlands.com/";
         public const string SPLINTERLANDS_APP = "splinterlands/0.7.139";
         public const string BOT_GITHUB_REPO = "Sir-Void/Ultimate-Splinterlands-Bot-V2";
-        public static char[] CharSubset = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
+        public static char[] CharSubset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
         public static Random _Random = new();
         public static CookieContainer CookieContainer = new();
         public static string StartupPath = "";
@@ -81,6 +81,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static JArray CardsDetails;
         public static Dictionary<string, string> QuestTypes;
         public static Dictionary<string, string> Summoners;
-        public static readonly string[] PhantomCards = { "157", "158", "159", "160", "395", "396", "397", "398", "399", "161", "162", "163", "167", "400", "401", "402", "403", "440", "168", "169", "170", "171", "381", "382", "383", "384", "385", "172", "173", "174", "178", "386", "387", "388", "389", "437", "179", "180", "181", "182", "367", "368", "369", "370", "371", "183", "184", "185", "189", "372", "373", "374", "375", "439", "146", "147", "148", "149", "409", "410", "411", "412", "413", "150", "151", "152", "156", "414", "415", "416", "417", "135", "135", "136", "137", "138", "353", "354", "355", "356", "357", "139", "140", "141", "145", "358", "359", "360", "361", "438", "224", "190", "191", "192", "157", "423", "424", "425", "426", "194", "195", "196", "427", "428", "429", "" };
+        public static readonly string[] PhantomCards = { "157", "158", "159", "160", "395", "396", "397", "398", "399", "161", "162", "163", "167", "400", "401", "402", "403", "440", "441", "168", "169", "170", "171", "381", "382", "383", "384", "385", "172", "173", "174", "178", "386", "387", "388", "389", "437", "179", "180", "181", "182", "367", "368", "369", "370", "371", "183", "184", "185", "189", "372", "373", "374", "375", "439", "146", "147", "148", "149", "409", "410", "411", "412", "413", "150", "151", "152", "156", "414", "415", "416", "417", "135", "136", "137", "138", "353", "354", "355", "356", "357", "139", "140", "141", "145", "358", "359", "360", "361", "438", "224", "190", "191", "192", "157", "423", "424", "425", "426", "194", "195", "196", "427", "428", "429", "" };
     }
 }
