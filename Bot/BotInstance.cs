@@ -40,7 +40,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private double WinsTotal { get; set; }
         private (JToken Quest, JToken QuestLessDetails) QuestCached { get; set; } // This really should get it's own quest class...
         private Card[] CardsCached { get; set; }
-        private Dictionary<GameState, JToken> GameStates { get; set; }
+        private Dictionary<GameEvent, JToken> GameEvents { get; set; }
         public bool CurrentlyActive { get; private set; }
 
         private object _activeLock;
@@ -66,20 +66,20 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
 
             JToken json = JToken.Parse(message.Text);
-            if (Enum.TryParse(json["id"].ToString(), out GameState state))
+            if (Enum.TryParse(json["id"].ToString(), out GameEvent gameEvent))
             {
-                if (GameStates.ContainsKey(state))
+                if (GameEvents.ContainsKey(gameEvent))
                 {
-                    GameStates[state] = json["data"];
+                    GameEvents[gameEvent] = json["data"];
                 }
                 else
                 {
-                    GameStates.TryAdd(state, json["data"]);
+                    GameEvents.TryAdd(gameEvent, json["data"]);
                 }
 
-                if (state == GameState.ecr_update)
+                if (gameEvent == GameEvent.ecr_update)
                 {
-                    ECRCached = (double)GameStates[GameState.ecr_update]["capture_rate"] / 100;
+                    ECRCached = (double)GameEvents[GameEvent.ecr_update]["capture_rate"] / 100;
                 }
             }
             else if (json["data"]["trx_info"] != null
@@ -95,7 +95,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             Log.WriteToLog($"{Username}: Message received: {message.Text}", debugOnly: true);
         }
 
-        private async Task<bool> WaitForGameStateAsync(GameState state, int secondsToWait = 0)
+        private async Task<bool> WaitForGameEventAsync(GameEvent gameEvent, int secondsToWait = 0)
         {
             int maxI = secondsToWait > 0 ? secondsToWait : 1;
             for (int i = 0; i < maxI; i++)
@@ -104,7 +104,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 {
                     await Task.Delay(1000);
                 }
-                if (GameStates.ContainsKey(state))
+                if (GameEvents.ContainsKey(gameEvent))
                 {
                     return true;
                 }
@@ -126,16 +126,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             for (int i = 0; i < secondsToWait * 2; i++)
             {
                 await Task.Delay(500);
-                if (GameStates.ContainsKey(GameState.transaction_complete)
-                    && (string)GameStates[GameState.transaction_complete]["trx_info"]["id"] == tx)
+                if (GameEvents.ContainsKey(GameEvent.transaction_complete)
+                    && (string)GameEvents[GameEvent.transaction_complete]["trx_info"]["id"] == tx)
                 {
-                    if ((bool)GameStates[GameState.transaction_complete]["trx_info"]["success"])
+                    if ((bool)GameEvents[GameEvent.transaction_complete]["trx_info"]["success"])
                     {
                         return true;
                     }
                     else
                     {
-                        Log.WriteToLog($"{Username}: Transaction error: " + tx + " - " + (string)GameStates[GameState.transaction_complete]["trx_info"]["error"], Log.LogType.Warning);
+                        Log.WriteToLog($"{Username}: Transaction error: " + tx + " - " + (string)GameEvents[GameEvent.transaction_complete]["trx_info"]["error"], Log.LogType.Warning);
                         return false;
                     }
                 }
@@ -433,7 +433,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             LogSummary = new LogSummary(index, username);
             _activeLock = new object();
             APICounter = 99999;
-            GameStates = new Dictionary<GameState, JToken>();
+            GameEvents = new Dictionary<GameEvent, JToken>();
             DrawsTotal = 0;
             WinsTotal = 0;
             LossesTotal = 0;
@@ -457,7 +457,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 return SleepUntil.AddMinutes(30);
             }
 
-            GameStates.Clear();
+            GameEvents.Clear();
             var wsClient = Settings.LegacyWindowsMode ? null : new WebsocketClient(new Uri(Settings.SPLINTERLANDS_WEBSOCKET_URL));
             if (!Settings.LegacyWindowsMode) wsClient.ReconnectTimeout = new TimeSpan(0, 5, 0);
 
@@ -659,14 +659,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         }
                         else
                         {
-                            if (!await WaitForGameStateAsync(GameState.match_found, 185))
+                            if (!await WaitForGameEventAsync(GameEvent.match_found, 185))
                             {
                                 Log.WriteToLog($"{Username}: Banned from ranked? Sleeping for 10 minutes!", Log.LogType.Warning);
                                 SleepUntil = DateTime.Now.AddMinutes(10);
                                 return SleepUntil;
                             }
 
-                            matchDetails = GameStates[GameState.match_found];
+                            matchDetails = GameEvents[GameEvent.match_found];
                         }
                     }
 
@@ -700,12 +700,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         }
                         else
                         {
-                            if (await WaitForGameStateAsync(GameState.opponent_submit_team, 4))
+                            if (await WaitForGameEventAsync(GameEvent.opponent_submit_team, 4))
                             {
                                 break;
                             }
                             // if there already is a battle result now it's because the enemy surrendered or the game vanished
-                            if (await WaitForGameStateAsync(GameState.battle_result) || await WaitForGameStateAsync(GameState.battle_cancelled))
+                            if (await WaitForGameEventAsync(GameEvent.battle_result) || await WaitForGameEventAsync(GameEvent.battle_cancelled))
                             {
                                 surrender = true;
                                 break;
@@ -1020,24 +1020,24 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 await ShowBattleResultLegacyAsync(tx);
                 return;
             }
-            if (!await WaitForGameStateAsync(GameState.battle_result, 210))
+            if (!await WaitForGameEventAsync(GameEvent.battle_result, 210))
             {
                 Log.WriteToLog($"{Username}: Could not get battle result", Log.LogType.Error);
             }
             else
             {
-                decimal decReward = await WaitForGameStateAsync(GameState.balance_update, 10) ?
-                    (decimal)GameStates[GameState.balance_update]["amount"] : 0;
+                decimal decReward = await WaitForGameEventAsync(GameEvent.balance_update, 10) ?
+                    (decimal)GameEvents[GameEvent.balance_update]["amount"] : 0;
 
-                int newRating = await WaitForGameStateAsync(GameState.rating_update) ?
-                    (int)GameStates[GameState.rating_update]["new_rating"] : RatingCached;
+                int newRating = await WaitForGameEventAsync(GameEvent.rating_update) ?
+                    (int)GameEvents[GameEvent.rating_update]["new_rating"] : RatingCached;
 
-                LeagueCached = await WaitForGameStateAsync(GameState.rating_update) ?
-                    (int)GameStates[GameState.rating_update]["new_league"] : LeagueCached;
+                LeagueCached = await WaitForGameEventAsync(GameEvent.rating_update) ?
+                    (int)GameEvents[GameEvent.rating_update]["new_league"] : LeagueCached;
 
                 int ratingChange = newRating - RatingCached;
 
-                if (await WaitForGameStateAsync(GameState.quest_progress))
+                if (await WaitForGameEventAsync(GameEvent.quest_progress))
                 {
                     // this is a lazy way until quest is implemented as a class and we can update the quest object here
                     QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
@@ -1045,11 +1045,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 RatingCached = newRating;
 
                 int battleResult = 0;
-                if ((string)GameStates[GameState.battle_result]["winner"] == Username)
+                if ((string)GameEvents[GameEvent.battle_result]["winner"] == Username)
                 {
                     battleResult = 1;
                 }
-                else if ((string)GameStates[GameState.battle_result]["winner"] == "DRAW")
+                else if ((string)GameEvents[GameEvent.battle_result]["winner"] == "DRAW")
                 {
                     battleResult = 2;
                 }
