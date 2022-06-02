@@ -7,23 +7,23 @@ MINIMUM_BATTLE_POWER=0
 CLAIM_SEASON_REWARD=false
 CLAIM_QUEST_REWARD=false
 
-##If enabled it will click on the advance to next league button
+## If enabled it will click on the advance to next league button
 ADVANCE_LEAGUE=true
 
-# the maximum league the bot will advance to. 0=bronze, 1=silver, 2=gold, 3=diamond, 4=champion
+# The maximum league the bot will advance to. 0=bronze, 1=silver, 2=gold, 3=diamond, 4=champion
 MAX_LEAGUE_TIER=4
 
-##seperate by comma like this: earth,life - it will request new quest on earth and life quest
-##Remove the # at the beginning of the next line to activate
+## seperate by comma like this: earth,life - it will request new quest on earth and life quest
+## Remove the # at the beginning of the next line to activate
 #REQUEST_NEW_QUEST=earth
 ##################General Settings##################
 
 ##################Technical Settings##################
-##Threads = number of parallel accoounts.
+## Threads = number of parallel accoounts.
 THREADS=1
 
-##Disable this if you want a cleaner log or you have problems with too many
-##requests to the splinterlands API. Disabling will also make battles 10-25 seconds faster.
+## Disable this if you want a cleaner log or you have problems with too many
+## requests to the splinterlands API. Disabling will also make battles 10-25 seconds faster.
 SHOW_BATTLE_RESULTS=true
 ##################Lightning Mode Settings##################
 
@@ -31,7 +31,7 @@ SHOW_BATTLE_RESULTS=true
 USE_API=true
 API_URL=http://splinterlandsapi.pcjones.de:8080/v2/
 
-##PRIVATE API Settings - ignore if you don't have it
+## PRIVATE API Settings - ignore if you don't have it
 USE_PRIVATE_API=false
 PRIVATE_API_URL=
 PRIVATE_API_SHOP=
@@ -44,8 +44,8 @@ SHOW_API_RESPONSE=true
 DEBUG=false
 WRITE_LOG_TO_FILE=false
 
-##Enable this if you get weird characters in your console that makes it hard to read
+## Enable this if you get weird characters in your console that makes it hard to read
 DISABLE_CONSOLE_COLORS=false
 
-##Advanced bot logic
+## Advanced bot logic
 #nothing here at the moment
