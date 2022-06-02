@@ -37,7 +37,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Model
         [JsonProperty("rewards")]
         public JToken? Rewards { get; init; }
         [JsonProperty("chest_tier")]
-        public int ChestTier { get; init; }
+        public int? ChestTier { get; init; }
         [JsonProperty("rshares")]
         public int RShares { get; init; }
         [JsonProperty("league")]
