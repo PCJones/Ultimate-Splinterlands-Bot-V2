@@ -7,11 +7,11 @@ USE_CARD_SETTINGS=false
 WINRATE_MODIFIER_OWNED_CARD_PERCENTAGE=24
 FLAT_NEGATIVE_MODIFIER_PER_UNOWNED_CARD=2.5
 
-## If you finished in silver last season the modifiers above will only be applied once you are
-## in silver or higher
+## Example: If you finished in silver last season the modifiers above will only be applied
+## once you are in silver or higher
 DISABLE_OWNED_CARDS_PREFERENCE_BEFORE_CHEST_LEAGUE_RATING=true
 
-## If you finished in silver last season the bot will not prioritize the quest focus element
+## Example: If you finished in silver last season the bot will not prioritize the quest focus element
 ## before you are in silver or higher
 DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING=true
 
@@ -25,7 +25,7 @@ ADD_ZERO_MANA_CARDS=true
 PLAY_STARTER_CARDS=true
 
 ## Possible options: dragon,death,fire,earth,water,life
-## If you only want to play earth and fire elements if the bot is not fighting for the quest focus:
+## Example: You only want to play earth and fire elements if the bot is not fighting for the quest focus:
 ## PREFERRED_SUMMONER_ELEMENTS=earth,fire
 PREFERRED_SUMMONER_ELEMENTS=dragon,death,fire,earth,water,life
 
