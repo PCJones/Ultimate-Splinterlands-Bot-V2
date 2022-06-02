@@ -198,7 +198,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             Log.WriteToLog($"{username}: Requesting team from public API...");
             try
             {
-                bool chestTierReached = quest != null && chestTier >= quest.ChestTier;
+                bool chestTierReached = quest != null && quest.ChestTier != null && chestTier >= quest.ChestTier;
                 JObject matchDetails = new(
                         new JProperty("mana", mana),
                         new JProperty("rules", rules),
