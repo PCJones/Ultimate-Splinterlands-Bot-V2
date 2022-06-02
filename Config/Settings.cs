@@ -20,7 +20,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public const string SPLINTERLANDS_API_URL_FALLBACK = "https://game-api.splinterlands.io";
         public const string SPLINTERLANDS_BROADCAST_URL = "https://broadcast.splinterlands.com/send";
         public const string SPLINTERLANDS_WEBSOCKET_URL = "wss://ws2.splinterlands.com/";
-        public const string SPLINTERLANDS_APP = "splinterlands/0.7.139";
+        public const string SPLINTERLANDS_APP = "splinterlands/0.7.220524";
         public const string BOT_GITHUB_REPO = "PCJones/Ultimate-Splinterlands-Bot-V2";
         public static char[] CharSubset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
         public static Random _Random = new();
@@ -51,12 +51,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static object PowerTransferBotLock = new();
 
         public static bool PrioritizeQuest = true;
-        public static bool IgnoreEcrForQuest = false;
         public static bool ClaimQuestReward = false;
         public static bool ClaimSeasonReward = false;
-        public static bool DontClaimQuestNearHigherLeague = false;
-        public static int MinimumLeagueForQuestClaim = 1;
-        public static bool WaitForMissingCPAtQuestClaim = false;
         public static bool AdvanceLeague = false;
         public static int SleepBetweenBattles = 30;
         public static int StartBattleAboveECR = 0;
