@@ -17,7 +17,6 @@ ADVANCE_LEAGUE=true
 
 ##################Technical Settings##################
 ##Threads = number of parallel accoounts.
-##Threads are MUCH faster than in the browser mode
 THREADS=1
 
 ##Disable this if you want a cleaner log or you have problems with too many
