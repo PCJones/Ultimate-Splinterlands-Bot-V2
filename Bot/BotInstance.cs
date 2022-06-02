@@ -937,7 +937,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
 
-                int chestTier = GetCurrentChestTier();
+                int chestTier = GetTier(LeagueCached);
 
                 JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached, chestTier, Username, gameIdHash, false, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
@@ -1164,8 +1164,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     return;
                 }
 
-                int highestPossibleLeage = GetMaxLeagueByRankAndPower();
-                if (highestPossibleLeage > LeagueCached)
+
+                int highestPossibleLeague = GetMaxLeagueByRankAndPower();
+                int highestPossibleLeagueTier = GetTier(highestPossibleLeague);
+                if (highestPossibleLeague > LeagueCached && highestPossibleLeagueTier <= Settings.MaxLeagueTier)
                 {
                     Log.WriteToLog($"{Username}: { "Advancing to higher league!".Pastel(Color.Green)}");
 
@@ -1233,30 +1235,30 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
         }
 
-        private int GetCurrentChestTier()
+        private int GetTier(int league)
         {
             // novice
-            if (LeagueCached == 0)
+            if (league == 0)
             {
                 return -1;
             }
             // bronze
-            if (LeagueCached is >= 1 and <= 3)
+            if (league is >= 1 and <= 3)
             {
                 return 0;
             }
             // silver
-            if (LeagueCached is >= 4 and <= 6)
+            if (league is >= 4 and <= 6)
             {
                 return 1;
             }
             // gold
-            if (LeagueCached is >= 5 and <= 8)
+            if (league is >= 5 and <= 8)
             {
                 return 2;
             }
             // diamond
-            if (LeagueCached is >= 5 and <= 8)
+            if (league is >= 5 and <= 8)
             {
                 return 3;
             }

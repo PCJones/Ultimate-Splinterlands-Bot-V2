@@ -10,6 +10,9 @@ CLAIM_QUEST_REWARD=false
 ##If enabled it will click on the advance to next league button
 ADVANCE_LEAGUE=true
 
+# the maximum league the bot will advance to. 0=bronze, 1=silver, 2=gold, 3=diamond, 4=champion
+MAX_LEAGUE_TIER=4
+
 ##seperate by comma like this: earth,life - it will request new quest on earth and life quest
 ##Remove the # at the beginning of the next line to activate
 #REQUEST_NEW_QUEST=earth

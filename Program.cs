@@ -265,6 +265,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                         case "ADVANCE_LEAGUE":
                             Settings.AdvanceLeague = bool.Parse(temp[1]);
                             break;
+                        case "MAX_LEAGUE_TIER":
+                            Settings.MaxLeagueTier = Convert.ToInt32(temp[1]);
+                            break;
                         case "REQUEST_NEW_QUEST":
                             Settings.BadQuests = temp[1].Split(',');
                             break;
