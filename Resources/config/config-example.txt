@@ -7,9 +7,6 @@ MINIMUM_BATTLE_POWER=0
 CLAIM_SEASON_REWARD=false
 CLAIM_QUEST_REWARD=false
 
-##If quest is not finished bot will continue fighting even if STOP ECR is reached
-IGNORE_ECR_FOR_QUEST=false
-
 ##E.g. if you are almost bronze 1 and have enough power, it won't claim quest reward until you are bronze 1
 DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE=true
 
