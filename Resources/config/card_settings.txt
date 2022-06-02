@@ -7,6 +7,14 @@ USE_CARD_SETTINGS=false
 WINRATE_MODIFIER_OWNED_CARD_PERCENTAGE=24
 FLAT_NEGATIVE_MODIFIER_PER_UNOWNED_CARD=2.5
 
+## If you finished in silver last season the modifiers above will only be applied once you are
+## in silver or higher
+DISABLE_OWNED_CARDS_PREFERENCE_BEFORE_CHEST_LEAGUE_RATING=true
+
+## If you finished in silver last season the bot will not prioritize the quest focus element
+## before you are in silver or higher
+DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING=true
+
 ## Only play cards with this level or higher
 CARD_MIN_LEVEL=1
 

@@ -937,7 +937,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
 
-                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached, Username, gameIdHash, true, ignorePrivateAPI);
+                int chestTier = GetCurrentChestTier();
+
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached, chestTier, Username, gameIdHash, false, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
@@ -1105,7 +1107,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
                 // Focus quest
-                else if (QuestCached != null && QuestCached.Rewards == null && QuestCached.TotalItems == 0 && QuestCached.IsExpired)
+                else if (QuestCached != null && QuestCached.Rewards.Type == JTokenType.Null && QuestCached.TotalItems == 0 && QuestCached.IsExpired)
                 {
                     logText = "Focus quest reward can be claimed";
                     Log.WriteToLog($"{Username}: {logText.Pastel(Color.Green)}");
@@ -1120,9 +1122,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         if (await WaitForTransactionSuccessAsync(tx, 45))
                         {
                             Log.WriteToLog($"{Username}: { "Claimed focus quest reward:".Pastel(Color.Green) } {tx}");
-
-                            await Task.Delay(12500); // wait for splinterlands to update the quest
-                            QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username); // force reload the quest
                         }
                     }
                 }
@@ -1232,6 +1231,36 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             {
                 Log.WriteToLog($"{Username}: Error at changing quest: {ex}", Log.LogType.Error);
             }
+        }
+
+        private int GetCurrentChestTier()
+        {
+            // novice
+            if (LeagueCached == 0)
+            {
+                return -1;
+            }
+            // bronze
+            if (LeagueCached is >= 1 and <= 3)
+            {
+                return 0;
+            }
+            // silver
+            if (LeagueCached is >= 4 and <= 6)
+            {
+                return 1;
+            }
+            // gold
+            if (LeagueCached is >= 5 and <= 8)
+            {
+                return 2;
+            }
+            // diamond
+            if (LeagueCached is >= 5 and <= 8)
+            {
+                return 3;
+            }
+            return 4;
         }
 
         private int GetMaxLeagueByRankAndPower()

@@ -23,6 +23,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public int CARD_MIN_LEVEL { get; init; } = 1;
         public bool ADD_ZERO_MANA_CARDS { get; init; } = true;
         public bool PLAY_STARTER_CARDS { get; init; } = true;
+        public bool DISABLE_OWNED_CARDS_PREFERENCE_BEFORE_CHEST_LEAGUE_RATING { get; init; } = true;
+        public bool DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING { get; init; } = true;
         public int WINRATE_THRESHOLD { get; init; } = 45; // legacy
         public int MINIMUM_GAMES { get; init; } = 10; // legacy
         public string PREFERRED_SUMMONER_ELEMENT { get; init; } = null; // legacy
