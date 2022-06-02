@@ -16,9 +16,18 @@ ADD_ZERO_MANA_CARDS=true
 ## If set to false the bot will never play any starter cards. Only recommended if you have a ton of cards
 PLAY_STARTER_CARDS=true
 
-## TBD
-#USE_FOCUS_ELEMENT_WINRATE_TRESHOLD=40
+## Possible options: dragon,death,fire,earth,water,life
+## If you only want to play earth and fire elements if the bot is not fighting for the quest focus:
+## PREFERRED_SUMMONER_ELEMENTS=earth,fire
+PREFERRED_SUMMONER_ELEMENTS=dragon,death,fire,earth,water,life
 
+## If PRIORITIZE_QUEST=true then the API will always try to play the focus element, unless it can not find
+## A team with a winrate >= this
+USE_FOCUS_ELEMENT_WINRATE_TRESHOLD=60
+
+## If the API can not find a team with your focus or preferred summoner elements >= this winrate it
+## it will chose a team without element restrictions applied
+PREFERRED_SUMMONER_ELEMENTS_WINRATE_TRESHOLD=48
 
 ####################################################################################
 ##### DEPRECATED - only working for old API and will probably be removed soon:
