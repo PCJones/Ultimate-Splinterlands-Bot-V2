@@ -45,13 +45,4 @@ WRITE_LOG_TO_FILE=false
 DISABLE_CONSOLE_COLORS=false
 
 ##Advanced bot logic
-
-##If you enable both DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE and this the bot will not only wait
-##until you have enough rating for the higher league, but also until you have enough
-##power. Don't enable this unless you actively manage your power.
-WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM=false
-
-##Only claim the quest if the account is in this league or higher. Bronze 3 = 1, Bronze 2 = 2,
-##Bronze 1 = 3, Silver 3 = 4, Silver 2 = 5, Silver 1 = 6, Gold 3 = 7, Gold 2 = 8, Gold 1 = 9, etc...
-MINIMUM_LEAGUE_FOR_QUEST_CLAIM=1
-#####################Advanced Settings#####################
+#nothing here at the moment
