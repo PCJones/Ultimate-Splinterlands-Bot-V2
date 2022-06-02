@@ -156,7 +156,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             return null;
         }
-        public static async Task<(JToken quest, JToken questLessDetails)> GetPlayerQuestAsync(string username)
+        public static async Task<Quest> GetPlayerQuestAsync(string username)
         {
             try
             {
@@ -168,23 +168,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     Log.WriteToLog($"{username}: Error with splinterlands API for quest, trying fallback api...", Log.LogType.Warning);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/players/quests?username={ username }");
                 }
-                JToken quest = JToken.Parse(data)[0];
 
-                var questLessDetails = new JObject(
-                    new JProperty("name", quest["name"]),
-                    new JProperty("splinter", Settings.QuestTypes[(string)quest["name"]]),
-                    new JProperty("total", quest["total_items"]),
-                    new JProperty("completed", quest["completed_items"])
-                    );
-
-                return (quest, questLessDetails);
+                return JsonConvert.DeserializeObject<Quest[]>(data)[0];
 
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{username}: Could not get quest from splinterlands API: {ex}", Log.LogType.Error);
             }
-            return (null, null);
+            return null;
         }
 
         public static async Task<Card[]> GetPlayerCardsAsync(string username)

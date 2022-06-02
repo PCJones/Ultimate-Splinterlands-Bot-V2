@@ -38,7 +38,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private int LossesTotal { get; set; }
         private double DrawsTotal { get; set; }
         private double WinsTotal { get; set; }
-        private (JToken Quest, JToken QuestLessDetails) QuestCached { get; set; } // This really should get it's own quest class...
+        private Quest QuestCached { get; set; }
         private Card[] CardsCached { get; set; }
         private Dictionary<GameEvent, JToken> GameEvents { get; set; }
         public bool CurrentlyActive { get; private set; }
@@ -513,9 +513,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 LogSummary.ECR = ECRCached.ToString();
 
                 Log.WriteToLog($"{Username}: Deck size: {(CardsCached.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
-                if (QuestCached.Quest != null)
+                if (QuestCached != null)
                 {
-                    Log.WriteToLog($"{Username}: Quest details: {JsonConvert.SerializeObject(QuestCached.QuestLessDetails).Pastel(Color.Yellow)}");
+                    Log.WriteToLog($"{Username}: Quest element: {Settings.QuestTypes[QuestCached.Name].Pastel(Color.Yellow)}. " +
+                        $"Completed items: {QuestCached.CompletedItems.ToString().Pastel(Color.Yellow)}");
                 }
 
                 await AdvanceLeagueAsync();
@@ -525,25 +526,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
                 if (ECRCached < Settings.StopBattleBelowECR)
                 {
-                    if (Settings.IgnoreEcrForQuest && QuestCached.Quest != null && (int)QuestCached.Quest["completed_items"] < (int)QuestCached.Quest["total_items"])
+                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
+                    if (Settings.StartBattleAboveECR >= 10)
                     {
-                        Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - keep playing because quest is not yet finished!", Log.LogType.Warning);
+                        SetSleepUntilStartEcrReached();
+                        TransferPowerIfNeeded();
                     }
                     else
                     {
-                        Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
-                        if (Settings.StartBattleAboveECR >= 10)
-                        {
-                            SetSleepUntilStartEcrReached();
-                            TransferPowerIfNeeded();
-                        }
-                        else
-                        {
-                            SleepUntil = DateTime.Now.AddMinutes(5);
-                        }
-                        await Task.Delay(1500); // Short delay to not spam splinterlands api
-                        return SleepUntil;
+                        SleepUntil = DateTime.Now.AddMinutes(5);
                     }
+                    await Task.Delay(1500); // Short delay to not spam splinterlands api
+                    return SleepUntil;
                 }
 
                 if (PowerCached < Settings.MinimumBattlePower)
