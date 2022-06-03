@@ -1086,7 +1086,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             {
                 string logText;
                 // Old quest types
-                if (QuestCached != null && QuestCached.CompletedItems >= QuestCached.TotalItems
+                if (QuestCached != null && QuestCached.Name.Length > 10 && QuestCached.CompletedItems >= QuestCached.TotalItems
                     && QuestCached.Rewards.Type == JTokenType.Null && QuestCached.TotalItems > 0)
                 {
                     logText = "Quest reward can be claimed";
