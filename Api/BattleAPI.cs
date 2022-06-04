@@ -202,7 +202,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             return null;
         }
-        private static async Task<JToken> GetTeamFromPublicAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPublicAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string apikey, bool secondTry = false)
         {
             string APIResponse = "";
             Log.WriteToLog($"{username}: Requesting team from public API...");
@@ -228,7 +228,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     {
                         Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
                         System.Threading.Thread.Sleep(25000);
-                        return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
+                        return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, apikey, true);
                     }
                     else
                     {
@@ -260,13 +260,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 {
                     Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                     await Task.Delay(2000);
-                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
+                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, apikey, true);
                 }
                 else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: API overloaded or down?: Waiting 10 minutes...", Log.LogType.Warning);
                     await Task.Delay(1000 * 60 * 10);
-                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
+                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, apikey, true);
                 }
             }
             return null;

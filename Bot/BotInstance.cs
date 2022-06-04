@@ -1021,7 +1021,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
                     Log.WriteToLog($"{Username}: New rating is { battleResult.newRating } ({ battleResult.ratingChange.ToString().Pastel(Color.Red) })");
                     Settings.InstanceLose++;
-                    BattleAPI.ReportLoss((string)GameStates[GameState.battle_result]["winner"], Username);
                     break;
 
                 default:
@@ -1097,7 +1096,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         logTextBattleResult = $"You lost :(";
                         Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
                         Log.WriteToLog($"{Username}: New rating is { newRating } ({ ratingChange.ToString().Pastel(Color.Red) })");
-                        BattleAPI.ReportLoss((string)GameStates[GameState.battle_result]["winner"], Username);
                         Settings.InstanceLose++;
                         break;
 
