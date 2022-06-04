@@ -955,7 +955,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 int chestTier = GetTier(LeagueCached);
 
-                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached, chestTier, Username, gameIdHash, false, ignorePrivateAPI);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached, chestTier, Username, gameIdHash, APIKey, false, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
