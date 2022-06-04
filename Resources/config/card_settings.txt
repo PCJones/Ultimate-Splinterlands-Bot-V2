@@ -7,6 +7,14 @@ USE_CARD_SETTINGS=false
 WINRATE_MODIFIER_OWNED_CARD_PERCENTAGE=24
 FLAT_NEGATIVE_MODIFIER_PER_UNOWNED_CARD=2.5
 
+## Example: If you finished in silver last season the modifiers above will only be applied
+## once you are in silver or higher
+DISABLE_OWNED_CARDS_PREFERENCE_BEFORE_CHEST_LEAGUE_RATING=true
+
+## Example: If you finished in silver last season the bot will not prioritize the quest focus element
+## before you are in silver or higher
+DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING=true
+
 ## Only play cards with this level or higher
 CARD_MIN_LEVEL=1
 
@@ -16,9 +24,18 @@ ADD_ZERO_MANA_CARDS=true
 ## If set to false the bot will never play any starter cards. Only recommended if you have a ton of cards
 PLAY_STARTER_CARDS=true
 
-## TBD
-#USE_FOCUS_ELEMENT_WINRATE_TRESHOLD=40
+## Possible options: dragon,death,fire,earth,water,life
+## Example: You only want to play earth and fire elements if the bot is not fighting for the quest focus:
+## PREFERRED_SUMMONER_ELEMENTS=earth,fire
+PREFERRED_SUMMONER_ELEMENTS=dragon,death,fire,earth,water,life
 
+## If the API can not find a team with your preferred summoner elements with a winrate >= this
+## it will chose a team without element restrictions applied
+PREFERRED_SUMMONER_ELEMENTS_WINRATE_TRESHOLD=48
+
+## If PRIORITIZE_QUEST=true then the API will always try to play the focus element, unless it can not find
+## A team with a winrate >= this
+USE_FOCUS_ELEMENT_WINRATE_TRESHOLD=60
 
 ####################################################################################
 ##### DEPRECATED - only working for old API and will probably be removed soon:

@@ -244,11 +244,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                         case "PRIORITIZE_QUEST":
                             Settings.PrioritizeQuest = bool.Parse(temp[1]);
                             break;
-
-                        case "IGNORE_ECR_FOR_QUEST":
-                            Settings.IgnoreEcrForQuest = bool.Parse(temp[1]);
-                            break;
-
                         case "SLEEP_BETWEEN_BATTLES":
                             Settings.SleepBetweenBattles = Convert.ToInt32(temp[1]);
                             break;
@@ -280,23 +275,12 @@ namespace Ultimate_Splinterlands_Bot_V2
                         case "CLAIM_QUEST_REWARD":
                             Settings.ClaimQuestReward = bool.Parse(temp[1]);
                             break;
-
-                        case "DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE":
-                            Settings.DontClaimQuestNearHigherLeague = bool.Parse(temp[1]);
-                            break;
-
-                        case "MINIMUM_LEAGUE_FOR_QUEST_CLAIM":
-                            Settings.MinimumLeagueForQuestClaim = Convert.ToInt32(temp[1]);
-                            break;
-
-                        case "WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM":
-                            Settings.WaitForMissingCPAtQuestClaim = bool.Parse(temp[1]);
-                            break;
-
                         case "ADVANCE_LEAGUE":
                             Settings.AdvanceLeague = bool.Parse(temp[1]);
                             break;
-
+                        case "MAX_LEAGUE_TIER":
+                            Settings.MaxLeagueTier = Convert.ToInt32(temp[1]);
+                            break;
                         case "REQUEST_NEW_QUEST":
                             Settings.BadQuests = temp[1].Split(',');
                             break;
@@ -391,12 +375,9 @@ namespace Ultimate_Splinterlands_Bot_V2
                     $"WRITE_LOG_TO_FILE: {Settings.WriteLogToFile}{Environment.NewLine}" +
                     $"SHOW_API_RESPONSE: {Settings.ShowAPIResponse}{Environment.NewLine}" +
                     $"PRIORITIZE_QUEST: {Settings.PrioritizeQuest}{Environment.NewLine}" +
-                    $"IGNORE_ECR_FOR_QUEST: {Settings.IgnoreEcrForQuest}{Environment.NewLine}" +
                     $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                     $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
                     $"REQUEST_NEW_QUEST: {string.Join(",", Settings.BadQuests)}{Environment.NewLine}" +
-                    $"DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE: {Settings.DontClaimQuestNearHigherLeague}{Environment.NewLine}" +
-                    $"WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM: {Settings.WaitForMissingCPAtQuestClaim}{Environment.NewLine}" +
                     $"ADVANCE_LEAGUE: {Settings.AdvanceLeague}{Environment.NewLine}" +
                     $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
                     $"START_BATTLE_ABOVE_ECR: {Settings.StartBattleAboveECR}{Environment.NewLine}" +
@@ -408,13 +389,6 @@ namespace Ultimate_Splinterlands_Bot_V2
                     $"THREADS: {Settings.Threads} {Environment.NewLine}" +
                     $"{Settings.CardSettings}");
 
-                if (Settings.ClaimQuestReward)
-                {
-                    Settings.ClaimQuestReward = false;
-                    Log.WriteToLog("Quest/Focus Chest Claiming is disabled in this version. It will be enabled again in the next bot update.", Log.LogType.Warning);
-                    Log.WriteToLog("Quest/Focus Chest Claiming is disabled in this version. It will be enabled again in the next bot update.", Log.LogType.Warning);
-                    Log.WriteToLog("Quest/Focus Chest Claiming is disabled in this version. It will be enabled again in the next bot update.", Log.LogType.Warning);
-                }
                 return true;
             }
             catch (Exception ex)

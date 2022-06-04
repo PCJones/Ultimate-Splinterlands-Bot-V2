@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ultimate_Splinterlands_Bot_V2.Model
 {
-    public enum GameState
+    public enum GameEvent
     {
         match_found,
         opponent_submit_team,

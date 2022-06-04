@@ -17,12 +17,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public bool USE_CARD_SETTINGS { get; init; } = false;
         public int WINRATE_MODIFIER_OWNED_CARD_PERCENTAGE { get; init; } = 24;
         public double FLAT_NEGATIVE_MODIFIER_PER_UNOWNED_CARD { get; init; } = 2.5;
-        public string PREFERRED_SUMMONER_ELEMENT { get; init; } = null;
+        public int USE_FOCUS_ELEMENT_WINRATE_TRESHOLD { get; init; } = 60;
+        public int PREFERRED_SUMMONER_ELEMENTS_WINRATE_TRESHOLD { get; set; } = 48;
+        public string[] PREFERRED_SUMMONER_ELEMENTS { get; set; } = new string[] { "dragon", "death", "fire", "earth", "water", "life" };
         public int CARD_MIN_LEVEL { get; init; } = 1;
-        public int WINRATE_TRESHOLD { get; init; } = 45;
-        public int MINIMUM_GAMES { get; init; } = 10;
         public bool ADD_ZERO_MANA_CARDS { get; init; } = true;
         public bool PLAY_STARTER_CARDS { get; init; } = true;
+        public bool DISABLE_OWNED_CARDS_PREFERENCE_BEFORE_CHEST_LEAGUE_RATING { get; init; } = true;
+        public bool DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING { get; init; } = true;
+        public int WINRATE_THRESHOLD { get; init; } = 45; // legacy
+        public int MINIMUM_GAMES { get; init; } = 10; // legacy
+        public string PREFERRED_SUMMONER_ELEMENT { get; init; } = null; // legacy
 
         public CardSettings()
         {
@@ -47,6 +52,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
                 if (property == null)
                 {
                     Console.WriteLine($"could not find setting for: '{parts[0]}'");
+                    Console.WriteLine($"Please read the newest patch notes to update your card_settings.txt!");
                     return;
                 }
 
@@ -65,6 +71,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
                 else if (property.PropertyType == typeof(double))
                 {
                     property.SetValue(this, Convert.ToDouble(value, CultureInfo.InvariantCulture));
+                }
+                else if (property.PropertyType == typeof(string[]))
+                {
+                    property.SetValue(this, value.Split(','));
                 }
                 else
                 {

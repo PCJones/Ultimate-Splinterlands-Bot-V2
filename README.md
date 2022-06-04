@@ -72,7 +72,7 @@ And now we can run the bot with:
 ## How to install (Windows)
 - [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
 - Download the windows.zip from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
-- Install https://dotnet.microsoft.com/download/dotnet/5.0/runtime (for console applications)
+- Install https://dotnet.microsoft.com/download/dotnet/6.0/runtime (for console applications)
 - Create config.txt and accounts.txt in config folder - see config-example.txt and accounts-example.txt
 - Start the bot by double clicking on Ultimate Splinterlands Bot V2.exe in main folder
 

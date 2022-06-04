@@ -18,27 +18,27 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
 {
     public static class BattleAPI
     {
-        public static async Task<JToken> GetTeamFromAPIAsync(int rating, int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, string gameIdHash, string apikey, bool secondTry = false, bool ignorePrivateAPI = false)
+        public static async Task<JToken> GetTeamFromAPIAsync(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false, bool ignorePrivateAPI = false)
         {
             if (Settings.UsePrivateAPI && !ignorePrivateAPI)
             {
                 if (Settings.PrivateAPIUrl.Contains("/v2/"))
                 {
-                    return await GetTeamFromPrivateAPIV2Async(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, secondTry);
+                    return await GetTeamFromPrivateAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, secondTry);
                 }
-                return await GetTeamFromPrivateAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, secondTry);
+                return await GetTeamFromPrivateAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, secondTry);
             }
             else
             {
                 if (Settings.PublicAPIUrl.Contains("/v2/") && !Settings.PublicAPIUrl.Contains("lostvoid"))
                 {
-                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, questLessDetails, username, secondTry);
+                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, secondTry);
                 }
-                return await GetTeamFromPublicAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, apikey, secondTry);
+                return await GetTeamFromPublicAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, secondTry);
             }
         }
 
-        private static async Task<JToken> GetTeamFromPublicAPIAsync(int rating, int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, string apikey, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPublicAPIAsync(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, bool secondTry = false)
         {
             string APIResponse = "";
             Log.WriteToLog($"{username}: Requesting team from API...");
@@ -51,10 +51,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                         new JProperty("rules", rules),
                         new JProperty("splinters", splinters),
                         new JProperty("myCardsV2", JsonConvert.SerializeObject(cards)),
-                        new JProperty("quest", Settings.PrioritizeQuest && quest != null
-                        && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
-                        questLessDetails : ""),
-                        new JProperty("team_settings", Settings.TeamSettings.USE_TEAM_SETTINGS ? JsonConvert.SerializeObject(Settings.TeamSettings) : ""),
+                        new JProperty("quest", ""), // disabled for old api
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
@@ -91,7 +88,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     {
                         Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
                         System.Threading.Thread.Sleep(25000);
-                        return await GetTeamFromPublicAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, apikey, true);
+                        return await GetTeamFromPublicAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
                     }
                     else
                     {
@@ -123,19 +120,19 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 {
                     Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                     await Task.Delay(2000);
-                    return await GetTeamFromPublicAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, apikey, true);
+                    return await GetTeamFromPublicAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
                 }
                 else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: API overloaded or down?: Waiting 10 minutes...", Log.LogType.Warning);
                     await Task.Delay(1000 * 60 * 10);
-                    return await GetTeamFromPublicAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, apikey, true);
+                    return await GetTeamFromPublicAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
                 }
             }
             return null;
         }
 
-        private static async Task<JToken> GetTeamFromPrivateAPIAsync(int rating, int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, string gameIdHash, string apikey, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPrivateAPIAsync(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false)
         {
             Log.WriteToLog($"{username}: Requesting team from private API...");
             try
@@ -144,9 +141,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                         new JProperty("mana", mana),
                         new JProperty("rules", rules),
                         new JProperty("splinters", splinters),
-                        new JProperty("quest", Settings.PrioritizeQuest && quest != null
-                        && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
-                        questLessDetails : ""),
+                        new JProperty("quest", ""), // disabled for old api
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
@@ -161,7 +156,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     {
                         Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
                         System.Threading.Thread.Sleep(25000);
-                        return await GetTeamFromPrivateAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, true);
+                        return await GetTeamFromPrivateAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, true);
                     }
                     else
                     {
@@ -173,12 +168,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 {
                     Log.WriteToLog($"{username}: Private API doesn't seem to have card data yet - using free API", Log.LogType.Warning);
                     System.Threading.Thread.Sleep(25000);
-                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, false, true);
+                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, false, true);
+
                 }
                 else if (APIResponse.Contains("Account not allowed"))
                 {
                     Log.WriteToLog($"{username}: Private API Error: Account not allowed", Log.LogType.CriticalError);
-                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, false, true);
+                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, false, true);
                 }
                 if (APIResponse == null || APIResponse.Length < 5)
                 {
@@ -195,31 +191,30 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 {
                     Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                     await Task.Delay(2000);
-                    return await GetTeamFromPrivateAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, true);
+                    return await GetTeamFromPrivateAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, true);
                 }
                 else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: Private API down? Trying public API...", Log.LogType.Warning);
-                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, false, true);
+                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, false, true);
                 }
             }
             return null;
         }
-
-        private static async Task<JToken> GetTeamFromPublicAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPublicAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, bool secondTry = false)
         {
             string APIResponse = "";
             Log.WriteToLog($"{username}: Requesting team from public API...");
             try
             {
+                bool chestTierReached = quest != null && quest.ChestTier != null && chestTier >= quest.ChestTier;
                 JObject matchDetails = new(
                         new JProperty("mana", mana),
                         new JProperty("rules", rules),
                         new JProperty("splinters", splinters),
                         new JProperty("myCardsV2", JsonConvert.SerializeObject(cards)),
-                        new JProperty("quest", Settings.PrioritizeQuest && quest != null
-                        && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
-                        questLessDetails : ""),
+                        new JProperty("focus", Settings.PrioritizeQuest && chestTierReached && quest != null && !quest.IsExpired ? Settings.QuestTypes[quest.Name] : ""),
+                    new JProperty("chest_tier_reached", chestTierReached),
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
@@ -232,7 +227,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     {
                         Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
                         System.Threading.Thread.Sleep(25000);
-                        return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, questLessDetails, username, true);
+                        return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
                     }
                     else
                     {
@@ -264,30 +259,29 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 {
                     Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                     await Task.Delay(2000);
-                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, questLessDetails, username, true);
+                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
                 }
                 else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: API overloaded or down?: Waiting 10 minutes...", Log.LogType.Warning);
                     await Task.Delay(1000 * 60 * 10);
-                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, questLessDetails, username, true);
+                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
                 }
             }
             return null;
         }
-
-        private static async Task<JToken> GetTeamFromPrivateAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, JToken quest, JToken questLessDetails, string username, string gameIdHash, string apikey, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPrivateAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false)
         {
             Log.WriteToLog($"{username}: Requesting team from private API...");
             try
             {
+                bool chestTierReached = quest != null && chestTier >= quest.ChestTier;
                 JObject matchDetails = new(
                         new JProperty("mana", mana),
                         new JProperty("rules", rules),
                         new JProperty("splinters", splinters),
-                        new JProperty("quest", Settings.PrioritizeQuest && quest != null
-                        && ((int)questLessDetails["total"] != (int)questLessDetails["completed"]) ?
-                        questLessDetails : ""),
+                        new JProperty("focus", Settings.PrioritizeQuest && chestTierReached && quest != null && !quest.IsExpired ? Settings.QuestTypes[quest.Name] : ""),
+                        new JProperty("chest_tier_reached", chestTierReached),
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
@@ -302,7 +296,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     {
                         Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
                         System.Threading.Thread.Sleep(25000);
-                        return await GetTeamFromPrivateAPIV2Async(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, true);
+                        return await GetTeamFromPrivateAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, true);
                     }
                     else
                     {
@@ -314,12 +308,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 {
                     Log.WriteToLog($"{username}: Private API doesn't seem to have card data yet - using free API", Log.LogType.Warning);
                     System.Threading.Thread.Sleep(25000);
-                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, false, true);
+                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, false, true);
+
                 }
                 else if (APIResponse.Contains("Account not allowed"))
                 {
                     Log.WriteToLog($"{username}: Private API Error: Account not allowed", Log.LogType.CriticalError);
-                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, false, true);
+                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, false, true);
                 }
                 if (APIResponse == null || APIResponse.Length < 5)
                 {
@@ -336,12 +331,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 {
                     Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                     await Task.Delay(2000);
-                    return await GetTeamFromPrivateAPIV2Async(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, true);
+                    return await GetTeamFromPrivateAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, true);
                 }
                 else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: Private API down? Trying public API...", Log.LogType.Warning);
-                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, questLessDetails, username, gameIdHash, apikey, false, true);
+                    return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, false, true);
                 }
             }
             return null;

@@ -7,36 +7,31 @@ MINIMUM_BATTLE_POWER=0
 CLAIM_SEASON_REWARD=false
 CLAIM_QUEST_REWARD=false
 
-##If quest is not finished bot will continue fighting even if STOP ECR is reached
-IGNORE_ECR_FOR_QUEST=false
-
-##E.g. if you are almost bronze 1 and have enough power, it won't claim quest reward until you are bronze 1
-DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE=true
-
-##If enabled it will click on the advance to next league button
+## If enabled it will click on the advance to next league button
 ADVANCE_LEAGUE=true
 
-##seperate by comma like this: earth,life - it will request new quest on earth and life quest
-##Remove the # at the beginning of the next line to activate
+# The maximum league the bot will advance to. 0=bronze, 1=silver, 2=gold, 3=diamond, 4=champion
+MAX_LEAGUE_TIER=4
+
+## seperate by comma like this: earth,life - it will request new quest on earth and life quest
+## Remove the # at the beginning of the next line to activate
 #REQUEST_NEW_QUEST=earth
 ##################General Settings##################
 
 ##################Technical Settings##################
-##Threads = number of parallel accoounts.
-##Threads are MUCH faster than in the browser mode
+## Threads = number of parallel accoounts.
 THREADS=1
 
-##Disable this if you want a cleaner log or you have problems with too many
-##requests to the splinterlands API. Disabling will also make battles 10-25 seconds faster.
+## Disable this if you want a cleaner log or you have problems with too many
+## requests to the splinterlands API. Disabling will also make battles 10-25 seconds faster.
 SHOW_BATTLE_RESULTS=true
 ##################Lightning Mode Settings##################
 
 #######################API Settings########################
 USE_API=true
-API_URL=http://lostvoid.xyz/v2/
-FALLBACK_API_URL=http://splinterlandsapi.pcjones.de:8080/
+API_URL=http://splinterlandsapi.pcjones.de:8080/v2/
 
-##PRIVATE API Settings - ignore if you don't have it
+## PRIVATE API Settings - ignore if you don't have it
 USE_PRIVATE_API=false
 PRIVATE_API_URL=
 PRIVATE_API_SHOP=
@@ -49,17 +44,8 @@ SHOW_API_RESPONSE=true
 DEBUG=false
 WRITE_LOG_TO_FILE=false
 
-##Enable this if you get weird characters in your console that makes it hard to read
+## Enable this if you get weird characters in your console that makes it hard to read
 DISABLE_CONSOLE_COLORS=false
 
-##Advanced bot logic
-
-##If you enable both DONT_CLAIM_QUEST_NEAR_HIGHER_LEAGUE and this the bot will not only wait
-##until you have enough rating for the higher league, but also until you have enough
-##power. Don't enable this unless you actively manage your power.
-WAIT_FOR_MISSING_CP_AT_QUEST_CLAIM=false
-
-##Only claim the quest if the account is in this league or higher. Bronze 3 = 1, Bronze 2 = 2,
-##Bronze 1 = 3, Silver 3 = 4, Silver 2 = 5, Silver 1 = 6, Gold 3 = 7, Gold 2 = 8, Gold 1 = 9, etc...
-MINIMUM_LEAGUE_FOR_QUEST_CLAIM=1
-#####################Advanced Settings#####################
+## Advanced bot logic
+#nothing here at the moment
