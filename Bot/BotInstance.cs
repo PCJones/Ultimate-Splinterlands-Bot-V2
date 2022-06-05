@@ -1081,6 +1081,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         Log.WriteToLog($"{Username}: { logTextBattleResult}");
                         Log.WriteToLog($"{Username}: Rating has not changed ({ newRating })");
                         Settings.InstanceDraw++;
+                        if (Settings.ReportGameResult)
+                        {
+                            BattleAPI.ReportGameResult(APIKey, Username, "Draw");
+                        }
                         break;
 
                     case 1:
@@ -1089,6 +1093,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
                         Log.WriteToLog($"{Username}: New rating is { newRating } ({ ("+" + ratingChange.ToString()).Pastel(Color.Green) })");
                         Settings.InstanceWin++;
+                        if (Settings.ReportGameResult)
+                        {
+                            BattleAPI.ReportGameResult(APIKey, Username, "Win");
+                        }
                         break;
 
                     case 0:
@@ -1097,6 +1105,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Red) }");
                         Log.WriteToLog($"{Username}: New rating is { newRating } ({ ratingChange.ToString().Pastel(Color.Red) })");
                         Settings.InstanceLose++;
+                        if (Settings.ReportGameResult)
+                        {
+                            BattleAPI.ReportGameResult(APIKey, Username, "Lose");
+                        }
                         break;
 
                     default:

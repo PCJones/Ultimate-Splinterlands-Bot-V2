@@ -312,6 +312,10 @@ namespace Ultimate_Splinterlands_Bot_V2
                             Settings.FallBackPublicAPIUrl = temp[1];
                             break;
 
+                        case "REPORT_GAME_RESULT":
+                            Settings.ReportGameResult = bool.Parse(temp[1]);
+                            break;
+
                         case "DEBUG":
                             Settings.DebugMode = bool.Parse(temp[1]);
                             break;

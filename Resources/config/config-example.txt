@@ -6,6 +6,7 @@ STOP_BATTLE_BELOW_ECR=75
 MINIMUM_BATTLE_POWER=0
 CLAIM_SEASON_REWARD=false
 CLAIM_QUEST_REWARD=false
+REPORT_GAME_RESULT=false
 
 ## If enabled it will click on the advance to next league button
 ADVANCE_LEAGUE=true

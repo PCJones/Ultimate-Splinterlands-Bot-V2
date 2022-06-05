@@ -39,6 +39,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static double InstanceWin = 0;
         public static double InstanceDraw = 0;
         public static double InstanceLose = 0;
+        public static bool ReportGameResult = false;
 
         public static bool ShowBattleResults = true;
         public static int Threads = 1;

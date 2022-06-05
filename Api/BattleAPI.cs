@@ -348,6 +348,21 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             _ = Helper.DownloadPageAsync($"{ Settings.PublicAPIUrl }report_loss/{enemy}/{username}");
         }
 
+        public static async void ReportGameResult(string apikey, string username, string result)
+        {
+            JObject GameResult = new JObject(
+                        new JProperty("api_key", apikey),
+                        new JProperty("player", username),
+                        new JProperty("result", result)
+                    );
+            using var content = new StringContent(JsonConvert.SerializeObject(GameResult), Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await Settings._httpClient.PostAsync(Settings.PublicAPIUrl + "rgs/", content);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                Log.WriteToLog($"{username}: Reported Game Result: ({result})");
+            }
+        }
+
         private static async Task<string> PostJSONToApi(object json, string url, string username)
         {
             using (var content = new StringContent(JsonConvert.SerializeObject(json), Encoding.UTF8, "application/json"))
