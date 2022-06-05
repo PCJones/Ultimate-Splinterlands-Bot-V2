@@ -30,7 +30,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             else
             {
-                if (Settings.PublicAPIUrl.Contains("/v2/") | Settings.PublicAPIUrl.Contains("beta"))
+                if (Settings.PublicAPIUrl.Contains("/v2/") | Settings.PublicAPIUrl.Contains("beta") | !Settings.PublicAPIUrl.Contains("xyz/v2/"))
                 {
                     return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, apikey, secondTry);
                 }
