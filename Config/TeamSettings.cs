@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
     {
         [JsonIgnore]
         public bool USE_TEAM_SETTINGS { get; init; } = false;
+        public string[] PREFERRED_SUMMONER_ELEMENTS { get; set; } = new string[] { "dragon", "death", "fire", "earth", "water", "life" };
         public int MIN_BATTLES { get; init; } = 1;
         public string PREFERRED_SUMMONER_ID { get; init; } = "0";
         public string PREFERRED_MONSTER_1_ID { get; init; } = "0";
@@ -47,6 +49,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
                 if (property == null)
                 {
                     Console.WriteLine($"could not find setting for: '{parts[0]}'");
+                    Console.WriteLine($"Please read the newest patch notes to update your card_settings.txt!");
                     return;
                 }
 
@@ -61,6 +64,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
                 else if (property.PropertyType == typeof(Int32))
                 {
                     property.SetValue(this, Convert.ToInt32(value));
+                }
+                else if (property.PropertyType == typeof(double))
+                {
+                    property.SetValue(this, Convert.ToDouble(value, CultureInfo.InvariantCulture));
+                }
+                else if (property.PropertyType == typeof(string[]))
+                {
+                    property.SetValue(this, value.Split(','));
                 }
                 else
                 {

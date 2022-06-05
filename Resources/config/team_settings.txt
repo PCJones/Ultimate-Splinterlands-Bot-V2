@@ -1,6 +1,18 @@
 # Set to true to enable.
 USE_TEAM_SETTINGS=true
 
+## Possible options: dragon,death,fire,earth,water,life
+## Example: You only want to play earth and fire elements if the bot is not fighting for the quest focus:
+## PREFERRED_SUMMONER_ELEMENTS=earth,fire
+PREFERRED_SUMMONER_ELEMENTS=dragon,death,fire,earth,water,life
+
+# Select Cards Equal and Higher than this Level.
+# It's best to leave this to 1 if you don't have a team that is higher than Level 1.
+CARD_MIN_LEVEL=1
+
+##############################################
+# The Following Settings is only works on the old API (IT WILL SOON BE REMOVED)
+
 # What teams you want the bot to play.
 # You can put multiple cards per MONSTER POSITION.
 # You can also leave it to 0 | If left to 0 it will choose based on all the cards you have.
@@ -12,7 +24,3 @@ PREFERRED_MONSTER_3_ID=0
 PREFERRED_MONSTER_4_ID=0
 PREFERRED_MONSTER_5_ID=0
 PREFERRED_MONSTER_6_ID=0
-
-# Select Cards Equal and Higher than this Level.
-# It's best to leave this to 1 if you don't have a team that is higher than Level 1.
-CARD_MIN_LEVEL=1
