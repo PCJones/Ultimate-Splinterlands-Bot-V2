@@ -11,7 +11,7 @@ PREFERRED_SUMMONER_ELEMENTS=dragon,death,fire,earth,water,life
 CARD_MIN_LEVEL=1
 
 ##############################################
-# The Following Settings is only works on the old API (IT WILL SOON BE REMOVED)
+# The Following Settings only works on the old API (IT WILL SOON BE REMOVED)
 
 # What teams you want the bot to play.
 # You can put multiple cards per MONSTER POSITION.
