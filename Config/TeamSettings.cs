@@ -49,7 +49,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
                 if (property == null)
                 {
                     Console.WriteLine($"could not find setting for: '{parts[0]}'");
-                    Console.WriteLine($"Please read the newest patch notes to update your card_settings.txt!");
+                    Console.WriteLine($"Please read the newest patch notes to update your team_settings.txt!");
                     return;
                 }
 
