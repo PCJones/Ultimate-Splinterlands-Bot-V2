@@ -30,7 +30,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             else
             {
-                if (Settings.PublicAPIUrl.Contains("/v2/") && !Settings.PublicAPIUrl.Contains("lostvoid"))
+                if (Settings.PublicAPIUrl.Contains("/v2/") | Settings.PublicAPIUrl.Contains("beta"))
                 {
                     return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, apikey, secondTry);
                 }
@@ -210,12 +210,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             {
                 bool chestTierReached = quest != null && quest.ChestTier != null && chestTier >= quest.ChestTier;
                 JObject matchDetails = new(
+                        new JProperty("api_key", apikey),
+                        new JProperty("player", username),
                         new JProperty("mana", mana),
                         new JProperty("rules", rules),
                         new JProperty("splinters", splinters),
                         new JProperty("myCardsV2", JsonConvert.SerializeObject(cards)),
                         new JProperty("focus", Settings.PrioritizeQuest && chestTierReached && quest != null && !quest.IsExpired ? Settings.QuestTypes[quest.Name] : ""),
-                    new JProperty("chest_tier_reached", chestTierReached),
+                        new JProperty("chest_tier_reached", chestTierReached),
+                        new JProperty("team_settings", Settings.TeamSettings.USE_TEAM_SETTINGS ? JsonConvert.SerializeObject(Settings.TeamSettings) : ""),
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
