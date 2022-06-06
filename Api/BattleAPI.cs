@@ -30,7 +30,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             else
             {
-                if (Settings.PublicAPIUrl.Contains("/v2/") | Settings.PublicAPIUrl.Contains("beta") | !Settings.PublicAPIUrl.Contains("xyz/v2/"))
+                if ((Settings.PublicAPIUrl.Contains("/v2/") & (!Settings.PublicAPIUrl.Contains("xyz/v2/") & !Settings.PublicAPIUrl.Contains("xyz/pri"))) | Settings.PublicAPIUrl.Contains("beta"))
                 {
                     return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, apikey, secondTry);
                 }
@@ -170,7 +170,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     Log.WriteToLog($"{username}: Private API doesn't seem to have card data yet - using free API", Log.LogType.Warning);
                     System.Threading.Thread.Sleep(25000);
                     return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, apikey, false, true);
-
                 }
                 else if (APIResponse.Contains("Account not allowed"))
                 {
@@ -202,6 +201,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             return null;
         }
+
         private static async Task<JToken> GetTeamFromPublicAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string apikey, bool secondTry = false)
         {
             string APIResponse = "";
@@ -274,6 +274,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             return null;
         }
+
         private static async Task<JToken> GetTeamFromPrivateAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string gameIdHash, string apikey, bool secondTry = false)
         {
             Log.WriteToLog($"{username}: Requesting team from private API...");
@@ -313,7 +314,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     Log.WriteToLog($"{username}: Private API doesn't seem to have card data yet - using free API", Log.LogType.Warning);
                     System.Threading.Thread.Sleep(25000);
                     return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, apikey, false, true);
-
                 }
                 else if (APIResponse.Contains("Account not allowed"))
                 {
