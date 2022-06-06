@@ -576,9 +576,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         if (transferPower)
                         {
                             var args = "";
-                            if (Settings.PublicAPIUrl == "http://lostvoid.xyz/private/v2/" || !Settings.UsePrivateAPI)
+                            if (Settings.PublicAPIUrl == "https://beta.lostvoid.xyz/api/" || !Settings.UsePrivateAPI)
                             {
-                                args = $"{account.Username} {Username} {account.ActiveKey}";
+                                args = $"{account.Username} {Username} {account.ActiveKey} {APIKey}";
                             }
                             else
                             {
