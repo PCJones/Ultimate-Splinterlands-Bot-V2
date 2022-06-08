@@ -1206,7 +1206,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         {
             try
             {
-                if (QuestCached != null && QuestCached.IsExpired)
+                if (QuestCached != null && QuestCached.IsExpired && QuestCached.Name.Length < 11) // name length for old quest
                 {
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
