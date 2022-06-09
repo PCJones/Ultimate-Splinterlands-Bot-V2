@@ -61,10 +61,19 @@ namespace Ultimate_Splinterlands_Bot_V2.Http
             }
             catch (Exception ex)
             {
-                Log.WriteToLog("Error at WebRequest: " + ex.ToString());
-                Log.WriteToLog(webRequest.ToString());
-                Log.WriteToLog(webRequest.RequestUri.ToString());
-                return websiteResponse;
+                if (ex.Message.Contains("429"))
+                {
+                    Console.WriteLine("Splinterlands API limit - waiting 60 seconds");
+                    System.Threading.Thread.Sleep(60 * 1000);
+                    return WebRequestGet(CookieContainer, Url, UserAgent, Referer, proxy);
+                }
+                else
+                {
+                    Log.WriteToLog("Error at WebRequest: " + ex.ToString());
+                    Log.WriteToLog(webRequest.ToString());
+                    Log.WriteToLog(webRequest.RequestUri.ToString());
+                    return websiteResponse;
+                }
             }
         }
 
@@ -114,8 +123,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Http
             }
             catch (Exception ex)
             {
-                Log.WriteToLog("Error at WebRequest: " + ex.ToString());
-                return websiteResponse;
+                if (ex.Message.Contains("429"))
+                {
+                    Console.WriteLine("Splinterlands API limit - waiting 60 seconds");
+                    System.Threading.Thread.Sleep(60 * 1000);
+                    return WebRequestGet(CookieContainer, Url, UserAgent, Referer, proxy);
+                }
+                else
+                {
+                    Log.WriteToLog("Error at WebRequest: " + ex.ToString());
+                    return websiteResponse;
+                }
             }
         }
     }

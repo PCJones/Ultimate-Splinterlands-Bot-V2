@@ -17,8 +17,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public bool USE_CARD_SETTINGS { get; init; } = false;
         public int WINRATE_MODIFIER_OWNED_CARD_PERCENTAGE { get; init; } = 24;
         public double FLAT_NEGATIVE_MODIFIER_PER_UNOWNED_CARD { get; init; } = 2.5;
-        public int USE_FOCUS_ELEMENT_WINRATE_TRESHOLD { get; init; } = 60;
-        public int PREFERRED_SUMMONER_ELEMENTS_WINRATE_TRESHOLD { get; set; } = 48;
+        public int USE_FOCUS_ELEMENT_WINRATE_THRESHOLD { get; init; } = 60;
+        public int PREFERRED_SUMMONER_ELEMENTS_WINRATE_THRESHOLD { get; set; } = 48;
         public string[] PREFERRED_SUMMONER_ELEMENTS { get; set; } = new string[] { "dragon", "death", "fire", "earth", "water", "life" };
         public int CARD_MIN_LEVEL { get; init; } = 1;
         public bool ADD_ZERO_MANA_CARDS { get; init; } = true;
