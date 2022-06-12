@@ -1247,6 +1247,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         {
             try
             {
+                if (!Settings.ClaimQuestReward)
+                {
+                    return;
+                }
                 if (QuestCached != null && QuestCached.IsExpired && QuestCached.Name.Length < 11) // name length for old quest
                 {
                     string n = Helper.GenerateRandomString(10);
