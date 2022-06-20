@@ -222,6 +222,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                             && quest != null && !quest.IsExpired 
                                 ? Settings.QuestTypes[quest.Name] : ""),
                         new JProperty("chest_tier_reached", chestTierReached),
+                        new JProperty("team_settings", Settings.TeamSettings.USE_TEAM_SETTINGS ? JsonConvert.SerializeObject(Settings.TeamSettings) : ""),
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
