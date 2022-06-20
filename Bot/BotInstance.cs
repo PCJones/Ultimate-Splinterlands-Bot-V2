@@ -57,15 +57,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 return;
             }
 
-            // temp
-            if (message.Text.Contains("error") && !message.Text.Contains("error\":null"))
-            {
-                if (!message.Text.Contains("he current player is alr"))
-                {
-                    System.IO.File.AppendAllText("errorlog.txt", message.Text + Environment.NewLine + "-" + Environment.NewLine);
-                }
-            }
-
             JToken json = JToken.Parse(message.Text);
             if (Enum.TryParse(json["id"].ToString(), out GameEvent gameEvent))
             {

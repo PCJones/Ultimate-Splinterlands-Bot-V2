@@ -216,7 +216,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                         new JProperty("rules", rules),
                         new JProperty("splinters", splinters),
                         new JProperty("myCardsV2", JsonConvert.SerializeObject(cards)),
-                        new JProperty("focus", Settings.PrioritizeQuest && chestTierReached && quest != null && !quest.IsExpired ? Settings.QuestTypes[quest.Name] : ""),
+                        new JProperty("focus", 
+                            Settings.PrioritizeQuest 
+                            && (!Settings.CardSettings.DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING || chestTierReached) 
+                            && quest != null && !quest.IsExpired 
+                                ? Settings.QuestTypes[quest.Name] : ""),
                         new JProperty("chest_tier_reached", chestTierReached),
                         new JProperty("team_settings", Settings.TeamSettings.USE_TEAM_SETTINGS ? JsonConvert.SerializeObject(Settings.TeamSettings) : ""),
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
@@ -280,12 +284,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             Log.WriteToLog($"{username}: Requesting team from private API...");
             try
             {
-                bool chestTierReached = quest != null && chestTier >= quest.ChestTier;
+                bool chestTierReached = quest != null && quest.ChestTier != null && chestTier >= quest.ChestTier;
                 JObject matchDetails = new(
                         new JProperty("mana", mana),
                         new JProperty("rules", rules),
                         new JProperty("splinters", splinters),
-                        new JProperty("focus", Settings.PrioritizeQuest && chestTierReached && quest != null && !quest.IsExpired ? Settings.QuestTypes[quest.Name] : ""),
+                        new JProperty("focus",
+                            Settings.PrioritizeQuest
+                            && (!Settings.CardSettings.DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING || chestTierReached)
+                            && quest != null && !quest.IsExpired
+                                ? Settings.QuestTypes[quest.Name] : ""),
                         new JProperty("chest_tier_reached", chestTierReached),
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
