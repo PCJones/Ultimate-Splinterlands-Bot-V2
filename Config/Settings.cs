@@ -20,7 +20,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public const string SPLINTERLANDS_API_URL_FALLBACK = "https://game-api.splinterlands.io";
         public const string SPLINTERLANDS_BROADCAST_URL = "https://broadcast.splinterlands.com/send";
         public const string SPLINTERLANDS_WEBSOCKET_URL = "wss://ws2.splinterlands.com/";
-        public const string SPLINTERLANDS_APP = "splinterlands/0.7.220524";
+        public const string SPLINTERLANDS_APP = "usb/1.0";
         public const string BOT_GITHUB_REPO = "PCJones/Ultimate-Splinterlands-Bot-V2";
         public static char[] CharSubset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
         public static Random _Random = new();
@@ -50,6 +50,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static Queue<BotInstance> AvailablePowerTransfers;
         public static object PowerTransferBotLock = new();
 
+        public static string RankedFormat = "WILD";
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
         public static bool ClaimSeasonReward = false;

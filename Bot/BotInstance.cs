@@ -202,7 +202,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private string StartNewMatch()
         {
             string n = Helper.GenerateRandomString(10);
-            string json = "{\"match_type\":\"Ranked\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+            string matchType = Settings.RankedFormat == "WILD" ? "Ranked" : "Modern Ranked";
+            string json = "{\"match_type\":\"" + matchType + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
             COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_find_match", json);
 
@@ -508,6 +509,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 {
                     Log.WriteToLog($"{Username}: Quest element: {Settings.QuestTypes[QuestCached.Name].Pastel(Color.Yellow)} " +
                         $"Completed items: {QuestCached.CompletedItems.ToString().Pastel(Color.Yellow)}");
+                }
+                else
+                {
+                    // TODO test this and make the bot request a quest on it's own
+                    Log.WriteToLog($"{Username}: Account has no quest! Log in via browser to request one!", Log.LogType.Warning);
+                    Log.WriteToLog($"{Username}: Account has no quest! Log in via browser to request one!", Log.LogType.Warning);
+                    Log.WriteToLog($"{Username}: Account has no quest! Log in via browser to request one!", Log.LogType.Warning);
                 }
 
                 await AdvanceLeagueAsync();
@@ -1013,14 +1021,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
             else
             {
+                var rankedFormat = Settings.RankedFormat.ToLower();
                 decimal decReward = await WaitForGameEventAsync(GameEvent.balance_update, 10) ?
                     (decimal)GameEvents[GameEvent.balance_update]["amount"] : 0;
 
                 int newRating = await WaitForGameEventAsync(GameEvent.rating_update) ?
-                    (int)GameEvents[GameEvent.rating_update]["new_rating"] : RatingCached;
+                    (int)GameEvents[GameEvent.rating_update][rankedFormat]["new_rating"] : RatingCached;
 
                 LeagueCached = await WaitForGameEventAsync(GameEvent.rating_update) ?
-                    (int)GameEvents[GameEvent.rating_update]["new_league"] : LeagueCached;
+                    (int)GameEvents[GameEvent.rating_update][rankedFormat]["new_league"] : LeagueCached;
 
                 int ratingChange = newRating - RatingCached;
                 RatingCached = newRating;
@@ -1163,7 +1172,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     Log.WriteToLog($"{Username}: { "Advancing to higher league!".Pastel(Color.Green)}");
 
                     string n = Helper.GenerateRandomString(10);
-                    string json = "{\"notify\":\"false\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                    string json;
+                    if (Settings.RankedFormat == "MODERN")
+                    {
+                        json = "{\"notify\":\"false\",\"format\":\"modern\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                    }
+                    else
+                    {
+                        json = "{\"notify\":\"false\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                    }
 
                     //CtransactionData oTransaction = Settings.oHived.CreateTransaction(new object[] { custom_Json }, new string[] { PostingKey });
                     string tx = BroadcastCustomJsonToHiveNode("sm_advance_league", json);
