@@ -219,7 +219,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                         new JProperty("focus", 
                             Settings.PrioritizeQuest 
                             && (!Settings.CardSettings.DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING || chestTierReached) 
-                            && quest != null && !quest.IsExpired 
+                            && quest != null && !quest.IsExpired && Settings.QuestTypes.ContainsKey(quest.Name)
                                 ? Settings.QuestTypes[quest.Name] : ""),
                         new JProperty("chest_tier_reached", chestTierReached),
                         new JProperty("team_settings", Settings.TeamSettings.USE_TEAM_SETTINGS ? JsonConvert.SerializeObject(Settings.TeamSettings) : ""),
@@ -292,7 +292,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                         new JProperty("focus",
                             Settings.PrioritizeQuest
                             && (!Settings.CardSettings.DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING || chestTierReached)
-                            && quest != null && !quest.IsExpired
+                            && quest != null && !quest.IsExpired && Settings.QuestTypes.ContainsKey(quest.Name)
                                 ? Settings.QuestTypes[quest.Name] : ""),
                         new JProperty("chest_tier_reached", chestTierReached),
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")

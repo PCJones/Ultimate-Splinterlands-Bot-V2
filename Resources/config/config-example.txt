@@ -8,6 +8,9 @@ CLAIM_SEASON_REWARD=false
 CLAIM_QUEST_REWARD=false
 REPORT_GAME_RESULT=false
 
+#Pick between wild or modern
+RANKED_FORMAT=wild
+
 ## If enabled it will click on the advance to next league button
 ADVANCE_LEAGUE=true
 

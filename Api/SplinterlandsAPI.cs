@@ -41,6 +41,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
         {
             try
             {
+                string prefix = Settings.RankedFormat == "WILD" ? "" : "modern_";
                 string data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/players/details?name={ username }");
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
@@ -49,7 +50,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     await Task.Delay(5000);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/players/details?name={ username }");
                 }
-                return ((int)JToken.Parse(data)["collection_power"], (int)JToken.Parse(data)["rating"], (int)JToken.Parse(data)["league"]);
+                return ((int)JToken.Parse(data)["collection_power"], (int)JToken.Parse(data)[prefix + "rating"], (int)JToken.Parse(data)[prefix + "league"]);
             }
             catch (Exception ex)
             {
@@ -234,7 +235,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 cards.Reverse();
 
                 // only use highest level/gold cards
-                Card[] cardsFiltered = cards.Select(x => cards.Where(y => x.card_detail_id == y.card_detail_id).First()).Distinct().ToArray();
+                Card[] cardsFiltered = FilterCardsForRankedFormat(cards)
+                    .Select(x => cards.Where(y => x.card_detail_id == y.card_detail_id)
+                    .First()).Distinct().ToArray();
                 cardsFiltered = Settings.CardSettings.FilterByCardSettings(cardsFiltered);
                 return cardsFiltered;
             }
@@ -243,6 +246,35 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 Log.WriteToLog($"{username}: Could not get cards from splinterlands API: {ex}{Environment.NewLine}Bot will play with phantom cards only.", Log.LogType.Error);
             }
             return Settings.PhantomCards.Select(x => new Card(x, "starter-" + x + "-" + Helper.GenerateRandomString(5), "1", false, true)).ToArray();
+        }
+
+        private static Card[] FilterCardsForRankedFormat(List<Card> cards)
+        {
+            // TODO: Rewrite this and parse the CardsDetails JSON to make it faster
+
+            if (Settings.RankedFormat == "WILD")
+            {
+                return cards.ToArray();
+            }
+            // Modern
+            List<Card> filteredCards = new();
+            foreach (var card in cards)
+            {
+                if (card.card_detail_id != "")
+                {
+                    var cardId = Convert.ToInt32(card.card_detail_id);
+                    string[] editions = ((string)Settings.CardsDetails[cardId - 1]["editions"]).Split(',');
+                    string tier = (string)Settings.CardsDetails[cardId - 1]["tier"];
+                    if (!editions.Contains("4") && !editions.Contains("5") && !editions.Contains("7")
+                        && tier != "3" && tier != "4" && tier != "7")
+                    {
+                        continue;
+                    }
+                }
+                filteredCards.Add(card);
+            }
+
+            return filteredCards.ToArray();
         }
     }
 }
