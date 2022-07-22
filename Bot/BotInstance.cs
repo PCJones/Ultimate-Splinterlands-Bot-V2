@@ -507,8 +507,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 Log.WriteToLog($"{Username}: Deck size: {(CardsCached.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
                 if (QuestCached != null)
                 {
-                    Log.WriteToLog($"{Username}: Quest element: {Settings.QuestTypes[QuestCached.Name].Pastel(Color.Yellow)} " +
-                        $"Completed items: {QuestCached.CompletedItems.ToString().Pastel(Color.Yellow)}");
+                    // new quests temp workaround
+                    if (Settings.QuestTypes.ContainsKey(QuestCached.Name))
+                    {
+                        Log.WriteToLog($"{Username}: Quest element: {Settings.QuestTypes[QuestCached.Name].Pastel(Color.Yellow)} " +
+    $"Completed items: {QuestCached.CompletedItems.ToString().Pastel(Color.Yellow)}");
+                    }
+                    else
+                    {
+                        Log.WriteToLog($"{Username} has new quest type - the bot will not be updated to play for them until august!", Log.LogType.Warning);
+                    }
                 }
                 else
                 {
@@ -1134,7 +1142,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 if (QuestCached != null)
                 {
-                    logText = Settings.QuestTypes[QuestCached.Name] + ": " + logText;
+                    // temp workaround
+                    if (Settings.QuestTypes.ContainsKey(QuestCached.Name))
+                    {
+                        logText = Settings.QuestTypes[QuestCached.Name] + ": " + logText;
+                    }
+                    else
+                    {
+                        logText = "unknown quest type";
+                    }
                 }
                 LogSummary.QuestStatus = logText;
             }
