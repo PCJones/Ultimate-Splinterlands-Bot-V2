@@ -944,9 +944,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
 
+		Quest quest = allowedSplinters.Contains(QuestCached.Name) ? QuestCached : null;
                 int chestTier = GetTier(LeagueCached);
 
-                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached, chestTier, Username, gameIdHash, false, ignorePrivateAPI);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, quest, chestTier, Username, gameIdHash, false, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
