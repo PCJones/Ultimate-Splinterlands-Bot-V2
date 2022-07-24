@@ -1287,7 +1287,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 }
 
                 // Check for bad quest
-                if (QuestCached != null && QuestCached.RefreshTrxID == null && Settings.BadQuests.Contains(Settings.QuestTypes[QuestCached.Name]))
+                if (QuestCached != null && QuestCached.RefreshTrxID == null 
+                    && Settings.QuestTypes.ContainsKey(QuestCached.Name)
+                    && Settings.BadQuests.Contains(Settings.QuestTypes[QuestCached.Name]))
                 {
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
