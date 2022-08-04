@@ -827,13 +827,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 }
 
                 var seasonReward = Helper.DoQuickRegex("\"season_reward\":(.*?)},\"", response);
-                if (seasonReward == "{\"reward_packs\":0")
+                if (seasonReward.StartsWith("{\"reward_packs\":0"))
                 {
                     Log.WriteToLog($"{Username}: No season reward available!", Log.LogType.Error);
                 }
                 else
                 {
-                    var season = Helper.DoQuickRegex("\"season\":(.*?),\"", seasonReward);
+                    var season = Helper.DoQuickRegex("\"season\":(.*?)\\Z", seasonReward);
                     if (season.Length <= 1)
                     {
                         Log.WriteToLog($"{Username}: Error at claiming season rewards: Could not read season!", Log.LogType.Error);
