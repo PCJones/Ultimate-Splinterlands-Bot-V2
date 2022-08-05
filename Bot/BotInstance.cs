@@ -1230,7 +1230,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         {
             try
             {
-                if (!Settings.ClaimQuestReward)
+                if (!Settings.ClaimQuestReward || PowerCached < Settings.MinimumBattlePower)
                 {
                     return;
                 }
