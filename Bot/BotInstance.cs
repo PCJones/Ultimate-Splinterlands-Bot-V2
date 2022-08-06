@@ -654,6 +654,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 }
                 Log.WriteToLog($"{Username}: Splinterlands Response: {jsonResponsePlain}");
 
+                // Subtract 1% from ECR
+                ECRCached *= 0.99d;
+
                 SleepUntil = DateTime.Now.AddMinutes(Settings.SleepBetweenBattles);
 
                 if (submitTeam)
@@ -1271,7 +1274,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         {
             try
             {
-                if (!Settings.ClaimQuestReward)
+                if (!Settings.ClaimQuestReward || PowerCached < Settings.MinimumBattlePower)
                 {
                     return;
                 }
