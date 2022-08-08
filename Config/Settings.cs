@@ -26,6 +26,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static Random _Random = new();
         public static CookieContainer CookieContainer = new();
         public static string StartupPath = "";
+        public static bool UpdatedAccessTokens = false;
 
         public static bool AutoUpdate = false;
         public static bool LegacyWindowsMode = false;
