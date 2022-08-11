@@ -44,6 +44,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         public bool CurrentlyActive { get; private set; }
         private bool WebsocketAuthenticated { get; set; }
 
+        private string APIKey { get; init; } // only need for LostVoid API
+
         private object _activeLock;
         private DateTime SleepUntil;
         private DateTime LastCacheUpdate;
