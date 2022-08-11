@@ -68,6 +68,18 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
             return r.Match(Match).Groups[1].Value;
         }
 
+        public static void SaveAccessTokens()
+        {
+            var filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
+
+            string accessTokens = "#DO NOT SHARE THESE!" + Environment.NewLine;
+            foreach (var bot in Settings.BotInstances)
+            {
+                accessTokens += bot.Username + ":" + bot.AccessToken + Environment.NewLine;
+            }
+
+            File.WriteAllText(filePathAccessTokens, accessTokens);
+        }
         public static bool RunProcessWithResult(string file, string args)
         {
             Log.WriteToLog("PowerTransferDebug: Run Process: " + file);

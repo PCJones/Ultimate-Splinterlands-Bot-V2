@@ -29,8 +29,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         public string Username { get; private set; }
         private string PostingKey { get; init; }
         private string ActiveKey { get; init; } // only needed for plugins, not used by normal bot
-        private string APIKey { get; init; } // only need for LostVoid API
-        private string AccessToken { get; init; } // used for websocket authentication
+        public string AccessToken { get; private set; } // used for websocket authentication
         private int APICounter { get; set; }
         private int PowerCached { get; set; }
         private int LeagueCached { get; set; }
@@ -43,6 +42,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private Card[] CardsCached { get; set; }
         private Dictionary<GameEvent, JToken> GameEvents { get; set; }
         public bool CurrentlyActive { get; private set; }
+        private bool WebsocketAuthenticated { get; set; }
 
         private object _activeLock;
         private DateTime SleepUntil;
@@ -54,6 +54,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             if (message.MessageType != System.Net.WebSockets.WebSocketMessageType.Text
                 || !message.Text.Contains("\"id\""))
             {
+                // handle expired access token
+                if (message.Text.StartsWith("{\"status\":\"connection refused\""))
+                {
+                    Log.WriteToLog($"{Username}: Access Token expired!", Log.LogType.Warning);
+                    AccessToken = GetAccessTokenAsync(saveToFile: false).Result;
+                    Settings.UpdatedAccessTokens = true;
+                }
+                else if (message.Text.StartsWith("{\"status\":\"authenticated\""))
+                {
+                    WebsocketAuthenticated = true;
+                }
                 return;
             }
 
@@ -165,11 +176,22 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
         }
 
-        private void WebsocketAuthenticate(IWebsocketClient wsClient)
+        private async Task<bool> WebsocketAuthenticate(IWebsocketClient wsClient)
         {
             string sessionID = Helper.GenerateRandomString(10);
             string message = "{\"type\":\"auth\",\"player\":\"" + Username + "\",\"access_token\":\"" + AccessToken + "\",\"session_id\":\"" + sessionID + "\"}";
             wsClient.Send(message);
+
+            for (int i = 0; i < 175; i++)
+            {
+                await Task.Delay(50);
+                if (WebsocketAuthenticated)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private COperations.custom_json CreateCustomJson(bool activeKey, bool postingKey, string methodName, string json)
@@ -375,7 +397,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             return null;
         }
 
-        private async Task<string> GetAccessTokenAsync()
+        private async Task<string> GetAccessTokenAsync(bool saveToFile = true)
         {
             if (Settings.LegacyWindowsMode)
             {
@@ -383,7 +405,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
             try
             {
-                Log.WriteToLog($"{Username}: Requesting access token... (this only happens once per account)");
+                Log.WriteToLog($"{Username}: Requesting access token...");
                 var filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
                 var bid = "bid_" + Helper.GenerateRandomString(20);
                 var sid = "sid_" + Helper.GenerateRandomString(20);
@@ -397,7 +419,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 if (token.Length > 0)
                 {
                     Log.WriteToLog($"{Username}: Successfully requested access token!", Log.LogType.Success);
-                    File.AppendAllText(filePathAccessTokens, Username + ":" + token + Environment.NewLine);
+                    if (saveToFile)
+                    {
+                        File.AppendAllText(filePathAccessTokens, Username + ":" + token + Environment.NewLine);
+                    }
                 }
                 return token;
             }
@@ -453,6 +478,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
 
             GameEvents.Clear();
+            WebsocketAuthenticated = false;
             var wsClient = Settings.LegacyWindowsMode ? null : new WebsocketClient(new Uri(Settings.SPLINTERLANDS_WEBSOCKET_URL));
             if (!Settings.LegacyWindowsMode) wsClient.ReconnectTimeout = new TimeSpan(0, 5, 0);
 
@@ -478,7 +504,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     wsClient.ReconnectionHappened.Subscribe(info =>
                         Log.WriteToLog($"{Username}: Reconnection happened, type: {info.Type}"));
                     _ = WebsocketPingLoopAsync(wsClient).ConfigureAwait(false);
-                    WebsocketAuthenticate(wsClient);
+
+                    // don't fight if access token is getting refreshed
+                    if(!await WebsocketAuthenticate(wsClient))
+                    {
+                        await Task.Delay(15000);
+                        return SleepUntil;
+                    }
                 }
 
                 APICounter++;

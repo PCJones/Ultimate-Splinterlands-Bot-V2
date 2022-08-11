@@ -126,6 +126,11 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 Log.LogBattleSummaryToTable();
                                 Log.WriteSupportInformationToLog();
                                 Thread.Sleep(5000);
+                                if (Settings.UpdatedAccessTokens)
+                                {
+                                    Helper.SaveAccessTokens();
+                                    Settings.UpdatedAccessTokens = false;
+                                }
                                 nextBotInstance = 0;
                                 while (SplinterlandsAPI.CheckForMaintenance().Result)
                                 {
