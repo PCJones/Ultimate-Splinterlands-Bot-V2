@@ -75,7 +75,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
             string accessTokens = "#DO NOT SHARE THESE!" + Environment.NewLine;
             foreach (var bot in Settings.BotInstances)
             {
-                accessTokens += bot.Username + ":" + bot.AccessToken + Environment.NewLine;
+                accessTokens += $"{bot.Username}:{bot.AccessToken}{Environment.NewLine}";
             }
 
             File.WriteAllText(filePathAccessTokens, accessTokens);

@@ -515,14 +515,21 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 if (Settings.LegacyWindowsMode && APICounter >= 5 || APICounter >= 10 || (DateTime.Now - LastCacheUpdate).TotalMinutes >= 50)
                 {
                     LastCacheUpdate = DateTime.Now;
-                    (PowerCached, RatingCached, LeagueCached) = await SplinterlandsAPI.GetPlayerDetailsAsync(Username);
+                    var (power, wildRating, wildLeague, modernRating, modernLeague) = await SplinterlandsAPI.GetPlayerDetailsAsync(Username);
+                    PowerCached = power;
+                    RatingCached = Settings.RankedFormat == "WILD" ? wildRating : modernRating;
+                    LeagueCached = Settings.RankedFormat == "WILD" ? wildLeague : modernLeague;
+
                     QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
                     CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
+                    JArray playerBalances = (JArray)await SplinterlandsAPI.GetPlayerBalancesAsync(Username);
+                    ECRCached = GetEcrFromPlayerBalances(playerBalances);
+
                     if (Settings.UsePrivateAPI)
                     {
                         BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
+                        BattleAPI.UpdateAccountInfoForPrivateAPI(Username, ECRCached, playerBalances, wildRating, wildLeague, modernRating, modernLeague, power);
                     }
-                    ECRCached = await GetECRFromAPIAsync();
 
                     // Only at start of bot
                     if (APICounter >= 99999 && Settings.StartBattleAboveECR >= 10 && ECRCached < Settings.StartBattleAboveECR)
@@ -757,14 +764,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
 
-                Log.WriteToLog($"{Username}: Battle finished!");
-
                 if (Settings.ShowBattleResults)
                 {
+                    Log.WriteToLog($"{Username}: Waiting for opponent reveal.");
                     await ShowBattleResultAsync(tx);
                 }
                 else
                 {
+                    Log.WriteToLog($"{Username}: Battle finished!");
                     await Task.Delay(1000);
                 }
             }
@@ -1196,9 +1203,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
         }
 
-        private async Task<double> GetECRFromAPIAsync()
+        private static double GetEcrFromPlayerBalances(JArray playerBalances)
         {
-            var balanceInfo = ((JArray)await SplinterlandsAPI.GetPlayerBalancesAsync(Username)).Where(x => (string)x["token"] == "ECR").First();
+            JToken balanceInfo = playerBalances.Where(x => (string)x["token"] == "ECR").First();
             if (balanceInfo["last_reward_time"].Type == JTokenType.Null) return 100;
             var captureRate = (int)balanceInfo["balance"];
             DateTime lastRewardTime = (DateTime)balanceInfo["last_reward_time"];

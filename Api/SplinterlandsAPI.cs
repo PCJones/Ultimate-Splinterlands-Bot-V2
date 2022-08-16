@@ -37,11 +37,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             return true;
         }
-        public static async Task<(int power, int rating, int league)> GetPlayerDetailsAsync(string username)
+        public static async Task<(int power, int wildRating, int wildLeague, int modernRating, int modernLeague)> GetPlayerDetailsAsync(string username)
         {
             try
             {
-                string prefix = Settings.RankedFormat == "WILD" ? "" : "modern_";
                 string data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/players/details?name={ username }");
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
@@ -50,13 +49,14 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     await Task.Delay(5000);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/players/details?name={ username }");
                 }
-                return ((int)JToken.Parse(data)["collection_power"], (int)JToken.Parse(data)[prefix + "rating"], (int)JToken.Parse(data)[prefix + "league"]);
+                return ((int)JToken.Parse(data)["collection_power"], (int)JToken.Parse(data)["rating"], (int)JToken.Parse(data)["league"],
+                    (int)JToken.Parse(data)["modern_rating"], (int)JToken.Parse(data)["modern_league"]);
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{username}: Could not get player details from splinterlands API: {ex}", Log.LogType.Error);
             }
-            return (-1, -1, -1);
+            return (-1, -1, -1, -1, -1);
         }
 
         public static async Task<(bool enemyHasPicked, bool surrender)> CheckEnemyHasPickedAsync(string username, string tx)

@@ -392,6 +392,57 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 Log.WriteToLog($"{username}: Failed to update cards for private API: +  " + response, Log.LogType.Error);
             }
         }
+
+        public static void UpdateAccountInfoForPrivateAPI(string username, double ecr, JArray playerBalances, int wildRating, int wildRank, int modernRating, int modernRank, int power)
+        {
+
+            double dec = GetTokenBalance(playerBalances, "DEC");
+            double sps = GetTokenBalance(playerBalances, "SPS");
+            double stakedSps = GetTokenBalance(playerBalances, "SPSP");
+            double credits = GetTokenBalance(playerBalances, "CREDITS");
+            int chaosLegionPacks = (int)GetTokenBalance(playerBalances, "CHAOS");
+            int goldPotion = (int)GetTokenBalance(playerBalances, "GOLD");
+            int legendaryPotion = (int)GetTokenBalance(playerBalances, "LEGENDARY");
+            int merits = (int)GetTokenBalance(playerBalances, "MERITS");
+            double vouchers = GetTokenBalance(playerBalances, "VOUCHER");
+            string postData = ($"account={username}&ecr={ecr}&wildRank={wildRank}&wildRating={wildRating}&modernRating={modernRating}"
+                + $"&modernRank={modernRank}&dec={dec}&sps={sps}&stakedSps={stakedSps}&power={power}&credits={credits}&chaosLegionPacks={chaosLegionPacks}"
+                + $"&goldPotion={goldPotion}&legendaryPotion={legendaryPotion}&merits={merits}&vouchers={vouchers}").Replace(",", ".");
+            string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.PrivateAPIShop + "index.php?site=updateaccountinfo", "", "", Encoding.Default);
+
+            if (!response.Contains("success"))
+            {
+                string postDataLogin = "txtUsername=" + Uri.EscapeDataString(Settings.PrivateAPIUsername);
+                postDataLogin += "&txtPassword=" + Uri.EscapeDataString(Settings.PrivateAPIPassword);
+                postDataLogin += "&btnLoginSubmit=" + "Login";
+
+                response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postDataLogin, Settings.PrivateAPIShop + "index.php", "", "", Encoding.Default);
+
+                if (!response.Contains("Login Successfully"))
+                {
+                    Log.WriteToLog($"{username}: Failed to login into private API shop: " + response, Log.LogType.Error);
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
+
+            response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.PrivateAPIShop + "index.php?site=updateaccountinfo", "", "", Encoding.Default);
+
+            if (!response.Contains("success"))
+            {
+                Log.WriteToLog($"{username}: Failed to update account information for private API tracker: +  " + response, Log.LogType.Error);
+            }
+        }
+
+        private static double GetTokenBalance(JArray playerBalances, string token)
+        {
+            JToken balanceInfo = playerBalances.Where(x => (string)x["token"] == token).FirstOrDefault();
+            return balanceInfo != null ? (double)balanceInfo["balance"] : 0;
+        }
+
         public async static Task CheckRateLimitLoopAsync(string username, string apiUrl)
         {
             bool alreadyChecking = false;
