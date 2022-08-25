@@ -24,11 +24,14 @@ using Ultimate_Splinterlands_Bot_V2.Config;
 
 namespace Ultimate_Splinterlands_Bot_V2.Bot
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class BotInstance
     {
+        [JsonProperty]
         public string Username { get; private set; }
-        private string PostingKey { get; init; }
-        private string ActiveKey { get; init; } // only needed for plugins, not used by normal bot
+        private string PostingKey { get; set; }
+        private string ActiveKey { get; set; } // only needed for plugins, not used by normal bot
+        [JsonProperty]
         public string AccessToken { get; private set; } // used for websocket authentication
         private int APICounter { get; set; }
         private int PowerCached { get; set; }
@@ -44,10 +47,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         public bool CurrentlyActive { get; private set; }
         private bool WebsocketAuthenticated { get; set; }
 
-        private object _activeLock;
+        private readonly object _activeLock;
+        [JsonProperty]
         private DateTime SleepUntil;
         private DateTime LastCacheUpdate;
         private LogSummary LogSummary;
+        [JsonProperty]
+        private readonly bool IsDeserialized;
 
         private void HandleWebsocketMessage(ResponseMessage message)
         {
@@ -58,8 +64,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 if (message.Text.StartsWith("{\"status\":\"connection refused\""))
                 {
                     Log.WriteToLog($"{Username}: Access Token expired!", Log.LogType.Warning);
-                    AccessToken = GetAccessTokenAsync(saveToFile: false).Result;
-                    Settings.UpdatedAccessTokens = true;
+                    AccessToken = RequestAccessTokenAsync().Result;
                 }
                 else if (message.Text.StartsWith("{\"status\":\"authenticated\""))
                 {
@@ -107,7 +112,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 {
                     return true;
                 }
-                if (i != maxI)
+                if (i != maxI - 1)
                 {
                     await Task.Delay(1000);
                 }
@@ -397,7 +402,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             return null;
         }
 
-        private async Task<string> GetAccessTokenAsync(bool saveToFile = true)
+        private async Task<string> RequestAccessTokenAsync()
         {
             if (Settings.LegacyWindowsMode)
             {
@@ -419,10 +424,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 if (token.Length > 0)
                 {
                     Log.WriteToLog($"{Username}: Successfully requested access token!", Log.LogType.Success);
-                    if (saveToFile)
-                    {
-                        File.AppendAllText(filePathAccessTokens, Username + ":" + token + Environment.NewLine);
-                    }
                 }
                 return token;
             }
@@ -432,29 +433,37 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 return "";
             }
         }
-        public BotInstance(string username, string password, string accessToken, int index, string activeKey = "")
+        public BotInstance(string username)
         {
             Username = username;
-            PostingKey = password;
-            ActiveKey = activeKey;
-            AccessToken = accessToken.Length > 0 ? accessToken : GetAccessTokenAsync().Result;
-            SleepUntil = DateTime.Now.AddMinutes((Settings.SleepBetweenBattles + 1) * -1);
-            while (AccessToken.Length == 0)
-            {
-                // Sleep 20 seconds to not spam retries
-                Thread.Sleep(20000);
-                Log.WriteToLog($"{Username}: Could not get Access Token for this account - trying again", Log.LogType.Error);
-                Log.WriteToLog($"{Username}: Make sure to use your correct username and posting key", Log.LogType.Error);
-                AccessToken = GetAccessTokenAsync().Result;
-            }
             LastCacheUpdate = DateTime.MinValue;
-            LogSummary = new LogSummary(index, username);
+            if (!IsDeserialized)
+            {
+                SleepUntil = DateTime.Now;
+                IsDeserialized = true;
+            }
             _activeLock = new object();
             APICounter = 99999;
             GameEvents = new Dictionary<GameEvent, JToken>();
             DrawsTotal = 0;
             WinsTotal = 0;
             LossesTotal = 0;
+        }
+
+        public void Initialize(int index, string postingKey, string activeKey = "")
+        {
+            LogSummary = new LogSummary(index, Username);
+            PostingKey = postingKey;
+            ActiveKey = activeKey;
+            AccessToken = AccessToken?.Length > 0 ? AccessToken : RequestAccessTokenAsync().Result;
+            while (AccessToken.Length == 0)
+            {
+                // Sleep 20 seconds to not spam retries
+                Thread.Sleep(20000);
+                Log.WriteToLog($"{Username}: Could not get Access Token for this account - trying again", Log.LogType.Error);
+                Log.WriteToLog($"{Username}: Make sure to use your correct username and posting key", Log.LogType.Error);
+                AccessToken = RequestAccessTokenAsync().Result;
+            }
         }
 
         public async Task<DateTime> DoBattleAsync()
@@ -521,6 +530,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     LeagueCached = Settings.RankedFormat == "WILD" ? wildLeague : modernLeague;
 
                     QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
+                    QuestCached.GetChestAmount();
                     CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
                     JArray playerBalances = (JArray)await SplinterlandsAPI.GetPlayerBalancesAsync(Username);
                     ECRCached = GetEcrFromPlayerBalances(playerBalances);
@@ -744,12 +754,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         }
                         else
                         {
-                            if (await WaitForGameEventAsync(GameEvent.opponent_submit_team, 4))
+                            if (await WaitForGameEventAsync(GameEvent.opponent_submit_team, 5))
                             {
                                 break;
                             }
                             // if there already is a battle result now it's because the enemy surrendered or the game vanished
-                            if (await WaitForGameEventAsync(GameEvent.battle_result) || await WaitForGameEventAsync(GameEvent.battle_cancelled))
+                            if ((await WaitForGameEventAsync(GameEvent.battle_result) && !await WaitForGameEventAsync(GameEvent.opponent_submit_team))
+                                || await WaitForGameEventAsync(GameEvent.battle_cancelled))
                             {
                                 surrender = true;
                                 break;
@@ -766,7 +777,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 if (Settings.ShowBattleResults)
                 {
-                    Log.WriteToLog($"{Username}: Waiting for opponent reveal.");
                     await ShowBattleResultAsync(tx);
                 }
                 else
@@ -1041,7 +1051,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     break;
                 case 1:
                     WinsTotal++;
-                    logTextBattleResult = $"You won! Reward: { battleResult.decReward } DEC";
+                    logTextBattleResult = $"You won! Reward: { battleResult.decReward } SPS";
                     Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
                     Log.WriteToLog($"{Username}: New rating is { battleResult.newRating } ({ ("+" + battleResult.ratingChange.ToString()).Pastel(Color.Green) })");
                     break;
@@ -1061,7 +1071,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         }
         private async Task ShowBattleResultAsync(string tx)
         {
-            if (Settings.LegacyWindowsMode)
+            if (Settings.LegacyWindowsMode || Settings.ShowSpsReward)
             {
                 await ShowBattleResultLegacyAsync(tx);
                 return;
@@ -1073,8 +1083,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             else
             {
                 var rankedFormat = Settings.RankedFormat.ToLower();
-                decimal decReward = await WaitForGameEventAsync(GameEvent.balance_update, 10) ?
-                    (decimal)GameEvents[GameEvent.balance_update]["amount"] : 0;
+                //decimal spsReward = await WaitForGameEventAsync(GameEvent.balance_update, 10) ?
+                    //(decimal)GameEvents[GameEvent.balance_update]["amount"] : 0;
 
                 int newRating = await WaitForGameEventAsync(GameEvent.rating_update) ?
                     (int)GameEvents[GameEvent.rating_update][rankedFormat]["new_rating"] : RatingCached;
@@ -1111,7 +1121,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         break;
                     case 1:
                         WinsTotal++;
-                        logTextBattleResult = $"You won! Reward: { decReward } DEC";
+                        //logTextBattleResult = $"You won! Reward: { spsReward } SPS";
+                        logTextBattleResult = $"You won!";
                         Log.WriteToLog($"{Username}: { logTextBattleResult.Pastel(Color.Green) }");
                         Log.WriteToLog($"{Username}: New rating is { newRating } ({ ("+" + ratingChange.ToString()).Pastel(Color.Green) })");
                         break;

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Ultimate_Splinterlands_Bot_V2.Config;
 
 namespace Ultimate_Splinterlands_Bot_V2.Model
 {
@@ -44,6 +45,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Model
         public int League { get; init; }
         [JsonIgnore]
         public bool IsExpired => (DateTime.Now - CreatedDate.ToLocalTime()).TotalHours >= 24;
+        public int MinutesRemaining => (24*60) - (int)(DateTime.Now - CreatedDate.ToLocalTime()).TotalMinutes;
 
         public Quest(string id, string player, DateTime createdDate, int createdBlock, string name, int totalItems, int completedItems, string? claimTrxId, DateTime claimDate, int rewardQty, string? refreshTrxID, JToken rewards, int chestTier, int rShares, int league)
         {
@@ -62,6 +64,37 @@ namespace Ultimate_Splinterlands_Bot_V2.Model
             ChestTier = chestTier;
             RShares = rShares;
             League = league;
+        }
+
+        public int GetChestAmount()
+        {
+            var questChestConfig = Settings.SplinterlandsSettings.LootChests.Quest[ChestTier ?? 0];
+            var chests = -1;
+            double totalRshares = 0;
+            double nextChest = 0;
+
+            while (RShares >= JavaScriptRound(totalRshares))
+            {
+                chests++;
+                nextChest = questChestConfig.Base * Math.Pow(questChestConfig.StepMultiplier, chests);
+                totalRshares += nextChest;
+            }
+
+            if (chests >= questChestConfig.Max)
+            {
+                return chests;
+            }
+            var progress = JavaScriptRound(nextChest) - (JavaScriptRound(totalRshares) - RShares);
+            var rSharesUntilNextChest = Convert.ToInt32(JavaScriptRound(nextChest - progress));
+            var progressPercentage = progress / nextChest;
+            return 0;
+        }
+
+        // simulate java script Math.Round() - https://stackoverflow.com/a/1863604
+        private static double JavaScriptRound(double value)
+        {
+            double rounded = Math.Floor(value + 0.5);
+            return rounded;
         }
     }
 }

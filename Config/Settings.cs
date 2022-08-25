@@ -10,6 +10,7 @@ using System.Runtime.Remoting;
 using System.Text;
 using System.Threading.Tasks;
 using Ultimate_Splinterlands_Bot_V2.Bot;
+using Ultimate_Splinterlands_Bot_V2.Model;
 
 namespace Ultimate_Splinterlands_Bot_V2.Config
 {
@@ -26,7 +27,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static Random _Random = new();
         public static CookieContainer CookieContainer = new();
         public static string StartupPath = "";
-        public static bool UpdatedAccessTokens = false;
+        public static DateTime LastSerialization = DateTime.Now;
 
         public static bool AutoUpdate = false;
         public static bool LegacyWindowsMode = false;
@@ -35,6 +36,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static bool ShowAPIResponse = true;
 
         public static CardSettings CardSettings;
+        public static SplinterlandsSettings SplinterlandsSettings;
 
         public static bool ShowBattleResults = true;
         public static int Threads = 1;
@@ -55,6 +57,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static bool PrioritizeQuest = true;
         public static bool ClaimQuestReward = false;
         public static bool ClaimSeasonReward = false;
+        public static bool ShowSpsReward = false;
+        public static bool FocusChestOptimisation = false;
         public static bool AdvanceLeague = false;
         public static int MaxLeagueTier = 4;
         public static int SleepBetweenBattles = 30;

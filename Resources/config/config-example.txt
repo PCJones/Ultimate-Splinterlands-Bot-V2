@@ -7,13 +7,18 @@ MINIMUM_BATTLE_POWER=0
 CLAIM_SEASON_REWARD=false
 CLAIM_QUEST_REWARD=false
 
-#Pick between wild or modern
+## Display how much SPS you won after a battle - activating this will make the bot slower.
+## This will also make you reach the splinterlands rate limit faster
+## Recommended setting: true if you have less than 100 accounts, false if you have more
+SHOW_SPS_REWARD=true
+
+##Pick between wild or modern
 RANKED_FORMAT=wild
 
 ## If enabled it will click on the advance to next league button
 ADVANCE_LEAGUE=true
 
-# The maximum league the bot will advance to. 0=bronze, 1=silver, 2=gold, 3=diamond, 4=champion
+## The maximum league the bot will advance to. 0=bronze, 1=silver, 2=gold, 3=diamond, 4=champion
 MAX_LEAGUE_TIER=4
 
 ## seperate by comma like this: earth,life - it will request new quest on earth and life quest
@@ -31,7 +36,6 @@ SHOW_BATTLE_RESULTS=true
 ##################Lightning Mode Settings##################
 
 #######################API Settings########################
-USE_API=true
 API_URL=http://splinterlandsapi.pcjones.de:8080/v2/
 
 ## PRIVATE API Settings - ignore if you don't have it

@@ -68,17 +68,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
             return r.Match(Match).Groups[1].Value;
         }
 
-        public static void SaveAccessTokens()
+        public static void SerializeBotInstances()
         {
-            var filePathAccessTokens = Settings.StartupPath + @"/config/access_tokens.txt";
-
-            string accessTokens = "#DO NOT SHARE THESE!" + Environment.NewLine;
-            foreach (var bot in Settings.BotInstances)
-            {
-                accessTokens += $"{bot.Username}:{bot.AccessToken}{Environment.NewLine}";
-            }
-
-            File.WriteAllText(filePathAccessTokens, accessTokens);
+            string filePathAccountData = Settings.StartupPath + @"/config/account_data.json";
+            File.WriteAllText(filePathAccountData, JsonConvert.SerializeObject(Settings.BotInstances));
         }
         public static bool RunProcessWithResult(string file, string args)
         {

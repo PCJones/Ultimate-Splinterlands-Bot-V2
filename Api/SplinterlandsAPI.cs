@@ -17,7 +17,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
 {
     public static class SplinterlandsAPI
     {
-        public static async Task<bool> CheckForMaintenance()
+        public static async Task<string> GetSettings()
         {
             try
             {
@@ -29,7 +29,21 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     Log.WriteToLog($"Error with splinterlands API for settings, trying fallback api...", Log.LogType.Warning);
                     data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/settings");
                 }
-              return (bool)JToken.Parse(data)["maintenance_mode"];
+                return data;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteToLog($"Could not get settings from splinterlands API: {ex}", Log.LogType.Error);
+            }
+            return "";
+        }
+
+        public static async Task<bool> CheckForMaintenance()
+        {
+            try
+            {
+                var data = await GetSettings();
+                return (bool)JToken.Parse(data)["maintenance_mode"];
             }
             catch (Exception ex)
             {
@@ -89,8 +103,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             return (true, true);
         }
 
-        // this method is not being used currently
-        public static async Task<(int newRating, int ratingChange, decimal decReward, int result)> GetBattleResultAsync(string username, string tx)
+        // this method is only being used by legacy mode
+        public static async Task<(int newRating, int ratingChange, decimal spsReward, int result)> GetBattleResultAsync(string username, string tx)
         {
             try
             {
@@ -124,9 +138,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     ((int)matchHistory["battles"][0]["player_2_rating_final"]);
                 int ratingChange = (string)matchHistory["battles"][0]["player_1"] == username ? newRating - ((int)matchHistory["battles"][0]["player_1_rating_initial"]) :
                     newRating - ((int)matchHistory["battles"][0]["player_2_rating_initial"]);
-                decimal decReward = (decimal)matchHistory["battles"][0]["reward_dec"];
+                decimal spsReward = (decimal)matchHistory["battles"][0]["reward_sps"];
 
-                return (newRating, ratingChange, decReward, gameResult);
+                return (newRating, ratingChange, spsReward, gameResult);
             }
             catch (Exception ex)
             {
