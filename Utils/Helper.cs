@@ -123,20 +123,33 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
                 string gitHubUrl = $"https://api.github.com/repos/{Settings.BOT_GITHUB_REPO}/releases";
                 string releasesRaw = DownloadPageAsync(gitHubUrl).Result;
                 string[] localVersion = File.ReadAllLines(versionFilePath);
-                DateTime currentVersionPublishDate = DateTime.ParseExact(localVersion[0].Trim(), "yyyy-MM-dd' 'HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
+                // temp fix for missing Z
+                if (!localVersion[0].EndsWith("Z"))
+                {
+                    localVersion[0] += "Z";
+                }
+
+                DateTime currentVersionPublishDate = DateTime.ParseExact(localVersion[0].Trim(), "yyyy-MM-dd' 'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
                 string publishDateRaw = "";
                 string name = "";
-                JToken newestRelease;
+                JToken newestRelease = null;
                 using (JsonReader reader = new JsonTextReader(new StringReader(releasesRaw)))
                 {
                     reader.DateParseHandling = DateParseHandling.None;
-                    newestRelease = JArray.Load(reader)[0];
-                    publishDateRaw = (string)newestRelease["published_at"];
-                    name = (string)newestRelease["name"];
-                }
-                if (name.Contains("beta") || name.Contains("alpha") || name.Contains("test"))
-                {
-                    return;
+
+                    var releases = JArray.Load(reader);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        newestRelease = releases[i];
+                        publishDateRaw = (string)newestRelease["published_at"];
+                        name = (string)newestRelease["name"];
+                        if (name.Contains("beta") || name.Contains("alpha") || name.Contains("test"))
+                        {
+                            continue;
+                        }
+                        break;
+                    }
                 }
                 DateTime releasePublishDate = DateTime.ParseExact(publishDateRaw, "yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
 
@@ -144,7 +157,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
                 {
                     bool autoUpdate = Settings.AutoUpdate;
 
-                    if (Settings.AutoUpdate)
+                    if (Settings.AutoUpdate && newestRelease != null)
                     {
                         var asset = newestRelease["assets"].Where(x => (string)x["name"] == localVersion[1].Trim() + ".zip").FirstOrDefault();
                         if (asset == null)
@@ -163,6 +176,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
                             // create temp folder
                             DirectoryInfo d = new DirectoryInfo(Settings.StartupPath);
                             string tmpFolderPath = Settings.StartupPath + "/tmp/";
+                            var test = releasePublishDate.ToUniversalTime().ToString("u");
+                            Console.WriteLine(test);
                             Directory.CreateDirectory(tmpFolderPath);
                             string fileNameExe = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ultimate Splinterlands Bot V2.exe" : "Ultimate Splinterlands Bot V2";
                             foreach (var file in d.GetFiles("*.*"))
