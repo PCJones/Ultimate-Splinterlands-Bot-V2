@@ -57,6 +57,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
                 await Task.Delay(sleepingTime * 1000).ConfigureAwait(false);
                 return await DownloadPageAsync(url);
             }
+            else if (result.StatusCode == HttpStatusCode.BadGateway || result.StatusCode == HttpStatusCode.GatewayTimeout)
+            {
+                int sleepingTime = 10;
+                Log.WriteToLog($"Splinterlands API error - sleeping for {sleepingTime} seconds", Log.LogType.Warning);
+                await Task.Delay(sleepingTime * 1000).ConfigureAwait(false);
+                return await DownloadPageAsync(url);
+            }
             var response = await result.Content.ReadAsStringAsync();
             // Write status code.
             return response;

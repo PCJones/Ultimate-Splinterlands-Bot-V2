@@ -194,17 +194,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             return null;
         }
 
-        public static async Task<Card[]> GetPlayerCardsAsync(string username)
+        public static async Task<Card[]> GetPlayerCardsAsync(string username, string accessToken)
         {
             try
             {
-                string data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/cards/collection/{ username }");
+                string data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/cards/collection/{ username }?token={ accessToken }&username={ username }");
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
                     await Task.Delay(5000);
                     Log.WriteToLog($"{username}: Error with splinterlands API for cards, trying fallback api...", Log.LogType.Warning);
-                    data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/cards/collection/{ username }");
+                    data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL_FALLBACK}/cards/collection/{ username }?token={ accessToken }&username={ username }");
                 }
 
                 DateTime oneDayAgo = DateTime.Now.AddDays(-1);

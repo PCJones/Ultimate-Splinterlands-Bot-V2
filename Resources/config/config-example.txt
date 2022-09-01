@@ -24,6 +24,9 @@ MAX_LEAGUE_TIER=4
 ## seperate by comma like this: earth,life - it will request new quest on earth and life quest
 ## Remove the # at the beginning of the next line to activate
 #REQUEST_NEW_QUEST=earth
+
+## Does not work on Windows 7, 8 and Windows Server 2012 or older
+FOCUS_CHEST_OPTIMIZATION=false
 ##################General Settings##################
 
 ##################Technical Settings##################
@@ -33,7 +36,7 @@ THREADS=1
 ## Disable this if you want a cleaner log or you have problems with too many
 ## requests to the splinterlands API. Disabling will also make battles 10-25 seconds faster.
 SHOW_BATTLE_RESULTS=true
-##################Lightning Mode Settings##################
+##################Technical Settings##################
 
 #######################API Settings########################
 API_URL=http://splinterlandsapi.pcjones.de:8080/v2/

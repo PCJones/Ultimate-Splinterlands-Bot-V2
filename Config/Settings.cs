@@ -58,7 +58,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static bool ClaimQuestReward = false;
         public static bool ClaimSeasonReward = false;
         public static bool ShowSpsReward = false;
-        public static bool FocusChestOptimisation = false;
+        public static bool FocusChestOptimization = false;
         public static bool AdvanceLeague = false;
         public static int MaxLeagueTier = 4;
         public static int SleepBetweenBattles = 30;

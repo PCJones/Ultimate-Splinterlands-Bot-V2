@@ -41,7 +41,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private int LossesTotal { get; set; }
         private double DrawsTotal { get; set; }
         private double WinsTotal { get; set; }
-        private Quest QuestCached { get; set; }
+        [JsonProperty]
+        private Reward Reward { get; set; }
         private Card[] CardsCached { get; set; }
         private Dictionary<GameEvent, JToken> GameEvents { get; set; }
         public bool CurrentlyActive { get; private set; }
@@ -89,6 +90,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 {
                     ECRCached = (double)GameEvents[GameEvent.ecr_update]["capture_rate"] / 100;
                 }
+                else if (gameEvent == GameEvent.transaction_complete
+                    && (string)json["data"]["trx_info"]["type"] == "claim_reward")
+                {
+                    JToken result = JToken.Parse((string)json["data"]["trx_info"]["result"]);
+                    Reward.SetLastChestQuantity(result["rewards"].Count());
+                }
             }
             else if (json["data"]["trx_info"] != null
                 && !(bool)json["data"]["trx_info"]["success"])
@@ -99,7 +106,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             {
                 Log.WriteToLog($"{Username}: UNKNOWN Message received: {message.Text}", Log.LogType.Warning);
             }
-
+                
             Log.WriteToLog($"{Username}: Message received: {message.Text}", debugOnly: true);
         }
 
@@ -282,7 +289,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                         if (Settings.UsePrivateAPI && !secondTry)
                         {
                             Log.WriteToLog($"{Username}: Requesting team from public API - private API needs card update!", Log.LogType.Warning);
-                            CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
+                            CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username, AccessToken);
                             team = await GetTeamAsync(matchDetails, ignorePrivateAPI: true);
                             BattleAPI.UpdateCardsForPrivateAPI(Username, CardsCached);
                             return await SubmitTeamAsync(tx, matchDetails, team, secondTry: true);
@@ -437,6 +444,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         {
             Username = username;
             LastCacheUpdate = DateTime.MinValue;
+            Reward = new();
             if (!IsDeserialized)
             {
                 SleepUntil = DateTime.Now;
@@ -529,9 +537,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     RatingCached = Settings.RankedFormat == "WILD" ? wildRating : modernRating;
                     LeagueCached = Settings.RankedFormat == "WILD" ? wildLeague : modernLeague;
 
-                    QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
-                    QuestCached.GetChestAmount();
-                    CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username);
+                    Reward.Quest = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
+                    CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username, AccessToken);
                     JArray playerBalances = (JArray)await SplinterlandsAPI.GetPlayerBalancesAsync(Username);
                     ECRCached = GetEcrFromPlayerBalances(playerBalances);
 
@@ -544,7 +551,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     // Only at start of bot
                     if (APICounter >= 99999 && Settings.StartBattleAboveECR >= 10 && ECRCached < Settings.StartBattleAboveECR)
                     {
-                        SetSleepUntilStartEcrReached();
+                        SetSleepUntilEcrReached(Settings.StartBattleAboveECR);
                         TransferPowerIfNeeded();
                         return SleepUntil;
                     }
@@ -555,13 +562,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 LogSummary.ECR = ECRCached.ToString();
 
                 Log.WriteToLog($"{Username}: Deck size: {(CardsCached.Length - 1).ToString().Pastel(Color.Red)} (duplicates filtered)"); // Minus 1 because phantom card array has an empty string in it
-                if (QuestCached != null)
+                if (Reward.Quest != null)
                 {
                     // new quests temp workaround
-                    if (Settings.QuestTypes.ContainsKey(QuestCached.Name))
+                    if (Settings.QuestTypes.ContainsKey(Reward.Quest.Name))
                     {
-                        Log.WriteToLog($"{Username}: Quest element: {Settings.QuestTypes[QuestCached.Name].Pastel(Color.Yellow)} " +
-    $"Completed items: {QuestCached.CompletedItems.ToString().Pastel(Color.Yellow)}");
+                        Log.WriteToLog($"{Username}: Quest element: {Settings.QuestTypes[Reward.Quest.Name].Pastel(Color.Yellow)} " +
+    $"Completed items: {Reward.Quest.CompletedItems.ToString().Pastel(Color.Yellow)}");
                     }
                     else
                     {
@@ -586,7 +593,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
                     if (Settings.StartBattleAboveECR >= 10)
                     {
-                        SetSleepUntilStartEcrReached();
+                        SetSleepUntilEcrReached(Settings.StartBattleAboveECR);
                         TransferPowerIfNeeded();
                     }
                     else
@@ -846,9 +853,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
         }
 
-        private void SetSleepUntilStartEcrReached()
+        private void SetSleepUntilEcrReached(int desiredEcr)
         {
-            double missingECR = Settings.StartBattleAboveECR - ECRCached;
+            double missingECR = desiredEcr - ECRCached;
             double hoursUntilEcrReached = missingECR / 1.041666;
             SleepUntil = DateTime.Now.AddHours(hoursUntilEcrReached).AddMinutes(1);
             Log.WriteToLog($"{Username}: Sleeping until {SleepUntil.ToShortTimeString()} to reach an ECR of {Settings.StartBattleAboveECR}%.", Log.LogType.Warning);
@@ -999,7 +1006,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 int chestTier = GetTier(LeagueCached);
 
-                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, QuestCached, chestTier, Username, gameIdHash, false, ignorePrivateAPI);
+                JToken team = await BattleAPI.GetTeamFromAPIAsync(RatingCached, mana, rulesets, allowedSplinters.ToArray(), CardsCached, Reward.Quest, chestTier, Username, gameIdHash, false, ignorePrivateAPI);
                 if (team == null || (string)team["summoner_id"] == "")
                 {
                     return null;
@@ -1099,9 +1106,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 if ((string)GameEvents[GameEvent.battle_result]["winner"] == Username)
                 {
                     battleResult = 1;
-                    if (QuestCached != null && await WaitForGameEventAsync(GameEvent.quest_progress))
+                    if (Reward.Quest != null && await WaitForGameEventAsync(GameEvent.quest_progress))
                     {
-                        QuestCached.TotalItems++;
+                        Reward.Quest.TotalItems++;
                     }
                 }
                 else if ((string)GameEvents[GameEvent.battle_result]["winner"] == "DRAW")
@@ -1148,8 +1155,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             {
                 string logText;
                 // Old quest types
-                if (QuestCached != null && QuestCached.Name.Length > 10 && QuestCached.CompletedItems >= QuestCached.TotalItems
-                    && QuestCached.Rewards.Type == JTokenType.Null && QuestCached.TotalItems > 0)
+                if (Reward.Quest != null && Reward.Quest.Name.Length > 10 && Reward.Quest.CompletedItems >= Reward.Quest.TotalItems
+                    && Reward.Quest.Rewards.Type == JTokenType.Null && Reward.Quest.TotalItems > 0)
                 {
                     logText = "Quest reward can be claimed";
                     Log.WriteToLog($"{Username}: {logText.Pastel(Color.Green)}");
@@ -1158,7 +1165,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     if (Settings.ClaimQuestReward)
                     {
                         string n = Helper.GenerateRandomString(10);
-                        string json = "{\"type\":\"quest\",\"quest_id\":\"" + QuestCached.Id + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                        string json = "{\"type\":\"quest\",\"quest_id\":\"" + Reward.Quest.Id + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                         string tx = BroadcastCustomJsonToHiveNode("sm_claim_reward", json);
                         if (await WaitForTransactionSuccessAsync(tx, 45))
@@ -1169,7 +1176,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
                 // Focus quest
-                else if (QuestCached != null && QuestCached.Rewards.Type == JTokenType.Null && QuestCached.TotalItems == 0 && QuestCached.IsExpired)
+                else if (Reward.Quest != null && Reward.Quest.Rewards.Type == JTokenType.Null && Reward.Quest.TotalItems == 0 && Reward.Quest.IsExpired)
                 {
                     logText = "Focus quest reward can be claimed";
                     Log.WriteToLog($"{Username}: {logText.Pastel(Color.Green)}");
@@ -1178,7 +1185,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     if (Settings.ClaimQuestReward)
                     {
                         string n = Helper.GenerateRandomString(10);
-                        string json = "{\"type\":\"quest\",\"quest_id\":\"" + QuestCached.Id + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                        string json = "{\"type\":\"quest\",\"quest_id\":\"" + Reward.Quest.Id + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
                         string tx = BroadcastCustomJsonToHiveNode("sm_claim_reward", json);
 
                         if (await WaitForTransactionSuccessAsync(tx, 45))
@@ -1194,12 +1201,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     logText = "No quest reward...";
                 }
 
-                if (QuestCached != null)
+                if (Reward.Quest != null)
                 {
                     // temp workaround
-                    if (Settings.QuestTypes.ContainsKey(QuestCached.Name))
+                    if (Settings.QuestTypes.ContainsKey(Reward.Quest.Name))
                     {
-                        logText = Settings.QuestTypes[QuestCached.Name] + ": " + logText;
+                        logText = Settings.QuestTypes[Reward.Quest.Name] + ": " + logText;
                     }
                     else
                     {
@@ -1288,7 +1295,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 {
                     return;
                 }
-                if (QuestCached != null && QuestCached.IsExpired && QuestCached.Name.Length < 11) // name length for old quest
+                if (Reward.Quest != null && Reward.Quest.IsExpired && Reward.Quest.Name.Length < 11) // name length for old quest
                 {
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
@@ -1296,13 +1303,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     string tx = BroadcastCustomJsonToHiveNode("sm_start_quest", json);
                     Log.WriteToLog($"{Username}: Requesting new quest because 24 hours passed: {tx}");
                     await Task.Delay(12500); // wait for splinterlands to refresh the quest
-                    QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
+                    Reward.Quest = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
                 }
 
                 // Check for bad quest
-                if (QuestCached != null && QuestCached.RefreshTrxID == null 
-                    && Settings.QuestTypes.ContainsKey(QuestCached.Name)
-                    && Settings.BadQuests.Contains(Settings.QuestTypes[QuestCached.Name]))
+                if (Reward.Quest != null && Reward.Quest.RefreshTrxID == null 
+                    && Settings.QuestTypes.ContainsKey(Reward.Quest.Name)
+                    && Settings.BadQuests.Contains(Settings.QuestTypes[Reward.Quest.Name]))
                 {
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
@@ -1310,7 +1317,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     string tx = BroadcastCustomJsonToHiveNode("sm_refresh_quest", json);
                     Log.WriteToLog($"{Username}: Requesting new quest because of bad element: {tx}");
                     await Task.Delay(12500); // wait for splinterlands to refresh the quest
-                    QuestCached = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
+                    Reward.Quest = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
                 }
             }
             catch (Exception ex)

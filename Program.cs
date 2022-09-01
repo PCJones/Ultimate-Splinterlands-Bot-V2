@@ -134,7 +134,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                                 Log.LogBattleSummaryToTable();
                                 Log.WriteSupportInformationToLog();
                                 Thread.Sleep(5000);
-                                if ((DateTime.Now - Settings.LastSerialization).TotalMinutes > 1)
+                                if ((DateTime.Now - Settings.LastSerialization).TotalMinutes > 30)
                                 {
                                     Settings.LastSerialization = DateTime.Now;
                                     Helper.SerializeBotInstances();
@@ -299,7 +299,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                             Settings.AdvanceLeague = bool.Parse(temp[1]);
                             break; 
                         case "FOCUS_CHEST_OPTIMISATION":
-                            Settings.FocusChestOptimisation = bool.Parse(temp[1]);
+                            Settings.FocusChestOptimization = bool.Parse(temp[1]);
                             break;
                         case "RANKED_FORMAT":
                             Settings.RankedFormat = temp[1].ToUpper();
@@ -382,7 +382,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                     $"CLAIM_QUEST_REWARD: {Settings.ClaimQuestReward}{Environment.NewLine}" +
                     $"CLAIM_SEASON_REWARD: {Settings.ClaimSeasonReward}{Environment.NewLine}" +
                     $"SHOW_SPS_REWARD: {Settings.ShowSpsReward}{Environment.NewLine}" +
-                    $"FOCUS_CHEST_OPTIMISATION: {Settings.FocusChestOptimisation}{Environment.NewLine}" +
+                    $"FOCUS_CHEST_OPTIMIZATION: {Settings.FocusChestOptimization}{Environment.NewLine}" +
                     $"REQUEST_NEW_QUEST: {string.Join(",", Settings.BadQuests)}{Environment.NewLine}" +
                     $"ADVANCE_LEAGUE: {Settings.AdvanceLeague}{Environment.NewLine}" +
                     $"SLEEP_BETWEEN_BATTLES: {Settings.SleepBetweenBattles}{Environment.NewLine}" +
