@@ -381,20 +381,27 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
         private async Task<JToken> WaitForMatchDetailsAsync(string trxId)
         {
-            for (int i = 0; i < 9; i++) // 9 * 20 = 180, so 3mins
+            for (int i = 0; i < 15; i++) // 9 * 20 = 300, so 5mins
             {
                 try
                 {
                     await Task.Delay(7500);
-                    JToken matchDetails = JToken.Parse(await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/battle/status?id=" + trxId));
-                    if (i > 2 && ((string)matchDetails).Contains("no battle"))
+                    string matchDetailsRaw = await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/battle/status?id=" + trxId);
+                    if (matchDetailsRaw.Contains("no battle"))
                     {
-                        Log.WriteToLog($"{Username}: Error at waiting for match details: " + matchDetails.ToString(), Log.LogType.Error);
-                        return null;
+                        if (i > 10)
+                        {
+                            Log.WriteToLog($"{Username}: Error at waiting for match details: " + matchDetailsRaw, Log.LogType.Error);
+                            return null;
+                        }
                     }
-                    if (matchDetails["mana_cap"].Type != JTokenType.Null)
+                    else
                     {
-                        return matchDetails;
+                        var matchDetails = JToken.Parse(matchDetailsRaw);
+                        if (matchDetails["mana_cap"] != null && matchDetails["mana_cap"].Type != JTokenType.Null)
+                        {
+                            return matchDetails;
+                        }
                     }
                     await Task.Delay(12500);
                 }
@@ -572,7 +579,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                     else
                     {
-                        Log.WriteToLog($"{Username} has new quest type - the bot will not be updated to play for them until august!", Log.LogType.Warning);
+                        Log.WriteToLog($"{Username}: Quest element: {Reward.Quest.Name.Pastel(Color.Yellow)} ");
+                        //Log.WriteToLog($"{Username} has new quest type - the bot will not be updated to play for them until august!", Log.LogType.Warning);
                     }
                 }
                 else
@@ -858,7 +866,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             double missingECR = desiredEcr - ECRCached;
             double hoursUntilEcrReached = missingECR / 1.041666;
             SleepUntil = DateTime.Now.AddHours(hoursUntilEcrReached).AddMinutes(1);
-            Log.WriteToLog($"{Username}: Sleeping until {SleepUntil.ToShortTimeString()} to reach an ECR of {Settings.StartBattleAboveECR}%.", Log.LogType.Warning);
+            Log.WriteToLog($"{Username}: Sleeping until {SleepUntil.ToShortTimeString()} to reach an ECR of {desiredEcr}%.", Log.LogType.Warning);
             APICounter = 999;
         }
 

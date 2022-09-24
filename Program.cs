@@ -480,15 +480,6 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Settings.QuestTypes = new Dictionary<string, string>
             {
-                { "Defend the Borders", "life" },
-                { "Pirate Attacks", "water" },
-                { "High Priority Targets", "snipe" },
-                { "Lyanna's Call", "earth" },
-                { "Stir the Volcano", "fire" },
-                { "Rising Dead", "death" },
-                { "Stubborn Mercenaries", "neutral" },
-                { "Gloridax Revenge", "dragon" },
-                { "Stealth Mission", "sneak" },
                 {"stir", "fire"},
                 {"pirate", "water"},
                 {"lyanna", "earth"},
@@ -551,7 +542,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             };
 
             Settings.LogSummaryList = new List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)>();
-            Settings.oHived = new HiveAPI.CS.CHived(Settings._httpClient, "https://api.deathwing.me");
+            Settings.oHived = new HiveAPI.CS.CHived(Settings._httpClient, Settings.HIVE_NODE);
         }
 
         static void SetStartupPath()
