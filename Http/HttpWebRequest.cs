@@ -65,7 +65,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Http
                 {
                     Console.WriteLine("Splinterlands API limit - waiting 60 seconds");
                     System.Threading.Thread.Sleep(60 * 1000);
-                    return WebRequestGet(CookieContainer, Url, UserAgent, Referer, proxy);
+                    return WebRequestPost(CookieContainer, PostData, Url, UserAgent, Referer, Encoding.UTF8);
                 }
                 else
                 {

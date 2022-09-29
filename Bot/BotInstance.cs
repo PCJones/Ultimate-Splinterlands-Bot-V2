@@ -376,7 +376,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             catch (Exception ex)
             {
                 Log.WriteToLog($"{Username}: Error at submitting team: " + ex.ToString(), Log.LogType.Error);
-            }
+            }   
         }
 
         private async Task<JToken> WaitForMatchDetailsAsync(string trxId)
