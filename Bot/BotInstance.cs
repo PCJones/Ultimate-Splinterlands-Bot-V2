@@ -38,6 +38,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private int LeagueCached { get; set; }
         private int RatingCached { get; set; }
         private double ECRCached { get; set; }
+        private bool OutOfRc{ get; set; }
         private int LossesTotal { get; set; }
         private double DrawsTotal { get; set; }
         private double WinsTotal { get; set; }
@@ -496,6 +497,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             if (Settings.ClaimSeasonReward)
             {
                 await ClaimSeasonRewardAsync();
+                CheckOutOfRc();
                 return SleepUntil.AddMinutes(30);
             }
 
@@ -592,8 +594,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 }
 
                 await AdvanceLeagueAsync();
+                if (CheckOutOfRc()) return SleepUntil;
                 await ClaimQuestRewardAsync();
+                if (CheckOutOfRc()) return SleepUntil;
                 await RequestNewQuestViaAPIAsync();
+                if (CheckOutOfRc()) return SleepUntil;
 
                 Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
                 if (ECRCached < Settings.StopBattleBelowECR)
@@ -963,9 +968,31 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{Username}: Error at broadcasting transaction to blockchain: {ex}", Log.LogType.Error);
+                if (ex.Message.Contains("not_enough_rc_exception"))
+                {
+                    OutOfRc = true;
+                    Log.WriteToLog($"{Username}: Error at broadcasting transaction to blockchain: Account is out of RC - the account will sleep for 30 minutes and try again.", Log.LogType.Warning);
+                }
+                else
+                {
+                    Log.WriteToLog($"{Username}: Error at broadcasting transaction to blockchain: {ex}", Log.LogType.Error);
+                }
             }
             return "";
+        }
+
+        private bool CheckOutOfRc()
+        {
+            if (OutOfRc)
+            {
+                SleepUntil = DateTime.Now.AddMinutes(30);
+                OutOfRc = false;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private async Task<JToken> GetTeamAsync(JToken matchDetails, bool ignorePrivateAPI = false)

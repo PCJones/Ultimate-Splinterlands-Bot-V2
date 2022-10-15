@@ -20,14 +20,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public int USE_FOCUS_ELEMENT_WINRATE_THRESHOLD { get; init; } = 60;
         public int PREFERRED_SUMMONER_ELEMENTS_WINRATE_THRESHOLD { get; set; } = 48;
         public string[] PREFERRED_SUMMONER_ELEMENTS { get; set; } = new string[] { "dragon", "death", "fire", "earth", "water", "life" };
-        public int CARD_MIN_LEVEL { get; init; } = 1;
+        public int CARD_MIN_LEVEL { set { MONSTER_MIN_LEVEL = value; SUMMONER_MIN_LEVEL = value; } } // legacy
+        public int MONSTER_MIN_LEVEL { get; set; } = 1;
+        public int SUMMONER_MIN_LEVEL { get; set; } = 1;
         public bool ADD_ZERO_MANA_CARDS { get; init; } = true;
         public bool PLAY_STARTER_CARDS { get; init; } = true;
         public bool DISABLE_OWNED_CARDS_PREFERENCE_BEFORE_CHEST_LEAGUE_RATING { get; init; } = true;
         public bool DISABLE_FOCUS_PRIORITY_BEFORE_CHEST_LEAGUE_RATING { get; init; } = true;
-        public int WINRATE_THRESHOLD { get; init; } = 45; // legacy
-        public int MINIMUM_GAMES { get; init; } = 10; // legacy
-        public string PREFERRED_SUMMONER_ELEMENT { get; init; } = null; // legacy
 
         public CardSettings()
         {
@@ -94,7 +93,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
                     return unfilteredCards;
                 }
 
-                var filteredCards = unfilteredCards.Where(x => Convert.ToInt32(x.level) >= CARD_MIN_LEVEL);
+                var filteredCards = unfilteredCards.Where(x =>
+                    {
+                        int minLevel = x.IsSummoner ? SUMMONER_MIN_LEVEL : MONSTER_MIN_LEVEL;
+                        return Convert.ToInt32(x.level) >= SUMMONER_MIN_LEVEL;
+                    });
                 return filteredCards.ToArray();
             }
             catch (Exception ex)

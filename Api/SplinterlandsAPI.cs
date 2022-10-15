@@ -75,9 +75,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
 
         public static async Task<(bool enemyHasPicked, bool surrender)> CheckEnemyHasPickedAsync(string username, string tx)
         {
+            string data = null;
             try
             {
-                string data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/players/outstanding_match?username={ username }");
+                data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/players/outstanding_match?username={ username }");
                 if (data == null || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
@@ -98,7 +99,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             catch (Exception ex)
             {
-                Log.WriteToLog($"{username}: Could not get ongoing game from splinterlands API: {ex}", Log.LogType.Error);
+                Log.WriteToLog($"{username}: Could not get ongoing game from splinterlands API: {ex}" + Environment.NewLine + $"response: {data}", Log.LogType.Error);
             }
             return (true, true);
         }
@@ -235,7 +236,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 if (Settings.CardSettings.USE_CARD_SETTINGS && !Settings.CardSettings.PLAY_STARTER_CARDS)
                 {
                     // add empty card
-                    cards.Add(new Card("", "starter-" + "" + "-" + Helper.GenerateRandomString(5), "1", false, true));
+                    cards.Add(new Card("", "starter-" + "" + "-" + Helper.GenerateRandomString(5), "1", false, true, false));
                 }
                 else
                 {

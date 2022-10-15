@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ultimate_Splinterlands_Bot_V2.Config;
 
 namespace Ultimate_Splinterlands_Bot_V2.Model
 {
@@ -13,8 +14,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Model
         public string level { get; init; }
         public bool gold { get; init; }
         public bool starter { get; init; }
+
         [JsonIgnore]
         public string card_long_id { get; init; }
+        [JsonIgnore]
+        public bool IsSummoner { get; init; }
 
         public Card(string cardId, string _card_long_id, string _level, bool _gold, bool _starter)
         {
@@ -23,6 +27,17 @@ namespace Ultimate_Splinterlands_Bot_V2.Model
             level = _level;
             gold = _gold;
             starter = _starter;
+            IsSummoner = cardId == "" ? false : (string)Settings.CardsDetails[Convert.ToInt32(cardId) - 1]["type"] == "Summoner";
+        }
+
+        public Card(string cardId, string _card_long_id, string _level, bool _gold, bool _starter, bool _summoner)
+        {
+            card_detail_id = cardId;
+            card_long_id = _card_long_id;
+            level = _level;
+            gold = _gold;
+            starter = _starter;
+            IsSummoner = _summoner;
         }
 
         public int CompareTo(object obj)
