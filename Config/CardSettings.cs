@@ -96,7 +96,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
                 var filteredCards = unfilteredCards.Where(x =>
                     {
                         int minLevel = x.IsSummoner ? SUMMONER_MIN_LEVEL : MONSTER_MIN_LEVEL;
-                        return Convert.ToInt32(x.level) >= SUMMONER_MIN_LEVEL;
+                        return Convert.ToInt32(x.level) >= minLevel;
                     });
                 return filteredCards.ToArray();
             }
