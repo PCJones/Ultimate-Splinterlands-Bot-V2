@@ -60,7 +60,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             Settings._httpClient.Timeout = new TimeSpan(0, 2, 15);
             Settings._httpClient.DefaultRequestHeaders.Add("User-Agent", "USB");
 
-            if (!ReadConfig() || !ReadAccounts())
+            if (!ReadConfig() || !ReadAccountData())
             {
                 Log.WriteToLog("Press any key to close");
                 Console.ReadKey();
@@ -403,9 +403,10 @@ namespace Ultimate_Splinterlands_Bot_V2
             }
         }
 
-        static bool ReadAccounts()
+        static bool ReadAccountData()
         {
             string filePathAccountData = Settings.StartupPath + @"/config/account_data.json";
+
             if (File.Exists(filePathAccountData))
             {
                 Log.WriteToLog("Loading account data from account_data.json...");
@@ -445,6 +446,11 @@ namespace Ultimate_Splinterlands_Bot_V2
                 {
                     botInstance = new BotInstance(username);
                     Settings.BotInstances.Add(botInstance);
+                }
+                else if (Settings.PowerTransferBot)
+                {
+                    // Reset sleep times
+                    botInstance.SleepUntil = DateTime.Now;
                 }
 
                 botInstance.Initialize(indexCount++, postingKey, activeKey);

@@ -51,7 +51,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
         private readonly object _activeLock;
         [JsonProperty]
-        private DateTime SleepUntil;
+        public DateTime SleepUntil;
         private DateTime LastCacheUpdate;
         private LogSummary LogSummary;
         [JsonProperty]

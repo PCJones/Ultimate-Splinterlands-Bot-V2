@@ -239,10 +239,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     }
                 }
 
+                Log.WriteToLog("API Response: " + JsonConvert.SerializeObject(matchDetails), debugOnly: true);
                 if (APIResponse == null || APIResponse.Length < 5 || APIResponse.Contains("hash"))
                 {
                     Log.WriteToLog($"{username}: API Error: Response was empty", Log.LogType.CriticalError);
-                    Log.WriteToLog(JsonConvert.SerializeObject(matchDetails), debugOnly: true);
                     return null;
                 }
 
@@ -316,10 +316,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     Log.WriteToLog($"{username}: Private API Error: Account not allowed", Log.LogType.CriticalError);
                     return await GetTeamFromAPIAsync(rating, mana, rules, splinters, cards, quest, chestTier, username, gameIdHash, false, true);
                 }
+
+                Log.WriteToLog("API Response: " + JsonConvert.SerializeObject(matchDetails), debugOnly: true);
                 if (APIResponse == null || APIResponse.Length < 5)
                 {
                     Log.WriteToLog($"{username}: API Error: Response was empty", Log.LogType.CriticalError);
-                    Log.WriteToLog(JsonConvert.SerializeObject(matchDetails), debugOnly: true);
                     return null;
                 }
 

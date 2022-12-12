@@ -99,6 +99,7 @@ namespace HiveAPI.CS
 				}
 				else if (ex.Message.Contains("Internal Error"))
 				{
+					System.Threading.Thread.Sleep(3 * 1000);
 					return CreateTransaction(aOperations, astrPrivateKeys, errorCount++);
 				}
 				else
