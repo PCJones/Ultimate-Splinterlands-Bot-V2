@@ -16,7 +16,8 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
 {
     public static class Settings
     {
-        public const string HIVE_NODE = "https://api.deathwing.me/";
+        //public const string HIVE_NODE = "https://api.deathwing.me/";
+        public const string HIVE_NODE = "https://api.hive.blog/";
         public const string SPLINTERLANDS_API_URL = "https://api2.splinterlands.com";
         public const string SPLINTERLANDS_API_URL_FALLBACK = "https://api.splinterlands.com";
         public const string SPLINTERLANDS_BROADCAST_URL = "https://broadcast.splinterlands.com/send";
