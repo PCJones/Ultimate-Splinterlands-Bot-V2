@@ -102,6 +102,12 @@ namespace HiveAPI.CS
 					System.Threading.Thread.Sleep(3 * 1000);
 					return CreateTransaction(aOperations, astrPrivateKeys, errorCount++);
 				}
+				else if (ex.Message.Contains("Request Timeout"))
+				{
+					Log.WriteToLog("Hive Node Request Timeout, trying again in 3 seconds...", Log.LogType.Warning);
+					System.Threading.Thread.Sleep(3 * 1000);
+					return CreateTransaction(aOperations, astrPrivateKeys, errorCount++);
+				}
 				else
 				{
 					Log.WriteToLog("Error at creating blockchain transaction: "
