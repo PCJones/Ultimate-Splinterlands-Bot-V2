@@ -15,6 +15,8 @@ using Ultimate_Splinterlands_Bot_V2.Api;
 using Ultimate_Splinterlands_Bot_V2.Bot;
 using Newtonsoft.Json;
 using Ultimate_Splinterlands_Bot_V2.Model;
+using System.Net;
+using System.Net.Http;
 
 namespace Ultimate_Splinterlands_Bot_V2
 {
@@ -57,8 +59,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             Log.WriteStartupInfoToLog();
 
             // We have to configure the http client early because it might be used in account constructor
-            Settings._httpClient.Timeout = new TimeSpan(0, 2, 15);
-            Settings._httpClient.DefaultRequestHeaders.Add("User-Agent", "USB");
+            SetupHttpClient();
 
             if (!ReadConfig() || !ReadAccountData())
             {
@@ -98,7 +99,20 @@ namespace Ultimate_Splinterlands_Bot_V2
                     default:
                         break;
                 }
-            }   
+            }
+        }
+
+        private static void SetupHttpClient()
+        {
+            var clientHandler = new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            };
+            var httpClient = new HttpClient(clientHandler);
+            httpClient.Timeout = new TimeSpan(0, 2, 15);
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "USB");
+            httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("gzip"));
+            Settings.HttpClient = httpClient;
         }
 
         private static void CleanupLegacyFiles()
@@ -548,7 +562,7 @@ namespace Ultimate_Splinterlands_Bot_V2
             };
 
             Settings.LogSummaryList = new List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)>();
-            Settings.oHived = new HiveAPI.CS.CHived(Settings._httpClient, Settings.HIVE_NODE);
+            Settings.oHived = new HiveAPI.CS.CHived(Settings.HttpClient, Settings.HIVE_NODE);
         }
 
         static void SetStartupPath()

@@ -49,7 +49,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
         public async static Task<string> DownloadPageAsync(string url)
         {
             // Use static HttpClient to avoid exhausting system resources for network connections.
-            var result = await Settings._httpClient.GetAsync(url);
+            var result = await Settings.HttpClient.GetAsync(url);
             if (result.StatusCode == HttpStatusCode.TooManyRequests)
             {
                 int sleepingTime = Settings._Random.Next(60, 300);

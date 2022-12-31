@@ -72,7 +72,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static List<BotInstance> BotInstances { get; set; }
         public static List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)> LogSummaryList { get; set; }
 
-        public readonly static HttpClient _httpClient = new();
+        public static HttpClient HttpClient;
         public static CHived oHived;
 
         public static JArray CardsDetails;
