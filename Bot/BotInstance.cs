@@ -684,7 +684,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 if (jsonResponsePlain == "" || !jsonResponsePlain.Contains("success") || !await WaitForTransactionSuccessAsync(tx, 30))
                 {
-                    var outstandingGame = await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/players/outstanding_match?username=" + Username);
+                    var outstandingGame = await Helper.DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/players/outstanding_match?username=" + Username + "&token=" + AccessToken);
                     if (outstandingGame != "null")
                     {
                         tx = Helper.DoQuickRegex("\"id\":\"(.*?)\"", outstandingGame);

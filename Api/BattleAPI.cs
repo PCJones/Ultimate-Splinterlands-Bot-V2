@@ -287,7 +287,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
-                string urlGetTeam = $"{Settings.PublicAPIUrl}get_team/{Settings.RankedFormat}/{rating}";
+                string urlGetTeam = $"{Settings.PublicAPIUrl}get_team/{Settings.RankedFormat.ToLower()}/{rating}";
                 APIResponse = await PostJSONToApi(matchDetails, urlGetTeam, username);
 
                 if (APIResponse.Contains("api limit reached"))
@@ -359,7 +359,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                         new JProperty("card_settings", Settings.CardSettings.USE_CARD_SETTINGS ? JsonConvert.SerializeObject(Settings.CardSettings) : "")
                     );
 
-                string urlGetTeam = $"{Settings.PrivateAPIUrl}get_team_private/{username}/{Settings.RankedFormat}/{rating}/{gameIdHash}";
+                string urlGetTeam = $"{Settings.PrivateAPIUrl}get_team_private/{username}/{Settings.RankedFormat.ToLower()}/{rating}/{gameIdHash}";
                 string APIResponse = await PostJSONToApi(matchDetails, urlGetTeam, username);
                 Log.WriteToLog($"{username}: API Response: {APIResponse.Pastel(Color.Yellow) }", debugOnly: true);
 
