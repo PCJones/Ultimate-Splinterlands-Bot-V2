@@ -36,6 +36,11 @@ THREADS=1
 ## Disable this if you want a cleaner log or you have problems with too many
 ## requests to the splinterlands API. Disabling will also make battles 10-25 seconds faster.
 SHOW_BATTLE_RESULTS=true
+
+## Change this if you are having problems with this hive node.
+## You can find a list of hive nodes here:
+## https://developers.hive.io/quickstart/hive_full_nodes.html
+HIVE_NODE=https://api.hive.blog/
 ##################Technical Settings##################
 
 #######################API Settings########################
