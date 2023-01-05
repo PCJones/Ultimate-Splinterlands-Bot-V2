@@ -73,6 +73,13 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Helper.CheckForUpdate();
 
+            if (HasLegacyApi())
+            {
+                Log.WriteToLog("Press any key to close");
+                Console.ReadKey();
+                Environment.Exit(0);
+            }
+
             if (Settings.ClaimSeasonReward)
             {
                 Log.WriteToLog("Season Reward Claiming mode activated - set CLAIM_SEASON_REWARD=false to disable!", Log.LogType.Warning);
@@ -125,6 +132,24 @@ namespace Ultimate_Splinterlands_Bot_V2
             {
                 File.Delete(Settings.StartupPath + @"\config\access_tokens.txt");
             }
+        }
+
+        private static bool HasLegacyApi()
+        {
+            bool legacyApi = false;
+            if (!Settings.PublicAPIUrl.Contains("/v3/"))
+            {
+                Log.WriteToLog("This bot version only works with the new API - please change the following in your config.txt file:", Log.LogType.Warning);
+                Console.WriteLine("API_URL=https://battle-api.pcjones.de/v3/");
+                legacyApi = true;
+            }
+            if (!Settings.PrivateAPIUrl.Contains("/v3/"))
+            {
+                Log.WriteToLog("This bot version only works with the new API - please change the following in your config.txt file:", Log.LogType.Warning);
+                Console.WriteLine("PRIVATE_API_URL=https://battle-api.pcjones.de/v3/");
+                legacyApi = true;
+            }
+            return legacyApi;
         }
 
         static async Task BotLoopAsync(CancellationToken token)
