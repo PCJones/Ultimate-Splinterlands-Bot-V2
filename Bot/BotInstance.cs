@@ -1316,12 +1316,6 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 Log.WriteToLog($"{Username}: Error at advancing league: {ex}");
             }
         }
-
-        private static string GetSummonerColor(string id)
-        {
-            return (string)Settings.CardsDetails[Convert.ToInt32(id) - 1]["color"];
-        }
-
         private async Task RequestNewQuestViaAPIAsync()
         {
             try
