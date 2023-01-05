@@ -27,7 +27,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Model
             level = _level;
             gold = _gold;
             starter = _starter;
-            IsSummoner = cardId == "" ? false : (string)Settings.CardsDetails[Convert.ToInt32(cardId) - 1]["type"] == "Summoner";
+            IsSummoner = Settings.CardsDetails[Convert.ToInt32(cardId) - 1].IsSummoner();
         }
 
         public UserCard(string cardId, string _card_long_id, string _level, bool _gold, bool _starter, bool _summoner)

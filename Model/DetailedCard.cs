@@ -44,6 +44,11 @@ namespace Splinterlands_Battle_REST_API.Model
             .Replace("Red", "Fire").Replace("Blue", "Water").Replace("White", "Life").Replace("Black", "Death")
             .Replace("Green", "Earth").Replace("Gray", "Neutral").Replace("Gold", "Dragon").ToLower();
         }
+
+        public bool IsSummoner()
+        {
+            return type == "Summoner";
+        }
     }
 
     public class Stats
