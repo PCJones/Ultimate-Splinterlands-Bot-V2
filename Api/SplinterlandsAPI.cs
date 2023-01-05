@@ -195,7 +195,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             return null;
         }
 
-        public static async Task<Card[]> GetPlayerCardsAsync(string username, string accessToken)
+        public static async Task<UserCard[]> GetPlayerCardsAsync(string username, string accessToken)
         {
             try
             {
@@ -210,7 +210,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
 
                 DateTime oneDayAgo = DateTime.Now.AddDays(-1);
 
-                List<Card> cards = new(JToken.Parse(data)["cards"].Where(card =>
+                List<UserCard> cards = new(JToken.Parse(data)["cards"].Where(card =>
                 {
                     string currentUser = card["delegated_to"].Type == JTokenType.Null ? (string)card["player"] : (string)card["delegated_to"];
                     bool cardOnCooldown;
@@ -229,67 +229,25 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     
                     return currentUser == username && !cardOnCooldown && !listedOnMarket;
                 })
-                .Select(x => new Card((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"], false))
+                .Select(x => new UserCard((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"], false))
                 .Distinct().ToArray());
 
-                // add basic cards
-                if (Settings.CardSettings.USE_CARD_SETTINGS && !Settings.CardSettings.PLAY_STARTER_CARDS)
-                {
-                    // add empty card
-                    cards.Add(new Card("", "starter-" + "" + "-" + Helper.GenerateRandomString(5), "1", false, true, false));
-                }
-                else
-                {
-                    foreach (string cardId in Settings.PhantomCards)
-                    {
-                        cards.Add(new Card(cardId, "starter-" + cardId + "-" + Helper.GenerateRandomString(5), "1", false, true));
-                    }
-                }
+                // add starter cards
+                cards.AddRange(Settings.StarterCards);
 
                 cards.Sort();
                 cards.Reverse();
 
                 // only use highest level/gold cards
-                Card[] cardsFiltered = FilterCardsForRankedFormat(cards)
-                    .Select(x => cards.Where(y => x.card_detail_id == y.card_detail_id)
-                    .First()).Distinct().ToArray();
-                cardsFiltered = Settings.CardSettings.FilterByCardSettings(cardsFiltered);
+                UserCard[] cardsFiltered = Settings.CardSettings.FilterByCardSettings(cards);
                 return cardsFiltered;
             }
             catch (Exception ex)
             {
                 Log.WriteToLog($"{username}: Could not get cards from splinterlands API: {ex}{Environment.NewLine}Bot will play with phantom cards only.", Log.LogType.Error);
             }
-            return Settings.PhantomCards.Select(x => new Card(x, "starter-" + x + "-" + Helper.GenerateRandomString(5), "1", false, true)).ToArray();
-        }
 
-        private static Card[] FilterCardsForRankedFormat(List<Card> cards)
-        {
-            // TODO: Rewrite this and parse the CardsDetails JSON to make it faster
-
-            if (Settings.RankedFormat == "WILD")
-            {
-                return cards.ToArray();
-            }
-            // Modern
-            List<Card> filteredCards = new();
-            foreach (var card in cards)
-            {
-                if (card.card_detail_id != "")
-                {
-                    var cardId = Convert.ToInt32(card.card_detail_id);
-                    string[] editions = ((string)Settings.CardsDetails[cardId - 1]["editions"]).Split(',');
-                    string tier = (string)Settings.CardsDetails[cardId - 1]["tier"];
-                    if (!editions.Contains("4") && !editions.Contains("5") && !editions.Contains("7")
-                        && tier != "3" && tier != "4" && tier != "7")
-                    {
-                        continue;
-                    }
-                }
-                filteredCards.Add(card);
-            }
-
-            return filteredCards.ToArray();
+            return Settings.StarterCards;
         }
     }
 }
