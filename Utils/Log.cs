@@ -118,19 +118,16 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
                 t.Print();
             }
             t = new TablePrinter("Card", "ID", "Name", "Element");
-            t.AddRow("Summoner", (string)team["summoner_id"], (string)Settings.CardsDetails[((int)team["summoner_id"]) - 1]["name"],
-            ((string)Settings.CardsDetails[((int)team["summoner_id"]) - 1]["color"])
-            .Replace("Red", "Fire").Replace("Blue", "Water").Replace("White", "Life").Replace("Black", "Death").Replace("Green", "Earth").Replace("Gold", "Dragon"));
+            t.AddRow("Summoner", (string)team["summoner_id"], Settings.CardsDetails[((int)team["summoner_id"]) - 1].name,
+            Settings.CardsDetails[((int)team["summoner_id"]) - 1].GetCardColor());
             for (int i = 1; i < 7; i++)
             {
                 if ((string)team[$"monster_{i}_id"] == "")
                 {
                     break;
                 }
-                t.AddRow($"Monster #{i}", (string)team[$"monster_{i}_id"], (string)Settings.CardsDetails[((int)team[$"monster_{i}_id"]) - 1]["name"],
-                ((string)Settings.CardsDetails[((int)team[$"monster_{i}_id"]) - 1]["color"])
-                .Replace("Red", "Fire").Replace("Blue", "Water").Replace("White", "Life").Replace("Black", "Death").Replace("Green", "Earth")
-                .Replace("Gray", "Neutral").Replace("Gold", "Dragon"));
+                t.AddRow($"Monster #{i}", (string)team[$"monster_{i}_id"], Settings.CardsDetails[((int)team[$"monster_{i}_id"]) - 1].name,
+                Settings.CardsDetails[((int)team[$"monster_{i}_id"]) - 1].GetCardColor());
             }
 
             lock (_ConsoleLock)
