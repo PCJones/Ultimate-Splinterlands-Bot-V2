@@ -39,7 +39,7 @@ SHOW_BATTLE_RESULTS=true
 ##################Technical Settings##################
 
 #######################API Settings########################
-API_URL=http://splinterlandsapi.pcjones.de:8080/v2/
+API_URL=http://splinterlandsapi.pcjones.de:8080/v3/
 
 ## PRIVATE API Settings - ignore if you don't have it
 USE_PRIVATE_API=false

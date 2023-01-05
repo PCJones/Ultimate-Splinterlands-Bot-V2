@@ -284,7 +284,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 string monsters = "";
                 for (int i = 0; i < 6; i++)
                 {
-                    var monster = CardsCached.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
+                    var cardId = (string)team[$"monster_{i + 1}_id"];
+                    if (cardId.Length == 0)
+                    {
+                        break;
+                    }
+                    var monster = CardsCached.Where(x => x.card_detail_id == cardId).FirstOrDefault();
                     if (monster == null || summoner == null)
                     {
                         if (Settings.UsePrivateAPI && !secondTry)
@@ -348,6 +353,12 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 string monsters = "";
                 for (int i = 0; i < 6; i++)
                 {
+                    var cardId = (string)team[$"monster_{i + 1}_id"];
+                    if (cardId.Length == 0)
+                    {
+                        break;
+                    }
+
                     var monster = CardsCached.Where(x => x.card_detail_id == (string)team[$"monster_{i + 1}_id"]).FirstOrDefault();
                     if (monster.card_detail_id.Length == 0)
                     {

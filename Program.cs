@@ -136,20 +136,27 @@ namespace Ultimate_Splinterlands_Bot_V2
 
         private static bool HasLegacyApi()
         {
-            bool legacyApi = false;
             if (!Settings.PublicAPIUrl.Contains("/v3/"))
             {
                 Log.WriteToLog("This bot version only works with the new API - please change the following in your config.txt file:", Log.LogType.Warning);
-                Console.WriteLine("API_URL=https://battle-api.pcjones.de/v3/");
-                legacyApi = true;
+                Console.WriteLine("");
+                Console.WriteLine("please change the following in your config.txt file:");
+                Console.WriteLine("API_URL=http://splinterlandsapi.pcjones.de/v3/");
+                return true;
             }
-            if (!Settings.PrivateAPIUrl.Contains("/v3/"))
+            else if (!Settings.PrivateAPIUrl.Contains("/v3/"))
             {
-                Log.WriteToLog("This bot version only works with the new API - please change the following in your config.txt file:", Log.LogType.Warning);
-                Console.WriteLine("PRIVATE_API_URL=https://battle-api.pcjones.de/v3/");
-                legacyApi = true;
+                Log.WriteToLog("This bot version only works with the new API", Log.LogType.Warning);
+                Console.WriteLine("");
+                Console.WriteLine("please change the following in your config.txt file:");
+                Console.WriteLine("PRIVATE_API_URL=http://splinterlandsapi.pcjones.de/v3/");
+                return true;
             }
-            return legacyApi;
+
+            // Temporarily replace API url with another one until old API server DNS settings are changed
+            Settings.PrivateAPIUrl = Settings.PrivateAPIUrl.Replace("privatesps1.pcjones.de", "beta-splinterlandsapi.pcjones.de").Replace("privatesps2.pcjones.de", "beta-splinterlandsapi.pcjones.de");
+            Settings.PublicAPIUrl = Settings.PublicAPIUrl.Replace("splinterlandsapi.pcjones.de", "beta-splinterlandsapi.pcjones.de");
+            return false;
         }
 
         static async Task BotLoopAsync(CancellationToken token)
@@ -547,7 +554,7 @@ namespace Ultimate_Splinterlands_Bot_V2
         {
             var cardsDetailsRaw = File.ReadAllText(Settings.StartupPath + "/data/cardsDetails.json");
             Settings.CardsDetails = JsonConvert.DeserializeObject<DetailedCard[]>(cardsDetailsRaw);
-            Settings.StarterCards = Settings.CardsDetails.Where(card => Settings.STARTER_EDITIONS.Contains(card.editions)).Select(card =>
+            Settings.StarterCards = Settings.CardsDetails.Where(card => card.rarity <= 2 && Settings.STARTER_EDITIONS.Contains(card.editions)).Select(card =>
             {
                 return new UserCard(card.id.ToString(), "starter-" + card.id.ToString() + "-" + Helper.GenerateRandomString(5), "1", false, true);
             }).ToArray();
