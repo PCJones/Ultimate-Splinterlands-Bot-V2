@@ -69,6 +69,42 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
             return response;
         }
 
+        public async static Task UpdateCardDetails()
+        {
+            var path = Settings.StartupPath + "/data/";
+            var fileName = "cardsDetails.json";
+
+            bool needsUpdate = false;
+            if (!File.Exists(path + fileName))
+            {
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                Log.WriteToLog("Missing cardsDetails.json - downloading it now...");
+                needsUpdate = true;
+            }
+            else if ((DateTime.Now - File.GetLastWriteTime(path + fileName)).TotalHours > 12)
+            {
+                Log.WriteToLog("cardsDetails.json is older than 12 hours - updating it now...");
+                needsUpdate = true;
+            }
+
+            if (needsUpdate)
+            {
+                var response = await DownloadPageAsync(Settings.SPLINTERLANDS_API_URL + "/cards/get_details");
+                if (response == null || response.Length < 100 )
+                {
+                    Log.WriteToLog("Error at updating cardsDetails.json", Log.LogType.Error);
+                }
+                else
+                {
+                    File.WriteAllText(path + fileName, response);
+                    Log.WriteToLog("Updated cardsDetails.json", Log.LogType.Success);
+                }
+            }
+        }
+
         public static string DoQuickRegex(string Pattern, string Match)
         {
             Regex r = new(Pattern, RegexOptions.Singleline);

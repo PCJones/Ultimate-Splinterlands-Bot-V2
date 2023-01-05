@@ -61,6 +61,8 @@ namespace Ultimate_Splinterlands_Bot_V2
             // We have to configure the http client early because it might be used in account constructor
             SetupHttpClient();
 
+            var updateCardDetailsTask = Helper.UpdateCardDetails();
+
             if (!ReadConfig() || !ReadAccountData())
             {
                 Log.WriteToLog("Press any key to close");
@@ -79,6 +81,7 @@ namespace Ultimate_Splinterlands_Bot_V2
 
             Thread.Sleep(1500); // Sleep 1.5 seconds to read config and welcome message
 
+            updateCardDetailsTask.Wait();
             Initialize();
 
             CancellationTokenSource cancellationTokenSource = new();
