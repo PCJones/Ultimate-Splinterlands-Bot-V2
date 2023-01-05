@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using Ultimate_Splinterlands_Bot_V2.Model;
 using System.Net;
 using System.Net.Http;
+using Splinterlands_Battle_REST_API.Model;
 
 namespace Ultimate_Splinterlands_Bot_V2
 {
@@ -511,61 +512,20 @@ namespace Ultimate_Splinterlands_Bot_V2
                 {"gloridax", "dragon"}
             };
 
-            Settings.CardsDetails = Newtonsoft.Json.Linq.JArray.Parse(File.ReadAllText(Settings.StartupPath + @"/data/cardsDetails.json"));
-
-            Settings.Summoners = new Dictionary<string, string>
-            {
-                { "260", "fire" },
-                { "257", "water" },
-                { "437", "water" },
-                { "224", "dragon" },
-                { "189", "earth" },
-                { "145", "death" },
-                { "240", "dragon" },
-                { "167", "fire" },
-                { "438", "death" },
-                { "156", "life" },
-                { "440", "fire" },
-                { "114", "dragon" },
-                { "441", "life" },
-                { "439", "earth" },
-                { "262", "dragon" },
-                { "261", "life" },
-                { "178", "water" },
-                { "258", "death" },
-                { "27", "earth" },
-                { "38", "life" },
-                { "49", "death" },
-                { "5", "fire" },
-                { "70", "fire" },
-                { "73", "life" },
-                { "259", "earth" },
-                { "74", "death" },
-                { "72", "earth" },
-                { "442", "dragon" },
-                { "71", "water" },
-                { "88", "dragon" },
-                { "78", "dragon" },
-                { "200", "dragon" },
-                { "16", "water" },
-                { "239", "life" },
-                { "254", "water" },
-                { "235", "death" },
-                { "113", "life" },
-                { "109", "death" },
-                { "110", "fire" },
-                { "291", "dragon" },
-                { "278", "earth" },
-                { "236", "fire" },
-                { "56", "dragon" },
-                { "112", "earth" },
-                { "111", "water" },
-                { "205", "dragon" },
-                { "130", "dragon" }
-            };
+            LoadCards();
 
             Settings.LogSummaryList = new List<(int index, string account, string battleResult, string rating, string ECR, string questStatus)>();
             Settings.oHived = new HiveAPI.CS.CHived(Settings.HttpClient, Settings.HIVE_NODE);
+        }
+
+        private static void LoadCards()
+        {
+            var cardsDetailsRaw = File.ReadAllText(Settings.StartupPath + "/data/cardsDetails.json");
+            Settings.CardsDetails = JsonConvert.DeserializeObject<DetailedCard[]>(cardsDetailsRaw);
+            Settings.StarterCards = Settings.CardsDetails.Where(card => Settings.STARTER_EDITIONS.Contains(card.editions)).Select(card =>
+            {
+                return new UserCard(card.id.ToString(), "starter-" + card.id.ToString() + "-" + Helper.GenerateRandomString(5), "1", false, true);
+            }).ToArray();
         }
 
         static void SetStartupPath()

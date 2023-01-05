@@ -18,7 +18,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
 {
     public static class BattleAPI
     {
-        public static async Task<JToken> GetTeamFromAPIAsync(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false, bool ignorePrivateAPI = false)
+        public static async Task<JToken> GetTeamFromAPIAsync(int rating, int mana, string rules, string[] splinters, UserCard[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false, bool ignorePrivateAPI = false)
         {
             if (Settings.UsePrivateAPI && !ignorePrivateAPI)
             {
@@ -38,7 +38,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
         }
 
-        private static async Task<JToken> GetTeamFromPublicAPIAsync(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPublicAPIAsync(int rating, int mana, string rules, string[] splinters, UserCard[] cards, Quest quest, int chestTier, string username, bool secondTry = false)
         {
             string APIResponse = "";
             Log.WriteToLog($"{username}: Requesting team from public API...");
@@ -123,7 +123,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             return null;
         }
 
-        private static async Task<JToken> GetTeamFromPrivateAPIAsync(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPrivateAPIAsync(int rating, int mana, string rules, string[] splinters, UserCard[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false)
         {
             Log.WriteToLog($"{username}: Requesting team from private API...");
             try
@@ -192,7 +192,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             return null;
         }
-        private static async Task<JToken> GetTeamFromPublicAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPublicAPIV2Async(int rating, int mana, string rules, string[] splinters, UserCard[] cards, Quest quest, int chestTier, string username, bool secondTry = false)
         {
             string APIResponse = "";
             Log.WriteToLog($"{username}: Requesting team from public API...");
@@ -266,7 +266,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             return null;
         }
-        private static async Task<JToken> GetTeamFromPublicAPIV3Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPublicAPIV3Async(int rating, int mana, string rules, string[] splinters, UserCard[] cards, Quest quest, int chestTier, string username, bool secondTry = false)
         {
             string APIResponse = "";
             Log.WriteToLog($"{username}: Requesting team from public API...");
@@ -340,7 +340,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             return null;
         }
-        private static async Task<JToken> GetTeamFromPrivateAPIV3Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPrivateAPIV3Async(int rating, int mana, string rules, string[] splinters, UserCard[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false)
         {
             Log.WriteToLog($"{username}: Requesting team from private API...");
             try
@@ -417,7 +417,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             }
             return null;
         }
-        private static async Task<JToken> GetTeamFromPrivateAPIV2Async(int rating, int mana, string rules, string[] splinters, Card[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false)
+        private static async Task<JToken> GetTeamFromPrivateAPIV2Async(int rating, int mana, string rules, string[] splinters, UserCard[] cards, Quest quest, int chestTier, string username, string gameIdHash, bool secondTry = false)
         {
             Log.WriteToLog($"{username}: Requesting team from private API...");
             try
@@ -515,7 +515,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
             return null;
         }
 
-        public static void UpdateCardsForPrivateAPI(string username, Card[] cards)
+        public static void UpdateCardsForPrivateAPI(string username, UserCard[] cards)
         {
             string postData = "account=" + username + "&cards=" + JsonConvert.SerializeObject(cards);
             string response = HttpWebRequest.WebRequestPost(Settings.CookieContainer, postData, Settings.PrivateAPIShop + "index.php?site=updatecards", "", "", Encoding.Default);

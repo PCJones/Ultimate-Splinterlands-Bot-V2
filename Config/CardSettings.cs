@@ -84,13 +84,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
             }
         }
 
-        public Card[] FilterByCardSettings(Card[] unfilteredCards)
+        public UserCard[] FilterByCardSettings(List<UserCard> unfilteredCards)
         {
             try
             {
                 if (!USE_CARD_SETTINGS)
                 {
-                    return unfilteredCards;
+                    return unfilteredCards.ToArray();
                 }
 
                 var filteredCards = unfilteredCards.Where(x =>
@@ -103,7 +103,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
             catch (Exception ex)
             {
                 Log.WriteToLog($"Error at applying card settings: { ex.Message }", Log.LogType.Error);
-                return unfilteredCards;
+                return unfilteredCards.ToArray();
             }
         }
     }

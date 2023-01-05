@@ -44,7 +44,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private double WinsTotal { get; set; }
         [JsonProperty]
         private Reward Reward { get; set; }
-        private Card[] CardsCached { get; set; }
+        private UserCard[] CardsCached { get; set; }
         private Dictionary<GameEvent, JToken> GameEvents { get; set; }
         public bool CurrentlyActive { get; private set; }
         private bool WebsocketAuthenticated { get; set; }
