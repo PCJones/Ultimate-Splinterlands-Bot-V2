@@ -144,7 +144,7 @@ namespace Ultimate_Splinterlands_Bot_V2
                 Console.WriteLine("API_URL=http://splinterlandsapi.pcjones.de/v3/");
                 return true;
             }
-            else if (!Settings.PrivateAPIUrl.Contains("/v3/"))
+            else if (Settings.UsePrivateAPI && !Settings.PrivateAPIUrl.Contains("/v3/"))
             {
                 Log.WriteToLog("This bot version only works with the new API", Log.LogType.Warning);
                 Console.WriteLine("");
@@ -154,8 +154,8 @@ namespace Ultimate_Splinterlands_Bot_V2
             }
 
             // Temporarily replace API url with another one until old API server DNS settings are changed
-            Settings.PrivateAPIUrl = Settings.PrivateAPIUrl.Replace("privatesps1.pcjones.de", "beta-splinterlandsapi.pcjones.de").Replace("privatesps2.pcjones.de", "beta-splinterlandsapi.pcjones.de");
-            Settings.PublicAPIUrl = Settings.PublicAPIUrl.Replace("splinterlandsapi.pcjones.de", "beta-splinterlandsapi.pcjones.de");
+            Settings.PrivateAPIUrl = Settings.PrivateAPIUrl.Replace("/privatesps1.pcjones.de", "/beta-splinterlandsapi.pcjones.de").Replace("/privatesps2.pcjones.de", "/beta-splinterlandsapi.pcjones.de").Replace("/splinterlandsapi.pcjones.de", "/beta-splinterlandsapi.pcjones.de");
+            Settings.PublicAPIUrl = Settings.PublicAPIUrl.Replace("/splinterlandsapi.pcjones.de", "/beta-splinterlandsapi.pcjones.de");
             return false;
         }
 
