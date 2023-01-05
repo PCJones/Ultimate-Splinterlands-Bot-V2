@@ -239,7 +239,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 cards.Reverse();
 
                 // only use highest level/gold cards
-                UserCard[] cardsFiltered = Settings.CardSettings.FilterByCardSettings(cards);
+                UserCard[] cardsFiltered = Settings.CardSettings.FilterByCardSettings(cards)
+                    .Select(x => cards.Where(y => x.card_detail_id == y.card_detail_id)
+                    .First()).Distinct().ToArray();
+
                 return cardsFiltered;
             }
             catch (Exception ex)
