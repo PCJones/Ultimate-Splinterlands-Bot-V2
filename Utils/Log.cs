@@ -119,7 +119,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
             }
             t = new TablePrinter("Card", "ID", "Name", "Element");
             t.AddRow("Summoner", (string)team["summoner_id"], Settings.CardsDetails[((int)team["summoner_id"]) - 1].name,
-            Settings.CardsDetails[((int)team["summoner_id"]) - 1].GetCardColor());
+            Settings.CardsDetails[((int)team["summoner_id"]) - 1].GetCardColor(false));
             for (int i = 1; i < 7; i++)
             {
                 if ((string)team[$"monster_{i}_id"] == "")
@@ -127,7 +127,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Utils
                     break;
                 }
                 t.AddRow($"Monster #{i}", (string)team[$"monster_{i}_id"], Settings.CardsDetails[((int)team[$"monster_{i}_id"]) - 1].name,
-                Settings.CardsDetails[((int)team[$"monster_{i}_id"]) - 1].GetCardColor());
+                Settings.CardsDetails[((int)team[$"monster_{i}_id"]) - 1].GetCardColor(false));
             }
 
             lock (_ConsoleLock)

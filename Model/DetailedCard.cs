@@ -38,11 +38,13 @@ namespace Splinterlands_Battle_REST_API.Model
             else return (int)(long)stats.mana;
         }
 
-        public string GetCardColor()
+        public string GetCardColor(bool toLower = true)
         {
-            return color
+            var element = color
             .Replace("Red", "Fire").Replace("Blue", "Water").Replace("White", "Life").Replace("Black", "Death")
-            .Replace("Green", "Earth").Replace("Gray", "Neutral").Replace("Gold", "Dragon").ToLower();
+            .Replace("Green", "Earth").Replace("Gray", "Neutral").Replace("Gold", "Dragon");
+
+            return toLower ? element.ToLower() : element;
         }
 
         public bool IsSummoner()
