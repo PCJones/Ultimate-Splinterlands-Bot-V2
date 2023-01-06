@@ -20,14 +20,14 @@ A completely new, rewritten version of this bot: https://github.com/PCJones/ulti
 - Any suggestions?
 
 ## How to install (Windows)
-- [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8)
+- [Youtube Tutorial](https://www.youtube.com/watch?v=wVHL94ZH5r8) - warning: it's a bit outdated (chromedriver is no longer needed)
 - Download the windows.zip from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
 - Install https://dotnet.microsoft.com/download/dotnet/6.0/runtime (for console applications)
 - Create config.txt and accounts.txt in config folder - see config-example.txt and accounts-example.txt
 - Start the bot by double clicking on Ultimate Splinterlands Bot V2.exe in main folder
 
 ## How to install (Linux / MacOS)
-- [Youtube Tutorial](https://www.youtube.com/watch?v=kTS0FdAei7c)
+- [Youtube Tutorial](https://www.youtube.com/watch?v=kTS0FdAei7c) - warning: it's a bit outdated (chromedriver is no longer needed)
 - **(If you are looking for a chrome/chromedriver download - it is no longer needed!)**
 - Download the linux-x64.zip from the [Releases Page](https://github.com/PCJones/Ultimate-Splinterlands-Bot-V2/releases) and extract it
 - Create config.txt and accounts.txt in config folder - see config-example.txt and accounts-example.txt
