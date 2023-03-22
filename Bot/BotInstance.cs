@@ -89,7 +89,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 if (gameEvent == GameEvent.ecr_update)
                 {
-                    ECRCached = (double)GameEvents[GameEvent.ecr_update]["capture_rate"] / 100;
+                    ECRCached = (double)GameEvents[GameEvent.ecr_update]["capture_rate"];
                 }
                 else if (gameEvent == GameEvent.transaction_complete
                     && (string)json["data"]["trx_info"]["type"] == "claim_reward")
@@ -611,7 +611,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 await RequestNewQuestViaAPIAsync();
                 if (CheckOutOfRc()) return SleepUntil;
 
-                Log.WriteToLog($"{Username}: Current Energy Level is { (ECRCached >= 25 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
+                Log.WriteToLog($"{Username}: Current Energy Level is { (ECRCached >= 25 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }");
                 if (ECRCached < Settings.StopBattleBelowECR)
                 {
                     Log.WriteToLog($"{Username}: Energy is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
