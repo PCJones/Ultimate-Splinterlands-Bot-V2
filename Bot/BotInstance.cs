@@ -611,10 +611,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 await RequestNewQuestViaAPIAsync();
                 if (CheckOutOfRc()) return SleepUntil;
 
-                Log.WriteToLog($"{Username}: Current Energy Capture Rate is { (ECRCached >= 50 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
+                Log.WriteToLog($"{Username}: Current Energy Level is { (ECRCached >= 25 ? ECRCached.ToString("N3").Pastel(Color.Green) : ECRCached.ToString("N3").Pastel(Color.Red)) }%");
                 if (ECRCached < Settings.StopBattleBelowECR)
                 {
-                    Log.WriteToLog($"{Username}: ECR is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
+                    Log.WriteToLog($"{Username}: Energy is below threshold of {Settings.StopBattleBelowECR}% - skipping this account.", Log.LogType.Warning);
                     if (Settings.StartBattleAboveECR >= 10)
                     {
                         SetSleepUntilEcrReached(Settings.StartBattleAboveECR);
