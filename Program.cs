@@ -329,9 +329,19 @@ namespace Ultimate_Splinterlands_Bot_V2
                             break;
                         case "STOP_BATTLE_BELOW_ECR":
                             Settings.StopBattleBelowECR = Convert.ToInt32(temp[1]);
+                            if (Settings.StopBattleBelowECR > 49)
+                            {
+                                Settings.StopBattleBelowECR = 49;
+                                Log.WriteToLog("Set STOP_BATTLE_BELOW_ECR to 49. Consider to update your config.txt file.");
+                            }
                             break;
                         case "START_BATTLE_ABOVE_ECR":
                             Settings.StartBattleAboveECR = Convert.ToInt32(temp[1]);
+                            if (Settings.StartBattleAboveECR > 49)
+                            {
+                                Settings.StartBattleAboveECR = 49;
+                                Log.WriteToLog("Set START_BATTLE_ABOVE_ECR to 49. Consider to update your config.txt file.");
+                            }
                             break;
                         case "MINIMUM_BATTLE_POWER":
                             Settings.MinimumBattlePower = Convert.ToInt32(temp[1]);

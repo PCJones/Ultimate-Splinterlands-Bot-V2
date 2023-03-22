@@ -296,7 +296,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     {
                         Log.WriteToLog($"{username}: API Overloaded! Waiting 25 seconds and trying again after...", Log.LogType.Warning);
                         System.Threading.Thread.Sleep(25000);
-                        return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
+                        return await GetTeamFromPublicAPIV3Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
                     }
                     else
                     {
@@ -329,13 +329,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                 {
                     Log.WriteToLog($"{username}: Trying again...", Log.LogType.CriticalError);
                     await Task.Delay(2000);
-                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
+                    return await GetTeamFromPublicAPIV3Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
                 }
                 else if (secondTry)
                 {
                     Log.WriteToLog($"{username}: API overloaded or down?: Waiting 10 minutes...", Log.LogType.Warning);
                     await Task.Delay(1000 * 60 * 10);
-                    return await GetTeamFromPublicAPIV2Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
+                    return await GetTeamFromPublicAPIV3Async(rating, mana, rules, splinters, cards, quest, chestTier, username, true);
                 }
             }
             return null;
@@ -502,6 +502,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
 
         private async static Task<string> PostJSONToApi(object json, string url, string username)
         {
+            Log.WriteToLog($"API Request to {url}: " + JsonConvert.SerializeObject(json), debugOnly: true);
             using (var content = new StringContent(JsonConvert.SerializeObject(json), Encoding.UTF8, "application/json"))
             {
                 HttpResponseMessage result = await Settings.HttpClient.PostAsync(url, content);

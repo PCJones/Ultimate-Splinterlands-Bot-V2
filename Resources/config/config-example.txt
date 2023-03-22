@@ -1,8 +1,9 @@
 ##################General Settings##################
 PRIORITIZE_QUEST=true
 SLEEP_BETWEEN_BATTLES=5
+## ECR = Energy now. There probably is no reason to change START/STOP ECR ever now.
 START_BATTLE_ABOVE_ECR=0
-STOP_BATTLE_BELOW_ECR=75
+STOP_BATTLE_BELOW_ECR=1
 MINIMUM_BATTLE_POWER=0
 CLAIM_SEASON_REWARD=false
 CLAIM_QUEST_REWARD=false

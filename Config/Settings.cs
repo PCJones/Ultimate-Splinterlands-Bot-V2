@@ -60,7 +60,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static int MaxLeagueTier = 4;
         public static int SleepBetweenBattles = 30;
         public static int StartBattleAboveECR = 0;
-        public static int StopBattleBelowECR = 75;
+        public static int StopBattleBelowECR = 1;
         public static int MinimumBattlePower = 0;
         public static string[] BadQuests = Array.Empty<string>();
 

@@ -560,7 +560,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     Reward.Quest = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
                     CardsCached = await SplinterlandsAPI.GetPlayerCardsAsync(Username, AccessToken);
                     JArray playerBalances = (JArray)await SplinterlandsAPI.GetPlayerBalancesAsync(Username);
-                    ECRCached = GetEcrFromPlayerBalances(playerBalances);
+                    ECRCached = GetEnergyFromPlayerBalances(playerBalances);
 
                     if (Settings.UsePrivateAPI)
                     {
@@ -822,11 +822,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
             finally
             {
-                Settings.LogSummaryList.Add((LogSummary.Index, LogSummary.Account, LogSummary.BattleResult, LogSummary.Rating, LogSummary.ECR, LogSummary.QuestStatus));
                 lock (_activeLock)
                 {
                     CurrentlyActive = false;
                 }
+                Settings.LogSummaryList.Add((LogSummary.Index, LogSummary.Account, LogSummary.BattleResult, LogSummary.Rating, LogSummary.ECR, LogSummary.QuestStatus));
             }
             return SleepUntil;
         }
@@ -1267,10 +1267,24 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             }
         }
 
+        private static double GetEnergyFromPlayerBalances(JArray playerBalances)
+        {
+            const int MS_IN_ONE_HOUR = 1000 * 60 * 60;
+            const int MAX_ENERGY = 50;
+
+            JToken balanceInfo = playerBalances.FirstOrDefault(x => (string)x["token"] == "ECR");
+            if (balanceInfo == null || balanceInfo["last_reward_time"].Type == JTokenType.Null) return MAX_ENERGY;
+
+            double captureRate = Convert.ToDouble((string)balanceInfo["balance"], CultureInfo.InvariantCulture);
+            DateTime lastRewardTime = (DateTime)balanceInfo["last_reward_time"];
+            double timeSinceLastRewardMs = (DateTime.UtcNow - lastRewardTime).TotalMilliseconds;
+
+            return Math.Min(captureRate + (timeSinceLastRewardMs / MS_IN_ONE_HOUR), MAX_ENERGY);
+        }
         private static double GetEcrFromPlayerBalances(JArray playerBalances)
         {
             JToken balanceInfo = playerBalances.Where(x => (string)x["token"] == "ECR").First();
-            if (balanceInfo["last_reward_time"].Type == JTokenType.Null) return 100;
+            if (balanceInfo["last_reward_time"].Type == JTokenType.Null) return 50;
             var captureRate = (int)balanceInfo["balance"];
             DateTime lastRewardTime = (DateTime)balanceInfo["last_reward_time"];
             double ecrRegen = 0.0868;
