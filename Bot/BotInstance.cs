@@ -569,7 +569,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
 
                     // Only at start of bot
-                    if (APICounter >= 99999 && Settings.StartBattleAboveECR >= 10 && ECRCached < Settings.StartBattleAboveECR)
+                    if (APICounter >= 99999 && Settings.StartBattleAboveECR >= 1 && ECRCached < Settings.StartBattleAboveECR)
                     {
                         SetSleepUntilEcrReached(Settings.StartBattleAboveECR);
                         TransferPowerIfNeeded();
@@ -880,9 +880,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
         private void SetSleepUntilEcrReached(int desiredEcr)
         {
             double missingECR = desiredEcr - ECRCached;
-            double hoursUntilEcrReached = missingECR / 1.041666;
+            double hoursUntilEcrReached = missingECR / (50D / 24);
             SleepUntil = DateTime.Now.AddHours(hoursUntilEcrReached).AddMinutes(1);
-            Log.WriteToLog($"{Username}: Sleeping until {SleepUntil.ToShortTimeString()} to reach an ECR of {desiredEcr}%.", Log.LogType.Warning);
+            Log.WriteToLog($"{Username}: Sleeping until {SleepUntil.ToShortTimeString()} to reach an Energy Level of {desiredEcr}%.", Log.LogType.Warning);
             APICounter = 999;
         }
 
