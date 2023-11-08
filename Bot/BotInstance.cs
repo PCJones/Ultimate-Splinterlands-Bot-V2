@@ -321,11 +321,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
 
                 string teamHash = Helper.GenerateMD5Hash(summoner + "," + monsterClean + "," + secret);
 
-                /*string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"summoner\":\"" + summoner 
+                string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"summoner\":\"" + summoner 
                     + "\",\"monsters\":[" + monsters + "],\"secret\":\"" + secret + "\",\"app\":\"" 
                     + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
-                */
-                string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
+                
+                //string json = "{\"trx_id\":\"" + tx + "\",\"team_hash\":\"" + teamHash + "\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                 COperations.custom_json custom_Json = CreateCustomJson(false, true, "sm_submit_team", json);
 
@@ -766,14 +766,15 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     await Task.Delay(Settings._Random.Next(4500, 8000));
                     
                     var submittedTeam = await SubmitTeamAsync(tx, matchDetails, team);
-                    if (!await WaitForTransactionSuccessAsync(submittedTeam.tx, 10))
+                    if (await WaitForTransactionSuccessAsync(submittedTeam.tx, 10))
                     {
-                        SleepUntil = DateTime.Now.AddMinutes(5);
-                        return SleepUntil;
+                        RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
+                        /*SleepUntil = DateTime.Now.AddMinutes(5);
+                        return SleepUntil;*/
                     }
 
                     //// Reveal the team even when the enemy surrendered, just to be sure
-                    RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
+                    //RevealTeam(tx, matchDetails, submittedTeam.team, submittedTeam.secret);
 
                     bool surrender = false;
                     while (stopwatch.Elapsed.Seconds < 130)
