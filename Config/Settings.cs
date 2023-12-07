@@ -72,7 +72,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Config
         public static HttpClient HttpClient;
         public static CHived oHived;
 
-        public static readonly string[] STARTER_EDITIONS = new string[] { "4", "7" };
+        public static readonly string[] STARTER_EDITIONS = new string[] { "7", "12" };
         public static DetailedCard[] CardsDetails;
         public static UserCard[] StarterCards;
         public static Dictionary<string, string> QuestTypes;
