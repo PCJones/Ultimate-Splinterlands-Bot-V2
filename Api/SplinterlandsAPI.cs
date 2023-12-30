@@ -226,8 +226,10 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                     }
                     bool listedOnMarket = (string)card["market_listing_type"] == "RENT" && (string)card["player"] != username ? false : card["market_listing_type"].Type
                         != JTokenType.Null ? true : false;
-                    
-                    return currentUser == username && !cardOnCooldown && !listedOnMarket;
+
+                    bool workingTheLand = card["stake_plot"].Type != JTokenType.Null ? true : false;
+
+                    return currentUser == username && !cardOnCooldown && !listedOnMarket && !workingTheLand;
                 })
                 .Select(x => new UserCard((string)x["card_detail_id"], (string)x["uid"], (string)x["level"], (bool)x["gold"], false))
                 .Distinct().ToArray());
