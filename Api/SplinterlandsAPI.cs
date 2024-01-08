@@ -225,9 +225,9 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
                              currentUser != (string)card["last_used_player"]);
                     }
                     bool listedOnMarket = (string)card["market_listing_type"] == "RENT" && (string)card["player"] != username ? false : card["market_listing_type"].Type
-                        != JTokenType.Null ? true : false;
+                        != JTokenType.Null;
 
-                    bool workingTheLand = card["stake_plot"].Type != JTokenType.Null ? true : false;
+                    bool workingTheLand = card["stake_plot"].Type != JTokenType.Null;
 
                     return currentUser == username && !cardOnCooldown && !listedOnMarket && !workingTheLand;
                 })
