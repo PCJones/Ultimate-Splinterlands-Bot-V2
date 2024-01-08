@@ -44,8 +44,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Model
         [JsonProperty("league")]
         public int League { get; init; }
         [JsonIgnore]
-        public bool IsExpired => (DateTime.Now - CreatedDate.ToLocalTime()).TotalHours >= 24;
-        public int MinutesRemaining => (24*60) - (int)(DateTime.Now - CreatedDate.ToLocalTime()).TotalMinutes;
+        public bool IsComplete => DateTime.UtcNow.Date > CreatedDate.ToUniversalTime().Date;
 
         public Quest(string id, string player, DateTime createdDate, int createdBlock, string name, int totalItems, int completedItems, string? claimTrxId, DateTime claimDate, int rewardQty, string? refreshTrxID, JToken rewards, int chestTier, int rShares, int league)
         {

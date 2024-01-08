@@ -1225,7 +1225,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                     }
                 }
                 // Focus quest
-                else if (Reward.Quest != null && Reward.Quest.Rewards.Type == JTokenType.Null && Reward.Quest.TotalItems == 0 && Reward.Quest.IsExpired)
+                else if (Reward.Quest != null && Reward.Quest.Rewards.Type == JTokenType.Null && Reward.Quest.TotalItems == 0 && Reward.Quest.IsComplete)
                 {
                     logText = "Focus quest reward can be claimed";
                     Log.WriteToLog($"{Username}: {logText.Pastel(Color.Green)}");
@@ -1341,13 +1341,13 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
                 {
                     return;
                 }
-                if (Reward.Quest != null && Reward.Quest.IsExpired && Reward.Quest.Name.Length < 11) // name length for old quest
+                if (Reward.Quest != null && Reward.Quest.IsComplete && Reward.Quest.Name.Length < 11) // name length for old quest
                 {
                     string n = Helper.GenerateRandomString(10);
                     string json = "{\"type\":\"daily\",\"app\":\"" + Settings.SPLINTERLANDS_APP + "\",\"n\":\"" + n + "\"}";
 
                     string tx = BroadcastCustomJsonToHiveNode("sm_start_quest", json);
-                    Log.WriteToLog($"{Username}: Requesting new quest because 24 hours passed: {tx}");
+                    Log.WriteToLog($"{Username}: Requesting new quest because midnight (UTC) has passed: {tx}");
                     await Task.Delay(12500); // wait for splinterlands to refresh the quest
                     Reward.Quest = await SplinterlandsAPI.GetPlayerQuestAsync(Username);
                 }
