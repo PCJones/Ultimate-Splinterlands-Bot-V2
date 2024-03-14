@@ -105,11 +105,11 @@ namespace Ultimate_Splinterlands_Bot_V2.Api
         }
 
         // this method is only being used by legacy mode
-        public static async Task<(int newRating, int ratingChange, decimal spsReward, int result)> GetBattleResultAsync(string username, string tx)
+        public static async Task<(int newRating, int ratingChange, decimal spsReward, int result)> GetBattleResultAsync(string username, string accessToken, string tx)
         {
             try
             {
-                string data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/battle/history2?player={ username }&format={ Settings.RankedFormat.ToLower() }");
+                string data = await Helper.DownloadPageAsync($"{Settings.SPLINTERLANDS_API_URL}/battle/history2?token={ accessToken }&username={ username }&format={ Settings.RankedFormat.ToLower() }");
                 if (data == null || data.Trim().Length < 10 || data.Contains("502 Bad Gateway") || data.Contains("Cannot GET"))
                 {
                     // Fallback API
