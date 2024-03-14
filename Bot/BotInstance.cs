@@ -1081,7 +1081,7 @@ namespace Ultimate_Splinterlands_Bot_V2.Bot
             for (int i = 0; i < 14; i++)
             {
                 await Task.Delay(6000);
-                battleResult = await SplinterlandsAPI.GetBattleResultAsync(Username, tx);
+                battleResult = await SplinterlandsAPI.GetBattleResultAsync(Username, AccessToken, tx);
                 if (battleResult.result >= 0)
                 {
                     break;
